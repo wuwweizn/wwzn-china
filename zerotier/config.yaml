@@ -1,7 +1,7 @@
 name: ZeroTier One
 version: 0.22.0
 slug: zerotier
-description:ZeroTier虚拟网络层（内网穿透工具） Radically simplify your network with a virtual networking layer that
+description: 虚拟网络层（内网穿透工具） Radically simplify your network with a virtual networking layer that
   works the same everywhere
 url: https://github.com/hassio-addons/addon-zerotier
 codenotary: codenotary@frenck.dev
