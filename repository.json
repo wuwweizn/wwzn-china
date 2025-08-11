@@ -1,37 +1,6 @@
+
 {
-  "name": "无为智能 【无为之中，智启未来】",
+  "name": "Add-ons By wwzn 无为智能 【无为之中，智启未来】",
   "url": "https://github.com/wuwweizn/wwzn-china",
-  "maintainers": [
-    "wuwweizn"
-  ],
-  "slug": "wwzn-china",
-  "description": "A collection of Home Assistant add-ons by wwzn.",
-  "repository": "https://github.com/wuwweizn/wwzn-china",
-  "addons": [
-    {
-      "name": "Example Addon",
-      "description": "An example add-on for demonstration.",
-      "url": "https://github.com/wuwweizn/wwzn-china/tree/main/addons/example-addon",
-      "slug": "example-addon",
-      "version": "1.0.0",
-      "arch": [
-        "amd64",
-        "armhf",
-        "armv7",
-        "aarch64"
-      ],
-      "startup": "application",
-      "boot": "auto",
-      "ports": {
-        "80/tcp": 8080
-      },
-      "map": [
-        "config",
-        "data",
-        "ssl"
-      ],
-      "options": {},
-      "schema": {}
-    }
-  ]
+  "maintainer": "wwzn (@wuwweizn)"
 }
