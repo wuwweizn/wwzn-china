@@ -2,7 +2,7 @@
 version: 12.5.2
 slug: samba
 name: Samba share
-description: Expose Home Assistant folders with SMB/CIFS
+description: SMB局域网文件夹共享Expose Home Assistant folders with SMB/CIFS
 url: https://github.com/home-assistant/addons/tree/master/samba
 codenotary: notary@home-assistant.io
 arch:

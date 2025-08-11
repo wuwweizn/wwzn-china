@@ -2,7 +2,7 @@
 version: 9.19.0
 slug: ssh
 name: Terminal & SSH
-description: Allow logging in remotely to Home Assistant using SSH
+description: 允许使用SSH远程登录到家庭助手Allow logging in remotely to Home Assistant using SSH
 url: https://github.com/home-assistant/addons/tree/master/ssh
 codenotary: notary@home-assistant.io
 advanced: true
