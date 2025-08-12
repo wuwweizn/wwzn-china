@@ -22,7 +22,7 @@
   "startup": "services",
   "upstream": "1.0",
   "url": "https://github.com/jdeath/homeassistant-addons",
-  "image": "benzino77/tasmocompiler",
+  "image": "docker.1ms.run/benzino77/tasmocompiler",
   "version": "12.7.0",
   "ingress": false,
   "ingress_port": 3000,

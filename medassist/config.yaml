@@ -2,7 +2,7 @@ name: MedAssist
 version: "v0.16.2"
 upstream: v0.14.3test
 slug: medassist
-description:>  -  MedAssist是一个简单的Node.js应用程序。通过发送提醒，可以轻松跟踪药物清单和重新订购。
+description: MedAssist是一个简单的Node.js应用程序。通过发送提醒，可以轻松跟踪药物清单和重新订购。
 arch:
   - amd64
   - aarch64
