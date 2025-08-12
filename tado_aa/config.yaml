@@ -1,0 +1,25 @@
+name: Tado Auto Assist
+version: 1.6.8
+slug: tado_aa
+description: Tado Auto-Assist 是 Tado 推出的一项付费订阅服务，提供更智能的暖通空调（HVAC）控制功能，特别针对地理围栏（Geofencing）和开窗检测进行了优化
+url: https://github.com/FaserF/hassio-addons/tree/master/tado_aa
+arch:
+  - armhf
+  - armv7
+  - aarch64
+  - amd64
+  - i386
+image: ghcr.io/faserf/tado_aa-{arch}
+init: false
+options:
+  username:
+  password:
+  minTemp: int(5, 25)
+  maxTemp: int(5, 25)
+  log_level: info
+schema:
+  username: str
+  password: password
+  minTemp: int
+  maxTemp: int
+  log_level: list(info|minimal)?

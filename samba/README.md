@@ -1,13 +1,13 @@
-# Home Assistant Add-on: Samba share
+＃家庭助理插件：Samba分享
 
-Share your configuration over the network using Windows file sharing.
+使用Windows文件共享通过网络共享您的配置。
 
 ![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armhf Architecture][armhf-shield] ![Supports armv7 Architecture][armv7-shield] ![Supports i386 Architecture][i386-shield]
 
-## About
+##关于
+此附加组件，您可以通过网络启用各个操作系统的文件共享。
+它使您可以使用Windows和MacOS设备访问配置文件。
 
-This Add-on allows you to enable file sharing across different operating systems over a network.
-It lets you access your config files with Windows and macOS devices.
 
 [aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
 [amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg

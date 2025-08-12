@@ -1,34 +1,29 @@
-# Home Assistant Add-on: File editor
-
-Browser-based configuration file editor for Home Assistant.
+＃家庭助理附加组件：基于文件编辑器
+浏览器的配置文件编辑器，用于家庭助手。
 
 ![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armhf Architecture][armhf-shield] ![Supports armv7 Architecture][armv7-shield] ![Supports i386 Architecture][i386-shield]
 
 ![Configurator in the Home Assistant Frontend][screenshot]
 
-## About
 
-The File editor, formerly known as Configurator, is a small web-app (you access it via web browser) that provides a
-filesystem-browser and text-editor to modify files on the machine the File editor is
-running on.
+##关于
+文件编辑器，以前称为Configurator，是一个小型Web应用程序（您可以通过Web浏览器访问），
+它提供了一个文件系统浏览器和文本编辑器来修改文件编辑器正在运行的计算机上的文件。
 
-It is powered by Ace editor, which supports syntax highlighting for various
-code/markup languages. YAML files (the default language for Home Assistant
-configuration files) will be automatically checked for syntax errors while editing.
+它由ACE编辑器提供动力，该编辑器支持语法突出显示各种代码/标记语言。
+ YAML文件（家庭助手配置文件的默认语言）将在编辑时自动检查是否有语法错误。
 
-## Features
+##功能 
+- 基于Web的编辑器，可以通过语法突出显示和YAML覆盖来修改您的文件。
+- 上传和下载文件。
+- 阶段，藏匿和提交GIT存储库中的更改，创建和切换分支之间，推动遥控器，查看diffs。
+- 具有可用实体，触发器，事件，条件和服务的列表。
+- 单击按钮直接重新启动家庭助理。重新加载组，自动化等也可以完成。需要一个API密码。
+- 直接链接到家庭助理文档和图标。
+- 在附加容器中执行shell命令。
+- 编辑器设置保存在您的浏览器中。
+- 还有更多…
 
-- Web-based editor to modify your files with syntax highlighting and YAML linting.
-- Upload and download files.
-- Stage, stash and commit changes in Git repositories, create and switch between
-  branches, push to remotes, view diffs.
-- Lists with available entities, triggers, events, conditions and services.
-- Restart Home Assistant directly with the click of a button. Reloading groups,
-  automations, etc. can be done as well. An API password is required.
-- Direct links to Home Assistant documentation and icons.
-- Execute shell commands within the add-on container.
-- Editor settings are saved in your browser.
-- And much more…
 
 [aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
 [amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg

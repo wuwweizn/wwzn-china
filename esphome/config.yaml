@@ -34,6 +34,6 @@ name: ESPHome Device Builder
 panel_title: ESPHome Builder
 version: 2025.7.5
 slug: esphome
-description: Build your own smart home devices using ESPHome, no programming experience
+description: 使用Esphome，没有编程经验来构建自己的智能家居设备Build your own smart home devices using ESPHome, no programming experience
   required
 image: ghcr.io/esphome/esphome-hassio

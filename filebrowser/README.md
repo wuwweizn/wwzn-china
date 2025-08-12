@@ -1,5 +1,4 @@
-## &#9888; Open Issue : [🐛 [Filebrowser] Crashing on new install (opened 2025-08-02)](https://github.com/alexbelgium/hassio-addons/issues/1993) by [@LivArt01](https://github.com/LivArt01)
-# Home assistant add-on: Filebrowser
+##＆＃9888;开放问题：[[FileBrowser]在新安装上崩溃（开放2025-08-02）]（https://github.com/alexbelgium/alexbelgium/hassio-addons/issues/1993），作者：[@livart01]
 
 [![Donate][donation-badge]](https://www.buymeacoffee.com/alexbelgium)
 [![Donate][paypal-badge]](https://www.paypal.com/donate/?hosted_button_id=DZFULJZTP3UQA)
@@ -21,35 +20,34 @@ _Thanks to everyone having starred my repo! To star it click on the image below,
 
 ![downloads evolution](https://raw.githubusercontent.com/alexbelgium/hassio-addons/master/filebrowser/stats.png)
 
-## About
+## 关于
 
-Web-based file management interface that provides a secure way to browse, upload, download, edit and manage files on your Home Assistant system. Filebrowser offers a clean, modern interface for handling your files through a web browser, with support for multiple file formats, preview capabilities, and comprehensive file operations.
+基于Web的文件管理界面，可提供安全的方法，以浏览，上传，下载，编辑和管理您的家庭助理系统上的文件。 FileBrowser提供了一个干净的现代界面，用于通过Web浏览器处理文件，并支持多种文件格式，预览功能和全面的文件操作。
 
-This addon is based on the [docker image](https://hub.docker.com/r/filebrowser/filebrowser) from the official Filebrowser project.
+这个插件基于 [docker image](https://hub.docker.com/r/filebrowser/filebrowser) 来自官方FileBrowser项目。
 
-## Installation
+##安装
 
-The installation of this add-on is pretty straightforward and not different in
-comparison to installing any other Home Assistant add-on.
+与安装任何其他家庭助手附加组件相比，此附加组件的安装非常简单，并且没有什么不同。
 
-1. [Add my Home Assistant add-ons repository][repository] to your Home Assistant instance.
-1. Install this add-on.
-1. Click the `Save` button to store your configuration.
-1. Start the add-on.
-1. Check the logs of the add-on to see if everything went well.
-1. Access the web UI through the sidebar or at `<your-ip>:8071`.
+1.[将我的家庭助理附加存储库] [存储库]添加到您的家庭助理实例中。
+2.安装此附加组件。 
+3.单击“保存”按钮以存储您的配置。 
+4.启动附加组件。
+5.检查附加组件的日志，以查看一切是否进展顺利。
+6.通过侧边栏或访问Web UI `<your-ip>:8071`.
 
-## Configuration
+##配置
 
-The web UI can be found at `<your-ip>:8071` or through the Home Assistant sidebar when using Ingress.
+可以在 `<your-ip>:8071` 或使用入学时通过家庭助理侧边栏。
 
-**Default credentials:**
+**默认凭据：**
 - Username: `admin`
 - Password: `admin`
 
-**Important:** Change the default credentials immediately after first login for security.
+**重要：**首先登录安全性后立即更改默认凭据。
 
-### Options
+＃＃＃ 选项
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
@@ -65,7 +63,7 @@ The web UI can be found at `<your-ip>:8071` or through the Home Assistant sideba
 | `cifspassword` | str | *(optional)* | SMB password for network shares |
 | `cifsdomain` | str | *(optional)* | SMB domain for network shares |
 
-### Example Configuration
+###示例配置
 
 ```yaml
 ssl: true
@@ -81,32 +79,32 @@ cifspassword: "password123"
 cifsdomain: "workgroup"
 ```
 
-## Setup
+＃＃ 设置
 
-1. Start the add-on and wait for it to initialize.
-1. Access the web interface through the Home Assistant sidebar or at `<your-ip>:8071`.
-1. Log in using the default credentials:
+1. 启动加载项并等待它初始化.
+1. 通过家庭助理侧边栏或位置访问Web界面 `<your-ip>:8071`.
+1. 使用默认凭据登录:
    - Username: `admin`
    - Password: `admin`
-1. **Important:** Immediately change the default password by clicking on "Settings" > "User Management".
-1. Configure your preferred settings through the web interface.
-1. If authentication is disabled (`NoAuth: true`), the login screen will be bypassed.
+1. **重要：**立即通过单击更改默认密码 "设置" > "用户管理".
+1. 通过Web界面配置您的首选设置。
+1. 如果已禁用身份验证（`noauth：true`），则将绕过登录屏幕。
 
-### Mounting Drives
+###安装驱动器
 
-This addon supports mounting both local drives and remote SMB shares:
+此插件支持安装本地驱动器和远程SMB共享：
 
 - **Local drives**: See [Mounting Local Drives in Addons](https://github.com/alexbelgium/hassio-addons/wiki/Mounting-Local-Drives-in-Addons)
 - **Remote shares**: See [Mounting Remote Shares in Addons](https://github.com/alexbelgium/hassio-addons/wiki/Mounting-remote-shares-in-Addons)
 
-### Custom Scripts and Environment Variables
+###自定义脚本和环境变量
 
-This addon supports custom scripts and environment variables through the `addon_config` mapping:
+此插件通过`addon_config`映射支持自定义脚本和环境变量：
 
 - **Custom scripts**: See [Running Custom Scripts in Addons](https://github.com/alexbelgium/hassio-addons/wiki/Running-custom-scripts-in-Addons)
 - **Environment variables**: See [Add Environment Variables to your Addon](https://github.com/alexbelgium/hassio-addons/wiki/Add-Environment-variables-to-your-Addon)
 
-## Support
+＃＃ 支持
 
 Create an issue on GitHub, or ask on the [Home Assistant Community thread](https://community.home-assistant.io/t/home-assistant-addon-filebrowser/282108/3).
 

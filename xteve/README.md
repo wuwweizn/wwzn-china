@@ -20,13 +20,10 @@ _Thanks to everyone having starred my repo! To star it click on the image below,
 
 ![downloads evolution](https://raw.githubusercontent.com/alexbelgium/hassio-addons/master/xteve/stats.png)
 
-## About
-
-M3U Proxy for Plex DVR and Emby Live TV.
-
-Project homepage : https://github.com/xteve-project/xTeVe
-
-Based on the docker image : https://hub.docker.com/r/collelog/xteve
+##关于
+Plex DVR和Emby Live TV的M3U代理。
+项目主页：https：//github.com/xteve-project/xteve
+基于docker映像：https：//hub.docker.com/r/collelog/xteve 
 
 ## Installation
 
@@ -39,27 +36,30 @@ comparison to installing any other Hass.io add-on.
 1. Start the add-on.
 1. Check the logs of the add-on to see if everything went well.
 1. Carefully configure the add-on to your preferences, see the official documentation for for that.
+##安装
+此附加组件的安装非常简单，并且与安装任何其他Hass.io Add-Ond-on相比，这是非常简单的，并且没有什么不同。
+1.[将我的hass.io附加存储库添加] [存储库]到您的hass.io实例。 
+2.安装此附加组件。 
+3.单击“保存”按钮以存储您的配置。 
+4.启动附加组件。 
+5.检查附加组件的日志，以查看一切是否进展顺利。 
+6.仔细地将附加组件配置为您的首选项，请参阅官方文档。
 
-## Configuration
+##配置
+WebUI可以在<http：// homeassistant：34400/web>上找到。
+由于大多数设置是通过Web界面配置的，因此此附件具有最小的配置选项。
 
-Webui can be found at <http://homeassistant:34400/web>.
+ ###选项
+此插件不需要配置选项。所有配置都是通过端口34400的Web界面完成的。
 
-This addon has minimal configuration options as most settings are configured through the web interface.
+###示例配置
 
-### Options
-
-No configuration options are required for this addon. All configuration is done through the web interface at port 34400.
-
-### Example Configuration
 
 ```yaml
-# No options needed - configure via web interface
+# 无需选项 - 通过Web界面配置
 ```
 
 **Note**: xTeVe stores its configuration in `/data/` and runs on port 34400. Access the web interface to configure M3U playlists and XMLTV sources.
 
-## Support
-
-Create an issue on github
-
-[repository]: https://github.com/alexbelgium/hassio-addons
+##支持
+在github [存储库]上创建问题：https：//github.com/alexbelgium/hassio-addons

@@ -1,0 +1,23 @@
+name: MedAssist
+version: "v0.16.2"
+upstream: v0.14.3test
+slug: medassist
+description:>  -  MedAssist是一个简单的Node.js应用程序。通过发送提醒，可以轻松跟踪药物清单和重新订购。
+arch:
+  - amd64
+  - aarch64
+url: "https://github.com/jdeath/homeassistant-addons"
+ports:
+  3111/tcp: 3111 
+ports_description:
+  3111/tcp: "Web Interface"
+map:
+  - type: addon_config
+    read_only: false
+    path: /app/medassist
+image: ghcr.io/njic/medassist
+boot: auto
+startup: services
+webui: "[PROTO:ssl]://[HOST]:[PORT:3111]"
+ingress: false
+ingress_port: 3111
