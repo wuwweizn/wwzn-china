@@ -1,22 +1,12 @@
 {
-  "name": "Lucky",
-  "version": "2.18.1",
+  "name": "Lucky Add-on",
+  "version": "1.0.0",
   "slug": "lucky",
-  "description": "A Lucky add-on for Home Assistant. Multi-arch Docker image (amd64, arm64, armv7).",
-  "image": "ghcr.io/wuwweizn/lucky",
-  "arch": ["amd64","aarch64","armv7"],
-  "startup": "services",
+  "description": "Home Assistant add-on for Lucky multi-arch Docker image",
+  "arch": ["amd64", "arm64", "armv7"],
+  "startup": "application",
   "boot": "auto",
-  "host_network": true,
-  "ingress": true,
-  "ingress_port": 16601,
-  "panel_icon": "mdi:server-network",
-  "map": [
-    "config:rw",
-    "data:rw"
-  ],
-  "ports": {
-    "16601/tcp": 16601
-  },
-  "webui": "http://[HOST]:[PORT:16601]"
+  "image": "ghcr.io/wuwweizn/lucky:latest",
+  "options": {},
+  "schema": {}
 }
