@@ -1,0 +1,80 @@
+name: Build and Push Auto-Versioned Multi-Arch Docker Image with Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # 手动触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 拉取代码
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # 2. 登录 GitHub Packages (ghcr.io)
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 3. 启用 QEMU（多架构支持）
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      # 4. 启用 Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # 5. 计算版本号（兼容无 tag）
+      - name: Get version
+        id: version
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "Last tag: $LAST_TAG"
+
+          MAJOR_MINOR=$(echo $LAST_TAG | sed -E 's/v([0-9]+\.[0-9]+).*/\1/')
+          PATCH=$(git rev-list $LAST_TAG..HEAD --count 2>/dev/null || echo 0)
+          
+          if [ "$PATCH" = "0" ] && [ "$LAST_TAG" = "v0.0.0" ]; then
+            PATCH=1
+          fi
+
+          VERSION="$MAJOR_MINOR.$PATCH"
+          echo "Calculated version: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      # 6. 构建并推送多架构镜像
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/lucky:latest
+            ghcr.io/${{ github.repository_owner }}/lucky:${{ steps.version.outputs.version }}
+
+      # 7. 生成 Pull Command 文本文件
+      - name: Create Pull Command File
+        run: |
+          echo "docker pull ghcr.io/${{ github.repository_owner }}/lucky:latest" > pull.txt
+          echo "docker pull ghcr.io/${{ github.repository_owner }}/lucky:${{ steps.version.outputs.version }}" >> pull.txt
+
+      # 8. 创建 Release 并附带 pull.txt
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Release v${{ steps.version.outputs.version }}
+          body: |
+            Auto-generated release for lucky Docker image.
+            Multi-arch image (amd64, arm64) pushed to GitHub Packages.
+            See pull.txt for docker pull commands.
+          files: pull.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -37,6 +37,9 @@ AlexxIT加载项：https://github.com/AlexxIT/hassio-addons
 da-anda加载项：https://github.com/da-anda/hass-io-addons
 【引用的项目：knxd】
 
+huxiaoxu2019加载项：https://github.com/huxiaoxu2019/hass-addon-frp-client
+【引用的项目：frp-client】
+
 thejeffreystone加载项【mqtt】：https://github.com/thejeffreystone/hassio_addons
 GollumDom加载项【mqtt】：https://github.com/GollumDom/addon-repository
 pbkhrv加载项【rtl433】https://github.com/pbkhrv/rtl_433-hass-addons
