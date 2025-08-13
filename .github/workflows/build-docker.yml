@@ -1,94 +1,44 @@
-name: Auto Sync Lucky Upstream and Build Multi-Arch Docker Image
-
-permissions:
-  contents: write
-  packages: write
+name: Build & Release
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * *' # 每天 00:00 检查一次最新 upstream tag
+  push:
+    tags:
+      - 'v*'
 
 jobs:
-  sync-build:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [amd64, arm64, armv7]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.22
+      - name: Build for ${{ matrix.arch }}
+        run: |
+          mkdir -p build
+          GOOS=linux GOARCH=${{ matrix.arch }} go build -o build/myapp-${{ matrix.arch }} main.go
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: builds
+          path: build/*
+
+  release:
+    needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
+      - uses: actions/download-artifact@v4
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Get latest upstream tag
-        id: version
-        run: |
-          LATEST_TAG=$(git ls-remote --tags https://github.com/gdy666/lucky.git | \
-            awk -F/ '{print $3}' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1)
-          echo "Latest upstream tag: $LATEST_TAG"
-          VERSION=${LATEST_TAG#v}
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-
-      - name: Check existing release
-        id: check_release
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GH_PAT }}
-          script: |
-            const tag = `v${{ steps.version.outputs.version }}`;
-            try {
-              await github.rest.repos.getReleaseByTag({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                tag
-              });
-              return { exists: true };
-            } catch(e) {
-              return { exists: false };
-            }
-
-      - name: Stop if release exists
-        if: steps.check_release.outputs.exists == 'true'
-        run: |
-          echo "Release v${{ steps.version.outputs.version }} already exists. Exiting."
-          exit 0
-
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
-          push: true
-          tags: |
-            ghcr.io/wuwweizn/lucky:latest
-            ghcr.io/wuwweizn/lucky:${{ steps.version.outputs.version }}
-
-      - name: Create Pull Command File
-        run: |
-          echo "docker pull ghcr.io/wuwweizn/lucky:latest" > pull.txt
-          echo "docker pull ghcr.io/wuwweizn/lucky:${{ steps.version.outputs.version }}" >> pull.txt
-
+          name: builds
+          path: build
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ steps.version.outputs.version }}
-          name: Release v${{ steps.version.outputs.version }}
-          body: |
-            Auto-generated release for lucky Docker image.
-            Multi-arch image (amd64, arm64, armv7) pushed to GitHub Packages.
-            See pull.txt for docker pull commands.
-          files: pull.txt
+          files: build/*
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
