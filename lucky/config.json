@@ -13,5 +13,5 @@
   "map": ["config", "ssl", "addons", "share"],
   "options": {},
   "schema": {},
-  "image": "wuwweizn/lucky"
+  "image": "ghcr.io/wuwweizn/lucky"
 }
