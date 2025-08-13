@@ -2,7 +2,6 @@
   "name": "Lucky",
   "version": "2.18.1",
   "slug": "lucky",
-  "codenotary": "djhhui@gmail.com",
   "description": "A Lucky add-on for Home Assistant. Multi-arch Docker image (amd64, arm64, armv7).",
   "image": "ghcr.io/wuwweizn/lucky",
   "arch": ["amd64","aarch64","armv7"],
