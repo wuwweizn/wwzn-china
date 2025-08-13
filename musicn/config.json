@@ -4,7 +4,7 @@
   "slug": "musicn",
   "codenotary": "djhhui@gmail.com",
   "description": "一个可播放及下载音乐的 Node.js 工具，目前已经支持国内用户直接安装使用，不用魔法",
-  "url": "https://github.com/Desmond-Dong/hassio-addons",
+  "url": "https://github.com/wuwweizn/wwzn-china",
   "arch": [
     "aarch64",
     "amd64"
@@ -12,7 +12,7 @@
   "startup": "services",
   "boot": "auto",
   "init": false,
-  "image": "ghcr.nju.edu.cn/desmond-dong/musicn-{arch}",
+  "image": "ghcr.io/wuwweizn/wwzn-china/musicn-{arch}",
   "hassio_api": true,
   "hassio_role": "manager",
   "ports": {
