@@ -1,5 +1,6 @@
 name: Build and Push Auto-Versioned Multi-Arch Docker Image with Release
 
+# workflow 权限设置，GITHUB_TOKEN 推镜像需要 packages: write
 permissions:
   contents: read
   packages: write
@@ -18,7 +19,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      # 2. 登录 GitHub Packages (ghcr.io)
+      # 2. 登录 GitHub Container Registry (推 Docker 镜像)
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
@@ -40,19 +41,16 @@ jobs:
         run: |
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
           echo "Last tag: $LAST_TAG"
-
           MAJOR_MINOR=$(echo $LAST_TAG | sed -E 's/v([0-9]+\.[0-9]+).*/\1/')
           PATCH=$(git rev-list $LAST_TAG..HEAD --count 2>/dev/null || echo 0)
-          
           if [ "$PATCH" = "0" ] && [ "$LAST_TAG" = "v0.0.0" ]; then
             PATCH=1
           fi
-
           VERSION="$MAJOR_MINOR.$PATCH"
           echo "Calculated version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      # 6. 构建并推送多架构镜像
+      # 6. 构建并推送多架构 Docker 镜像
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v4
         with:
@@ -69,7 +67,7 @@ jobs:
           echo "docker pull ghcr.io/${{ github.repository_owner }}/lucky:latest" > pull.txt
           echo "docker pull ghcr.io/${{ github.repository_owner }}/lucky:${{ steps.version.outputs.version }}" >> pull.txt
 
-      # 8. 创建 Release 并附带 pull.txt
+      # 8. 创建 Release（用 PAT，避免 403）
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
@@ -81,4 +79,4 @@ jobs:
             See pull.txt for docker pull commands.
           files: pull.txt
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}  # 使用你的 Personal Access Token
