@@ -4,7 +4,7 @@
   "slug": "lucky",
   "description": "Lucky — 简洁好用的内网穿透和多功能网络工具",
   "arch": ["amd64", "armv7", "aarch64"],
-  "url": "https://github.com/wuwweizn/wwzn-china/lucky",
+  "url": "https://github.com/wuwweizn/wwzn-china",
   "startup": "services",
   "boot": "auto",
   "ports": {
@@ -13,5 +13,5 @@
   "map": ["config", "ssl", "addons", "share"],
   "options": {},
   "schema": {},
-  "image": "ghcr.io/wuwweizn/wwzn-china/lucky-{arch}"
+  "image": "ghcr.io/wuwweizn/lucky-{arch}"
 }
