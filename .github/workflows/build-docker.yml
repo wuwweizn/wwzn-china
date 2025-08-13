@@ -5,25 +5,20 @@ permissions:
   packages: write
 
 on:
-  # 1. 直接 push 到 main
   push:
     branches:
       - main
-  # 2. 手动触发
   workflow_dispatch:
-  # 3. Upstream tag 触发（定期检查）
   schedule:
-    - cron: '0 0 * * *' # 每天 00:00 检查一次最新 tag
+    - cron: '0 0 * * *' # 每天 00:00 检查一次最新 upstream tag
 
 jobs:
   sync-build:
     runs-on: ubuntu-latest
     steps:
-      # 1. Checkout
       - name: Checkout
         uses: actions/checkout@v3
 
-      # 2. 登录 GitHub Container Registry
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
@@ -31,15 +26,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 3. 设置 QEMU
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
-      # 4. 设置 Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      # 5. 获取 upstream 最新 tag
       - name: Get latest upstream tag
         id: version
         run: |
@@ -49,7 +41,6 @@ jobs:
           VERSION=${LATEST_TAG#v}
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      # 6. 检查本地是否已有该版本 Release，避免重复构建
       - name: Check existing release
         id: check_release
         uses: actions/github-script@v6
@@ -67,13 +58,13 @@ jobs:
             } catch(e) {
               return { exists: false };
             }
+
       - name: Stop if release exists
         if: steps.check_release.outputs.exists == 'true'
         run: |
           echo "Release v${{ steps.version.outputs.version }} already exists. Exiting."
           exit 0
 
-      # 7. 构建并推送 Docker 镜像
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v4
         with:
@@ -81,16 +72,14 @@ jobs:
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/lucky:latest
-            ghcr.io/${{ github.repository_owner }}/lucky:${{ steps.version.outputs.version }}
+            ghcr.io/wuwweizn/lucky:latest
+            ghcr.io/wuwweizn/lucky:${{ steps.version.outputs.version }}
 
-      # 8. 生成 pull.txt
       - name: Create Pull Command File
         run: |
-          echo "docker pull ghcr.io/${{ github.repository_owner }}/lucky:latest" > pull.txt
-          echo "docker pull ghcr.io/${{ github.repository_owner }}/lucky:${{ steps.version.outputs.version }}" >> pull.txt
+          echo "docker pull ghcr.io/wuwweizn/lucky:latest" > pull.txt
+          echo "docker pull ghcr.io/wuwweizn/lucky:${{ steps.version.outputs.version }}" >> pull.txt
 
-      # 9. 创建 Release
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
