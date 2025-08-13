@@ -3,15 +3,16 @@
   "version": "0.50",
   "slug": "yesplaymusic",
   "url": "https://github.com/wuwweizn/wwzn-china",
-  "description": "网页音乐播放",
+  "description": "在线网页网易的音乐播放",
   "arch": [
     "amd64",
     "armhf",
-    "armv7",
+    "armv7", 
     "aarch64"
   ],
   "startup": "services",
   "boot": "auto",
+  "image": "ghcr.io/wuwweizn/yesplaymusic-{arch}",
   "ports": {
     "3000/tcp": 7080,
     "80/tcp": 7081
