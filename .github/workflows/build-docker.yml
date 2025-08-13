@@ -1,5 +1,9 @@
 name: Build and Push Auto-Versioned Multi-Arch Docker Image with Release
 
+permissions:
+  contents: read
+  packages: write
+
 on:
   push:
     branches:
