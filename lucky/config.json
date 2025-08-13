@@ -2,16 +2,21 @@
   "name": "Lucky",
   "version": "2.15.3",
   "slug": "lucky",
+  "codenotary": "wuweizhineng@163.com",
   "description": "Lucky — 简洁好用的内网穿透和多功能网络工具",
-  "arch": ["amd64", "armv7", "aarch64"],
-  "url": "https://github.com/wuwweizn/wwzn-china",
+  "image": "ghcr.io/wuwweizn/lucky-{arch}",
+  "arch": ["aarch64", "amd64", "armv7"],
   "startup": "services",
   "boot": "auto",
+  "host_network": true,
+  "ingress": true,
+  "ingress_port": 16601,
+  "panel_icon": "mdi:server-network",
+  "map": [
+    "config:rw"
+  ],
   "ports": {
     "16601/tcp": 16601
   },
-  "map": ["config", "ssl", "addons", "share"],
-  "options": {},
-  "schema": {},
-  "image": "ghcr.io/wuwweizn/lucky-{arch}"
+  "webui": "http://[HOST]:[PORT:16601]"
 }
