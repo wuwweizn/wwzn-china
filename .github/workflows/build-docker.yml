@@ -65,7 +65,7 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v4
         with:
-          context: ./lucky       # Dockerfile 或直接基于 upstream 镜像
+          context: ./lucky
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
           tags: |
