@@ -1,4 +1,4 @@
-name: Build and Push jdxb2 (Multi-Arch, Docker Hub + GHCR)
+name: Build and Push musicn2 (Multi-Arch, Docker Hub + GHCR)
 
 on:
   workflow_dispatch:
@@ -62,7 +62,7 @@ jobs:
             BUILD_ARCH="${{ matrix.arch }}"
           fi
 
-          ADDON_DIR="jdxb"
+          ADDON_DIR="musicn"
           YAML_PATH="${ADDON_DIR}/build.yaml"
           CONFIG_PATH="${ADDON_DIR}/config.json"
 
@@ -82,7 +82,7 @@ jobs:
 
           echo "BUILD_ARCH=$BUILD_ARCH" >> $GITHUB_ENV
           echo "BUILD_FROM=$BUILD_FROM" >> $GITHUB_ENV
-          echo "ADDON_NAME=jdxb" >> $GITHUB_ENV
+          echo "ADDON_NAME=musicn" >> $GITHUB_ENV
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
           echo "💡 BUILD_FROM=$BUILD_FROM"
@@ -95,19 +95,19 @@ jobs:
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push jdxb for ${{ matrix.arch }}
+      - name: Build and push musicn for ${{ matrix.arch }}
         uses: docker/build-push-action@v5
         with:
-          context: jdxb
-          file: jdxb/Dockerfile
+          context: musicn
+          file: musicn/Dockerfile
           platforms: |
             linux/amd64
             linux/arm64
             linux/arm/v7
           push: true
           tags: |
-            ghcr.io/${{ env.REPO_OWNER_LC }}/jdxb-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
-            ${{ secrets.DOCKER_USERNAME }}/jdxb-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
+            ghcr.io/${{ env.REPO_OWNER_LC }}/musicn-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
+            ${{ secrets.DOCKER_USERNAME }}/musicn-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
           build-args: |
             BUILD_FROM=${{ env.BUILD_FROM }}
             BUILD_ARCH=${{ env.BUILD_ARCH }}
