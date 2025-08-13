@@ -1,4 +1,4 @@
-name: Build Lucky Multi-Arch Docker Image with Upstream Sync
+name: Build Lucky Multi-Arch Docker Image from Upstream
 
 on:
   push:
@@ -61,13 +61,22 @@ jobs:
           echo "Image ghcr.io/wuwweizn/lucky:${{ steps.version.outputs.version }} already exists. Exiting."
           exit 0
 
-      # 8. 构建并推送镜像
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v4
-        with:
-          context: ./lucky
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
-          push: true
-          tags: |
-            ghcr.io/wuwweizn/lucky:latest
-            ghcr.io/wuwweizn/lucky:${{ steps.version.outputs.version }}
+      # 8. 构建并推送 multi-arch 镜像
+      - name: Build and Push Multi-Arch Images
+        run: |
+          ARCHS=("amd64" "arm64" "armv7")
+          for arch in "${ARCHS[@]}"; do
+            echo "Pulling upstream image for $arch"
+            docker pull --platform=linux/$arch ghcr.io/gdy666/lucky:${{ steps.version.outputs.version }}
+            
+            echo "Tagging image for $arch"
+            docker tag ghcr.io/gdy666/lucky:${{ steps.version.outputs.version }} ghcr.io/wuwweizn/lucky:${{ steps.version.outputs.version }}-$arch
+            
+            echo "Pushing image for $arch"
+            docker push ghcr.io/wuwweizn/lucky:${{ steps.version.outputs.version }}-$arch
+          done
+
+          # 创建 latest 标签（指向最新 upstream）
+          docker pull ghcr.io/gdy666/lucky:${{ steps.version.outputs.version }}
+          docker tag ghcr.io/gdy666/lucky:${{ steps.version.outputs.version }} ghcr.io/wuwweizn/lucky:latest
+          docker push ghcr.io/wuwweizn/lucky:latest
