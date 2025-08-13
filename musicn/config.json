@@ -12,7 +12,7 @@
   "startup": "services",
   "boot": "auto",
   "init": false,
-  "image": "ghcr.io/wuwweizn/wwzn-china/musicn-{arch}",
+  "image": "ghcr.io/wuwweizn/musicn-{arch}",
   "hassio_api": true,
   "hassio_role": "manager",
   "ports": {
