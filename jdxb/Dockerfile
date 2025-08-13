@@ -13,14 +13,17 @@ WORKDIR /tmp
 # 根据架构下载对应文件
 RUN echo ">>> BUILD_ARCH is [$BUILD_ARCH]" && \
     case "$BUILD_ARCH" in \
-    amd64) wget -O owjdxb.zip https://raw.githubusercontent.com/wuwweizn/wwzn-china/tree/main/jdxb/owjdxb_x86.zip ;; \
-    arm64|aarch64) wget -O owjdxb.zip https://raw.githubusercontent.com/wuwweizn/wwzn-china/tree/main/jdxb/owjdxb_a64.zip ;; \
-    *) echo "❌ Unsupported architecture: [$BUILD_ARCH]" && exit 1 ;; \
+      amd64) URL=https://raw.githubusercontent.com/wuwweizn/wwzn-china/main/jdxb/owjdxb_x86.zip ;; \
+      arm64|aarch64) URL=https://raw.githubusercontent.com/wuwweizn/wwzn-china/main/jdxb/owjdxb_a64.zip ;; \
+      *) echo "❌ Unsupported architecture: [$BUILD_ARCH]" && exit 1 ;; \
     esac && \
+    echo "Downloading $URL ..." && \
+    wget -O owjdxb.zip "$URL" && \
     unzip owjdxb.zip && \
     mv owjdxb /owjdxb && \
     chmod +x "/owjdxb/bin/owjdxb" && \
     rm -rf /tmp/*
+
 
 
 # 复制并设置 run.sh 脚本
