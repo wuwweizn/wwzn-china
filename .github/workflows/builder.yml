@@ -34,9 +34,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install jq
-        run: sudo apt-get update && sudo apt-get install -y jq
-
       - name: Install yq (official binary)
         run: |
           YQ_VERSION="4.45.1"
