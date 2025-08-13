@@ -1,6 +1,6 @@
 {
   "name": "Lucky",
-  "version": "2.18.2",
+  "version": "2.18.1",
   "slug": "lucky",
   "codenotary": "djhhui@gmail.com",
   "description": "A Lucky add-on for Home Assistant. Auto-sync upstream tag and generate multi-arch Docker images.",
