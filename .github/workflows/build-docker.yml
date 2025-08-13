@@ -1,68 +1,67 @@
-name: Sync Lucky Docker Image from Upstream
+name: Auto-detect Latest Docker Tag & Multi-Arch Build
 
 on:
   push:
     branches:
       - main
   workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * *' # 每天 00:00 同步 upstream 最新版本
 
 jobs:
-  sync:
+  build:
     runs-on: ubuntu-latest
     steps:
-      # 1. Checkout
-      - name: Checkout
-        uses: actions/checkout@v3
+      # 1. 检出代码
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      # 2. 登录 GHCR
-      - name: Login to GitHub Container Registry
+      # 2. 设置 Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # 3. 登录 Docker Hub（如果是私有仓库）
+      - name: Docker Login
         uses: docker/login-action@v2
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # 3. 获取 upstream 最新 tag
-      - name: Get latest upstream tag
-        id: version
+      # 4. 获取最新可用标签
+      - name: Get latest Docker tag
+        id: get_tag
         run: |
-          LATEST_TAG=$(git ls-remote --tags https://github.com/gdy666/lucky.git | \
-            awk -F/ '{print $3}' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1)
-          echo "Latest upstream tag: $LATEST_TAG"
-          VERSION=${LATEST_TAG#v}
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          IMAGE_NAME="yourrepo/yourimage"  # 替换为你的仓库名
+          echo "Fetching latest tag for $IMAGE_NAME ..."
+          
+          # 获取 Docker Hub 的 tag 列表并选择最新
+          TAG=$(curl -s "https://registry.hub.docker.com/v2/repositories/${IMAGE_NAME}/tags?page_size=100" \
+                  | jq -r '.results[].name' \
+                  | sort -Vr \
+                  | head -n1)
+          
+          if [ -z "$TAG" ]; then
+            echo "No tag found! Exiting..."
+            exit 1
+          fi
+          
+          echo "Latest tag is $TAG"
+          echo "TAG=$TAG" >> $GITHUB_ENV
 
-      # 4. 检查镜像是否已存在
-      - name: Check if image exists
-        id: check_image
+      # 5. 安全拉取最新镜像
+      - name: Safe pull latest upstream image
         run: |
-          set +e
-          docker manifest inspect ghcr.io/wuwweizn/lucky:${{ steps.version.outputs.version }} > /dev/null
-          if [ $? -eq 0 ]; then
-            echo "exists=true" >> $GITHUB_OUTPUT
+          IMAGE="yourrepo/yourimage:${{ env.TAG }}"
+          echo "Pulling $IMAGE ..."
+          if docker pull $IMAGE; then
+            echo "Successfully pulled $IMAGE"
           else
-            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "Warning: $IMAGE not found. Skipping pull."
           fi
 
-      # 5. 停止如果镜像已存在
-      - name: Stop if image exists
-        if: steps.check_image.outputs.exists == 'true'
-        run: |
-          echo "Image ghcr.io/wuwweizn/lucky:${{ steps.version.outputs.version }} already exists. Exiting."
-          exit 0
-
-      # 6. 拉取并推送 upstream 镜像
-      - name: Pull and Push Image
-        run: |
-          echo "Pulling upstream image..."
-          docker pull ghcr.io/gdy666/lucky:${{ steps.version.outputs.version }}
-
-          echo "Tagging image..."
-          docker tag ghcr.io/gdy666/lucky:${{ steps.version.outputs.version }} ghcr.io/wuwweizn/lucky:${{ steps.version.outputs.version }}
-          docker tag ghcr.io/gdy666/lucky:${{ steps.version.outputs.version }} ghcr.io/wuwweizn/lucky:latest
-
-          echo "Pushing images..."
-          docker push ghcr.io/wuwweizn/lucky:${{ steps.version.outputs.version }}
-          docker push ghcr.io/wuwweizn/lucky:latest
+      # 6. 构建并推送多架构镜像
+      - name: Build and push multi-arch image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          tags: yourrepo/yourimage:${{ env.TAG }}
