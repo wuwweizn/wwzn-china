@@ -1,0 +1,12 @@
+{
+  "name": "Lucky",
+  "version": "1.0.0",
+  "slug": "lucky",
+  "description": "Lucky Home Assistant Add-on",
+  "arch": ["amd64", "arm64"],
+  "startup": "services",
+  "boot": "auto",
+  "options": {},
+  "schema": {},
+  "image": "ghcr.io/wuwweizn/lucky:latest"
+}
