@@ -1,12 +1,12 @@
 {
-  "name": "Lucky",
-  "version": "0.0.1",
+  "name": "Lucky Upstream Sync",
+  "version": "1.0.0",
   "slug": "lucky",
-  "description": "Lucky Home Assistant Add-on",
-  "arch": ["amd64", "arm64"],
+  "description": "Auto sync gdy666/lucky upstream tag and build multi-arch Docker images",
+  "arch": ["amd64", "armv7", "arm64"],
   "startup": "services",
   "boot": "auto",
+  "host_network": true,
   "options": {},
-  "schema": {},
-  "image": "ghcr.io/wuwweizn/lucky:0.0.1"
+  "schema": {}
 }

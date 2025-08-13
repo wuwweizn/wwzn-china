@@ -1,8 +1,14 @@
-# 使用你已经构建的多架构 lucky 镜像
-FROM ghcr.io/wuwweizn/lucky:0.0.1
+FROM python:3.11-slim
 
-# 设置容器工作目录（可选）
-WORKDIR /data
+# 安装必要工具
+RUN apt-get update && apt-get install -y git curl && rm -rf /var/lib/apt/lists/*
 
-# 容器入口
-CMD [ "/run.sh" ]
+# 工作目录
+WORKDIR /app
+
+# 复制启动脚本
+COPY run.sh /app/run.sh
+RUN chmod +x /app/run.sh
+
+# 设置默认启动命令
+CMD ["/app/run.sh"]
