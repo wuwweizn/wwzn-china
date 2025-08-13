@@ -1,14 +1,14 @@
 name: Alist
 slug: alist
-description: '一个支持多种存储后端的文件列表程序，基于 Gin 和 Solidjs 开发。'
+description: "一个支持多种存储后端的文件列表程序，基于 Gin 和 Solidjs 开发。"
 url: https://github.com/AlistGo/alist
 version: 3.44.0
-image: r.hassbus.com/wghaos/alist
+image: ghcr.io/alistgo/alist:3.44.0-{arch}
 codenotary: wghaos@163.com
 
 arch:
-  - aarch64
   - amd64
+  - aarch64
 
 apparmor: true
 init: false
