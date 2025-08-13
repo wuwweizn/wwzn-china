@@ -2,18 +2,16 @@
   "name": "Lucky",
   "version": "2.15.3",
   "slug": "lucky",
-  "codenotary": "djhhui@gmail.com",
-  "description": "A Lucky add-on for Home Assistant",
-  "arch": ["aarch64", "amd64", "armv7", "i386", "armhf"],
+  "description": "Lucky — 简洁好用的内网穿透和多功能网络工具",
+  "arch": ["amd64", "armv7", "aarch64"],
+  "url": "https://github.com/gdy666/lucky",
   "startup": "services",
   "boot": "auto",
-  "host_network": true,
-  "ingress": true,
-  "ingress_port": 16601,
-  "panel_icon": "mdi:server-network",
   "ports": {
     "16601/tcp": 16601
   },
-  "webui": "http://[HOST]:[PORT:16601]",
-  "image": "ghcr.io/wuwweizn/lucky:latest"
+  "map": ["config", "ssl", "addons", "share"],
+  "options": {},
+  "schema": {},
+  "image": "wuwweizn/lucky"
 }
