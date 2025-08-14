@@ -32,7 +32,7 @@ WORKDIR /opt/app
 
 # 克隆源码（如果你希望 build 时拉最新代码）
 ARG REPO_URL=https://github.com/ARC-MX/sgcc_electricity_new
-ARG REPO_REF=main
+ARG REPO_REF=master
 RUN git clone --depth=1 -b ${REPO_REF} ${REPO_URL} /opt/app || echo "源码已存在，跳过"
 
 # 安装 Python 依赖，如果 requirements.txt 存在
