@@ -1,42 +1,18 @@
 {
   "name": "Alist",
+  "version": "3.34.0",
   "slug": "alist",
-  "description": "一个支持多种存储后端的文件列表程序，基于 Gin 和 Solidjs 开发。",
+  "description": "Alist 文件列表服务",
+  "arch": ["amd64", "arm64", "armv7"],
   "url": "https://github.com/wuwweizn/wwzn-china",
-  "version": "3.44.0",
-  "image": "ghcr.io/wuwweizn/alist-{arch}",
-  "codenotary": "wuweizhineng@163.com",
-  "arch": ["aarch64", "amd64"],
-  "apparmor": true,
-  "init": false,
-  "backup_exclude": [
-    "*/data/"
-  ],
-  "devices": [
-    "/dev/fuse",
-    "/dev/net/tun"
-  ],
-  "privileged": [
-    "SYS_ADMIN",
-    "DAC_READ_SEARCH"
-  ],
+  "startup": "application",
+  "boot": "auto",
   "ports": {
     "5244/tcp": 5244
   },
-  "ports_description": {
-    "5244/tcp": "Web UI (HTTP)"
+  "volumes": {
+    "/data": "rw",
+    "/config": "rw"
   },
-  "webui": "http://[HOST]:[PORT:5244]/",
-  "startup": "application",
-  "boot": "manual",
-  "options": {
-    "port": 5244,
-    "data_dir": "/data",
-    "additional_args": ""
-  },
-  "schema": {
-    "port": "int",
-    "data_dir": "str",
-    "additional_args": "str"
-  }
+  "image": "ghcr.io/wuwweizn/alist-{arch}:{version}"
 }

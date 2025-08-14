@@ -1,10 +1,11 @@
-FROM xhofe/alist:v3.44.0
+FROM golang:alpine AS builder
+WORKDIR /build
+COPY . .
+RUN go build -o alist main.go
 
-SHELL ["/bin/bash", "-c"]
-
-COPY run.sh /run.sh
-RUN chmod +x /run.sh
-RUN find / -name alist -type f
-ENTRYPOINT ["/run.sh"]
-
-
+FROM alpine:3.21.3
+WORKDIR /app
+COPY --from=builder /build/alist .
+COPY config/ ./config/
+EXPOSE 5244
+CMD ["./alist"]
