@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 set -e
 
 # 颜色定义
@@ -41,48 +41,31 @@ log_info "Web端口: $WEB_PORT"
 log_info "管理员用户名: $ADMIN_USERNAME"
 log_info "日志级别: $LOG_LEVEL"
 
-# 设置配置目录
+# 设置配置目录 - 使用Home Assistant的配置目录
 LUCKY_CONFIG_DIR="/config/lucky"
 mkdir -p "$LUCKY_CONFIG_DIR"
 
-# 如果配置目录为空，创建初始配置
+# 检查配置目录权限
+chown -R root:root "$LUCKY_CONFIG_DIR" 2>/dev/null || true
+
+# 设置环境变量以便Lucky使用Home Assistant的配置
+export LUCKY_CONFIG_DIR="$LUCKY_CONFIG_DIR"
+
+# 如果是首次运行，创建基础配置
 if [ ! -f "$LUCKY_CONFIG_DIR/lucky.conf" ]; then
-    log_info "首次启动，创建初始配置..."
-    
-    # 创建初始配置文件
-    cat > "$LUCKY_CONFIG_DIR/lucky.conf" << EOF
-{
-  "ConfigVersion": "v2.17.8",
-  "SafeURL": "/",
-  "AdminUsername": "$ADMIN_USERNAME",
-  "AdminPassword": "$ADMIN_PASSWORD",
-  "WebPort": $WEB_PORT,
-  "LogLevel": "$LOG_LEVEL",
-  "HTTPSEnable": false,
-  "CertPath": "",
-  "KeyPath": "",
-  "IPWhiteList": [],
-  "IPBlackList": [],
-  "AllowCORS": true,
-  "Language": "zh-CN"
-}
-EOF
-    
-    chown -R lucky:lucky "$LUCKY_CONFIG_DIR"
+    log_info "首次启动，等待Lucky初始化配置..."
 fi
 
-# 设置文件权限
-chown -R lucky:lucky /data/lucky "$LUCKY_CONFIG_DIR"
-
-# 检查Lucky版本
 log_info "Lucky版本: $(lucky -v 2>/dev/null || echo 'Unknown')"
 
-# 启动前检查
-if ! command -v lucky &> /dev/null; then
-    log_error "Lucky二进制文件不存在!"
-    exit 1
-fi
+# 切换到配置目录
+cd "$LUCKY_CONFIG_DIR"
 
-# 启动Lucky
+# 启动Lucky - 使用官方启动方式
 log_info "启动Lucky服务..."
-exec su-exec lucky:lucky lucky -cd "$LUCKY_CONFIG_DIR" -p "$WEB_PORT" -u "$ADMIN_USERNAME" -pwd "$ADMIN_PASSWORD"
+
+# 设置端口环境变量
+export PORT="$WEB_PORT"
+
+# 直接启动lucky，让它使用当前目录作为配置目录
+exec lucky -cd "$LUCKY_CONFIG_DIR"

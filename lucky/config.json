@@ -1,6 +1,6 @@
 {
   "name": "Lucky",
-  "version": "2.17.8",
+  "version": "2.18.1",
   "slug": "lucky",
   "description": "软硬路由公网神器 - IPv6/IPv4端口转发、反向代理、DDNS、内网穿透、网络唤醒等多功能网络工具",
   "url": "https://github.com/wuwweizn/wwzn-china/tree/main/lucky",
@@ -44,7 +44,7 @@
   "environment": {
     "LOG_LEVEL": "info"
   },
-  "image": "ghcr.io/wuwweizn/lucky",
+  "image": "ghcr.io/wuwweizn/lucky-hassio",
   "webui": "http://[HOST]:[PORT:16601]",
   "panel_icon": "mdi:network-outline",
   "panel_title": "Lucky",
