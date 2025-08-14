@@ -39,6 +39,8 @@ da-anda加载项：https://github.com/da-anda/hass-io-addons
 
 huxiaoxu2019加载项：https://github.com/huxiaoxu2019/hass-addon-frp-client
 【引用的项目：frp-client】
+zigbee2mqtt加载项：https://github.com/zigbee2mqtt/hassio-zigbee2mqtt
+【引用的项目：zigbee2mqtt、zigbee2mqtt-proxy、zigbee2mqtt-edge】
 
 thejeffreystone加载项【mqtt】：https://github.com/thejeffreystone/hassio_addons
 GollumDom加载项【mqtt】：https://github.com/GollumDom/addon-repository
