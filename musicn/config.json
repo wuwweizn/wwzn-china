@@ -1,9 +1,9 @@
 {
   "name": "musicn",
-  "version": "3.21.0",
+  "version": "1.5.3",
   "slug": "musicn",
   "codenotary": "wuweizhineng@163.com",
-  "description": "一个可播放及下载音乐的 Node.js 工具，目前已经支持国内用户直接安装使用，不用魔法",
+  "description": "可播放可下载音乐的 Node.js 工具",
   "url": "https://github.com/wuwweizn/wwzn-china",
   "arch": [
     "aarch64",
