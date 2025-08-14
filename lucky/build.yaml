@@ -1,0 +1,23 @@
+build_from:
+  aarch64: "alpine:3.21.3"
+  amd64: "alpine:3.21.3"
+  armhf: "alpine:3.21.3"
+  armv7: "alpine:3.21.3"
+  i386: "alpine:3.21.3"
+
+labels:
+  io.hass.name: "Lucky"
+  io.hass.description: "软硬路由公网神器 - IPv6/IPv4端口转发、反向代理、DDNS、内网穿透等"
+  io.hass.arch: "aarch64|amd64|armhf|armv7|i386"
+  io.hass.type: "addon"
+  io.hass.version: "2.17.8"
+  maintainer: "wuwweizn"
+  org.opencontainers.image.title: "Lucky Home Assistant Add-on"
+  org.opencontainers.image.description: "Lucky网络工具Home Assistant加载项"
+  org.opencontainers.image.source: "https://github.com/wuwweizn/wwzn-china"
+  org.opencontainers.image.documentation: "https://github.com/wuwweizn/wwzn-china/tree/main/lucky"
+  org.opencontainers.image.author: "wuwweizn"
+  org.opencontainers.image.licenses: "Apache-2.0"
+
+args:
+  LUCKY_VERSION: "2.17.8"

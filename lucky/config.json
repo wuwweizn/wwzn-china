@@ -1,22 +1,60 @@
 {
   "name": "Lucky",
-  "version": "2.18.1",
+  "version": "2.17.8",
   "slug": "lucky",
-  "codenotary": "wuweizhineng@163.com",
-  "description": "Lucky — 简洁好用的内网穿透和多功能网络工具",
-  "image": "ghcr.io/wuwweizn/lucky-{arch}",
-  "arch": ["aarch64", "amd64"],
-  "startup": "services",
+  "description": "软硬路由公网神器 - IPv6/IPv4端口转发、反向代理、DDNS、内网穿透、网络唤醒等多功能网络工具",
+  "url": "https://github.com/wuwweizn/wwzn-china/tree/main/lucky",
+  "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
+  "startup": "application",
   "boot": "auto",
-  "host_network": true,
-  "ingress": true,
-  "ingress_port": 16601,
-  "panel_icon": "mdi:server-network",
-  "map": [
-    "config:rw"
-  ],
+  "init": false,
+  "map": ["config:rw", "ssl"],
+  "options": {
+    "web_port": 16601,
+    "admin_username": "666",
+    "admin_password": "666",
+    "log_level": "info"
+  },
+  "schema": {
+    "web_port": "port",
+    "admin_username": "str",
+    "admin_password": "str",
+    "log_level": "list(debug|info|warn|error)"
+  },
   "ports": {
     "16601/tcp": 16601
   },
-  "webui": "http://[HOST]:[PORT:16601]"
+  "ports_description": {
+    "16601/tcp": "Lucky Web管理界面端口"
+  },
+  "host_network": true,
+  "privileged": ["NET_ADMIN", "NET_RAW", "SYS_ADMIN"],
+  "devices": ["/dev/net/tun"],
+  "full_access": false,
+  "homeassistant_api": false,
+  "hassio_api": false,
+  "docker_api": false,
+  "audio": false,
+  "video": false,
+  "gpio": false,
+  "usb": false,
+  "uart": false,
+  "stdin": false,
+  "legacy": false,
+  "environment": {
+    "LOG_LEVEL": "info"
+  },
+  "image": "ghcr.io/wuwweizn/lucky",
+  "webui": "http://[HOST]:[PORT:16601]",
+  "panel_icon": "mdi:network-outline",
+  "panel_title": "Lucky",
+  "panel_admin": true,
+  "ingress": false,
+  "ingress_port": 0,
+  "ingress_entry": "/",
+  "timeout": 10,
+  "tmpfs": "size=64m,uid=0,rw,noatime,nosuid,nodev,noexec,mode=0755",
+  "services": [
+    "mqtt:need"
+  ]
 }
