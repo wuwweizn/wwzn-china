@@ -1,6 +1,6 @@
 {
   "name": "Alist",
-  "version": "3.41.0",
+  "version": "3.45.0",
   "slug": "alist",
   "description": "🗂️多存储文件列表/WebDAV程序 - 支持60+种存储后端的统一文件管理系统",
   "url": "https://github.com/wuwweizn/wwzn-china/tree/main/alist",
@@ -54,7 +54,7 @@
     "UMASK": "022",
     "TZ": "Asia/Shanghai"
   },
-  "image": "ghcr.io/wuwweizn/alist-{arch}",
+  "image": "xhofe/alist:latest",
   "webui": "http://[HOST]:[PORT:5244]",
   "panel_icon": "mdi:folder-multiple-outline",
   "panel_title": "Alist",

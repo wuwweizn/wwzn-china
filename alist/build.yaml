@@ -10,7 +10,7 @@ labels:
   io.hass.description: "🗂️多存储文件列表/WebDAV程序 - 支持60+种存储后端的统一文件管理系统"
   io.hass.arch: "aarch64|amd64|armhf|armv7|i386"
   io.hass.type: "addon"
-  io.hass.version: "3.41.0"
+  io.hass.version: "3.45.0"
   maintainer: "wuwweizn"
   org.opencontainers.image.title: "Alist Home Assistant Add-on"
   org.opencontainers.image.description: "Alist文件列表程序Home Assistant加载项"
@@ -20,4 +20,4 @@ labels:
   org.opencontainers.image.licenses: "AGPL-3.0"
 
 args:
-  ALIST_VERSION: "3.41.0"
+  ALIST_VERSION: "3.45.0"
