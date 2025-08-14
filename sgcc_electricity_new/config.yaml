@@ -1,74 +1,46 @@
-name: "SGCC Electricity New"
-slug: "sgcc_electricity_new"
-description: "国家电网(国网)电量/余额查询工具封装为 HA 加载项。"
-version: "1.0.0"
-url: "https://github.com/ARC-MX/sgcc_electricity_new"
+name: "SGCC Electricity"
+version: "v1.6.8-test"
+slug: "sgcc_electricity"
+description: "获取国网电费数据的插件"
+url: "https://github.com/wuwweizn/wwzn-china"
 arch:
   - aarch64
   - amd64
-  - armv7
-init: false
-startup: services
+host_network: true
+startup: application
 boot: auto
-panel_icon: mdi:flash
-hassio_role: default
-homeassistant: 2024.1.0
-
-# 如果需要访问宿主网络（如对公网/局域网接口没有特殊需求，可以保持 false）
-host_network: false
-
-# 如果你的程序提供 HTTP 服务，支持 Ingress（可根据项目实际情况调整）
-ingress: false
-# ingress_port: 8080
-# panel_title: "SGCC"
-
-# 显式映射端口（当不启用 ingress 时可用）
-ports:
-  "8080/tcp": 8080
-ports_description:
-  "8080/tcp": "HTTP 服务（如果项目提供 Web 接口的话）"
-
-# 需要的访问权限（如果项目要访问外网 API，通常不需要额外权限）
-apparmor: false
-full_access: false
-
-# 挂载数据目录
+init: false
+image: "ghcr.io/wuwweizn/sgcc_electricity-{arch}"
 map:
-  - addon_config:rw
+  - addons:rw
+  - config:rw
+  - media:rw
   - share:rw
-
-# 选项与校验
 options:
-  command: "python3 main.py"   # 启动命令（未知项目结构时可自定义）
-  args: []                      # 附加参数
-  phone: ""                    # 国网App手机账号（如项目需要）
-  password: ""                 # 密码/口令（如项目需要）
-  token: ""                    # 或者使用 token / cookie
-  cookie: ""
-  account_id: ""               # 户号/客户编号
-  city_code: ""                # 城市/省市区代码
-  poll_interval: 300            # 拉取周期(秒)
-  http_port: 8080               # 若项目提供 HTTP 服务
-  log_level: "info"
-  extra_env: {}                 # 以 key: value 形式追加环境变量
+  PHONE_NUMBER: ""
+  PASSWORD: ""  
+  IGNORE_USER_ID: "xxxx,xxxx"
+  ENABLE_DATABASE_STORAGE: false
+  DB_NAME: "homeassistant.db"
+  HASS_URL: "http://homeassistant.local:8123/"
+  HASS_TOKEN: ""
+  JOB_START_TIME: "07:00"
+  RETRY_WAIT_TIME_OFFSET_UNIT: 15
+  DATA_RETENTION_DAYS: 7
+  RECHARGE_NOTIFY: false
+  BALANCE: 5.0
+  PUSHPLUS_TOKEN: "xxxx,xxxx"
 schema:
-  command: str
-  args:
-    - str
-  phone: str?
-  password: str?
-  token: str?
-  cookie: str?
-  account_id: str?
-  city_code: str?
-  poll_interval: int
-  http_port: int
-  log_level: list(info|debug|warning|error)
-  extra_env: object
-
-# 进程管理
-init_commands: []
-
-# 需要时可加上这行将时区等环境注入
-environment:
-  TZ: "Asia/Shanghai"
+  PHONE_NUMBER: str
+  PASSWORD: password
+  IGNORE_USER_ID: str
+  ENABLE_DATABASE_STORAGE: bool
+  DB_NAME: str
+  HASS_URL: url
+  HASS_TOKEN: str
+  JOB_START_TIME: str
+  RETRY_WAIT_TIME_OFFSET_UNIT: int(2,30)
+  DATA_RETENTION_DAYS: int
+  RECHARGE_NOTIFY: bool 
+  BALANCE: float 
+  PUSHPLUS_TOKEN: str
