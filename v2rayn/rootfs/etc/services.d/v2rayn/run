@@ -1,0 +1,15 @@
+#!/usr/bin/with-contenv bashio
+# ==============================================================================
+# Home Assistant Community Add-on: v2rayN
+# Runs the v2rayN service
+# ==============================================================================
+
+declare -a options
+
+bashio::log.info "Starting v2rayN..."
+
+# 等待网络就绪
+sleep 2
+
+# 运行v2rayN管理器
+exec /usr/local/bin/v2rayn-manager.sh start

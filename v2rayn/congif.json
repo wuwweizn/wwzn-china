@@ -1,0 +1,125 @@
+{
+  "name": "v2rayN",
+  "version": "6.60",
+  "slug": "v2rayn",
+  "description": "v2rayN proxy client for Home Assistant - A powerful V2Ray/Xray client with web UI",
+  "url": "https://github.com/wuwweizn/wwzn-china/tree/main/v2rayn",
+  "startup": "services",
+  "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
+  "image": "ghcr.io/wuwweizn/v2rayn-{arch}",
+  "init": false,
+  "map": ["share:rw", "ssl"],
+  "options": {
+    "log_level": "info",
+    "http_port": 10808,
+    "socks_port": 10809,
+    "api_port": 8080,
+    "allow_lan": true,
+    "enable_sniffing": true,
+    "enable_routing": true,
+    "dns": {
+      "enable": true,
+      "servers": [
+        "https://1.1.1.1/dns-query",
+        "https://8.8.8.8/dns-query"
+      ]
+    },
+    "inbounds": [
+      {
+        "tag": "http",
+        "port": 10808,
+        "protocol": "http",
+        "settings": {
+          "allowTransparent": false
+        }
+      },
+      {
+        "tag": "socks",
+        "port": 10809,
+        "protocol": "socks",
+        "settings": {
+          "auth": "noauth",
+          "udp": true,
+          "allowTransparent": false
+        }
+      }
+    ],
+    "servers": []
+  },
+  "schema": {
+    "log_level": "list(trace|debug|info|warning|error|fatal)?",
+    "http_port": "port",
+    "socks_port": "port",
+    "api_port": "port",
+    "allow_lan": "bool",
+    "enable_sniffing": "bool",
+    "enable_routing": "bool",
+    "dns": {
+      "enable": "bool",
+      "servers": ["str"]
+    },
+    "inbounds": [
+      {
+        "tag": "str",
+        "port": "port",
+        "protocol": "list(http|socks|vmess|vless|trojan|shadowsocks)",
+        "settings": "match(.*)"
+      }
+    ],
+    "servers": [
+      {
+        "name": "str",
+        "type": "list(vmess|vless|trojan|shadowsocks|wireguard)",
+        "server": "str",
+        "port": "port",
+        "uuid": "str?",
+        "alterId": "int(0,)?",
+        "security": "list(auto|aes-128-gcm|chacha20-poly1305|none)?",
+        "network": "list(tcp|kcp|ws|h2|quic|grpc)?",
+        "tls": "bool?",
+        "sni": "str?",
+        "alpn": "str?",
+        "path": "str?",
+        "host": "str?",
+        "headers": "match(.*)?"
+      }
+    ]
+  },
+  "ports": {
+    "8080/tcp": 8080,
+    "10808/tcp": 10808,
+    "10809/tcp": 10809
+  },
+  "ports_description": {
+    "8080/tcp": "Web UI and API port",
+    "10808/tcp": "HTTP proxy port",
+    "10809/tcp": "SOCKS proxy port"
+  },
+  "webui": "http://[HOST]:[PORT:8080]",
+  "panel_icon": "mdi:shield-network",
+  "panel_title": "v2rayN",
+  "panel_admin": true,
+  "host_network": false,
+  "full_access": false,
+  "apparmor": false,
+  "privileged": ["NET_ADMIN", "NET_RAW"],
+  "auto_uart": false,
+  "hassio_api": true,
+  "hassio_role": "admin",
+  "homeassistant_api": true,
+  "docker_api": false,
+  "host_pid": false,
+  "stdin": false,
+  "kernel_modules": false,
+  "devicetree": false,
+  "tmpfs": "size=256m,uid=1000",
+  "environment": {
+    "LOG_LEVEL": "info"
+  },
+  "services": ["mqtt:want", "mysql:want"],
+  "discovery": ["v2rayn"],
+  "backup": "hot",
+  "boot": "auto",
+  "advanced": true,
+  "stage": "stable"
+}

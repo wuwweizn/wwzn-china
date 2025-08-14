@@ -1,0 +1,18 @@
+#!/usr/bin/with-contenv bashio
+# ==============================================================================
+# Home Assistant Community Add-on: v2rayN
+# Take down the S6 supervision tree when v2rayN fails
+# ==============================================================================
+
+declare exit_code
+readonly exit_code="${1}"
+
+bashio::log.info "Service v2rayN exited with code ${exit_code}"
+
+if [[ "${exit_code}" -ne 0 ]] && [[ "${exit_code}" -ne 256 ]]; then
+  bashio::log.warning "Halting Home Assistant add-on"
+  /run/s6/basedir/bin/halt
+fi
+
+bashio::log.info "Service restart after 10 seconds"
+sleep 10
