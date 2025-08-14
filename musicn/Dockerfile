@@ -1,4 +1,4 @@
-FROM alpine:1.5.3
+FROM alpine:3.18
 
 
 ENV NODE_ENV=production
