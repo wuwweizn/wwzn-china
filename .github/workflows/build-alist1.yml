@@ -1,4 +1,4 @@
-name: Build and Push Alist (Multi-Arch, Docker Hub + GHCR)
+name: Build and Push Alist Home Assistant Addon
 
 on:
   workflow_dispatch:
@@ -12,26 +12,18 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        arch: [amd64, arm64, armv7]
     permissions:
       contents: read
       packages: write
-    
-    env:
-      DEFAULT_BUILD_FROM_amd64: alpine:3.21.3
-      DEFAULT_BUILD_FROM_aarch64: alpine:3.21.3
-      DEFAULT_BUILD_FROM_armv7: alpine:3.21.3
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install yq and jq
+      - name: Install build tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y jq python3-yaml python3-toml
+          sudo apt-get install -y jq
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -49,41 +41,23 @@ jobs:
       - name: Get lowercase repo owner
         run: echo "REPO_OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
 
-      - name: Extract BUILD_FROM, BUILD_ARCH and VERSION
+      - name: Extract addon metadata
         id: extract_meta
         run: |
-          if [[ "${{ matrix.arch }}" == "arm64" ]]; then
-            BUILD_ARCH="aarch64"
-          elif [[ "${{ matrix.arch }}" == "armv7" ]]; then
-            BUILD_ARCH="armv7"
-          else
-            BUILD_ARCH="${{ matrix.arch }}"
-          fi
-          
           ADDON_DIR="alist"
-          YAML_PATH="${ADDON_DIR}/build.yaml"
           CONFIG_PATH="${ADDON_DIR}/config.json"
-          
-          if [[ -f "$YAML_PATH" ]]; then
-            BUILD_FROM=$(yq e ".build_from.${BUILD_ARCH}" "$YAML_PATH")
-          else
-            DEFAULT_VAR_NAME="DEFAULT_BUILD_FROM_${BUILD_ARCH}"
-            BUILD_FROM="${!DEFAULT_VAR_NAME}"
-          fi
           
           if [[ -f "$CONFIG_PATH" ]]; then
             VERSION=$(jq -r .version "$CONFIG_PATH")
+            ADDON_NAME=$(jq -r .name "$CONFIG_PATH")
           else
             echo "❌ ERROR: $CONFIG_PATH not found!"
             exit 1
           fi
           
-          echo "BUILD_ARCH=$BUILD_ARCH" >> $GITHUB_ENV
-          echo "BUILD_FROM=$BUILD_FROM" >> $GITHUB_ENV
-          echo "ADDON_NAME=alist" >> $GITHUB_ENV
+          echo "ADDON_NAME=$ADDON_NAME" >> $GITHUB_ENV
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "💡 BUILD_FROM=$BUILD_FROM"
-          echo "💡 BUILD_ARCH=$BUILD_ARCH" 
+          echo "💡 ADDON_NAME=$ADDON_NAME"
           echo "💡 VERSION=$VERSION"
 
       - name: Setup QEMU
@@ -92,7 +66,7 @@ jobs:
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push Alist for ${{ matrix.arch }}
+      - name: Build and push Alist Home Assistant Addon
         uses: docker/build-push-action@v5
         with:
           context: alist
@@ -103,8 +77,9 @@ jobs:
             linux/arm/v7
           push: true
           tags: |
-            ghcr.io/${{ env.REPO_OWNER_LC }}/alist-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
-            ${{ secrets.DOCKER_USERNAME }}/alist-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
-          build-args: |
-            BUILD_FROM=${{ env.BUILD_FROM }}
-            BUILD_ARCH=${{ env.BUILD_ARCH }}
+            ghcr.io/${{ env.REPO_OWNER_LC }}/alist-hassio:${{ env.VERSION }}
+            ghcr.io/${{ env.REPO_OWNER_LC }}/alist-hassio:latest
+            ${{ secrets.DOCKER_USERNAME }}/alist-hassio:${{ env.VERSION }}
+            ${{ secrets.DOCKER_USERNAME }}/alist-hassio:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
