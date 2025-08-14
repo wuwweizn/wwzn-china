@@ -12,7 +12,10 @@ RUN apk add --no-cache \
     nodejs \
     npm \
     python3 \
-    py3-pip
+    make \
+    g++ \
+    libc-dev
+
 
 # 设置工作目录
 WORKDIR /app
