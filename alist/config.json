@@ -1,18 +1,26 @@
+
 {
-  "name": "Alist",
-  "version": "3.34.0",
+  "name": "alist",
+  "version": "latest",
   "slug": "alist",
-  "description": "Alist 文件列表服务",
-  "arch": ["amd64", "arm64", "armv7"],
-  "url": "https://github.com/wuwweizn/wwzn-china",
+  "description": "A file list program that supports multiple storage",
+  "url": "https://github.com/AlistGo/alist",
+  "arch": ["amd64", "armv7", "arm64"],
   "startup": "application",
   "boot": "auto",
   "ports": {
     "5244/tcp": 5244
   },
-  "volumes": {
-    "/data": "rw",
-    "/config": "rw"
+  "ports_description": {
+    "5244/tcp": "Web interface"
   },
-  "image": "ghcr.io/wuwweizn/alist-{arch}:{version}"
+  "map": ["share:rw", "ssl"],
+  "options": {
+    "PUID": 0,
+    "PGID": 0
+  },
+  "schema": {
+    "PUID": "int",
+    "PGID": "int"
+  }
 }
