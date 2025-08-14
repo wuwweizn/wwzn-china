@@ -1,0 +1,42 @@
+      - name: Extract BUILD_FROM, BUILD_ARCH and VERSION
+        id: extract_meta
+        run: |
+          if [[ "${{ matrix.arch }}" == "arm64" ]]; then
+            BUILD_ARCH="aarch64"
+          elif [[ "${{ matrix.arch }}" == "armv7" ]]; then
+            BUILD_ARCH="armv7"
+          else
+            BUILD_ARCH="${{ matrix.arch }}"
+          fi
+
+          ADDON_DIR="sgcc_electricity_new"
+          YAML_PATH="${ADDON_DIR}/build.yaml"
+          CONFIG_JSON_PATH="${ADDON_DIR}/config.json"
+          CONFIG_YAML_PATH="${ADDON_DIR}/config.yaml"
+
+          # 读取 BUILD_FROM
+          if [[ -f "$YAML_PATH" ]]; then
+            BUILD_FROM=$(yq e ".build_from.${BUILD_ARCH}" "$YAML_PATH")
+          else
+            DEFAULT_VAR_NAME="DEFAULT_BUILD_FROM_${BUILD_ARCH}"
+            BUILD_FROM="${!DEFAULT_VAR_NAME}"
+          fi
+
+          # 读取 VERSION
+          if [[ -f "$CONFIG_YAML_PATH" ]]; then
+            VERSION=$(yq e ".version" "$CONFIG_YAML_PATH")
+          elif [[ -f "$CONFIG_JSON_PATH" ]]; then
+            VERSION=$(jq -r .version "$CONFIG_JSON_PATH")
+          else
+            echo "❌ ERROR: Neither config.yaml nor config.json found!"
+            exit 1
+          fi
+
+          echo "BUILD_ARCH=$BUILD_ARCH" >> $GITHUB_ENV
+          echo "BUILD_FROM=$BUILD_FROM" >> $GITHUB_ENV
+          echo "ADDON_NAME=sgcc_electricity_new" >> $GITHUB_ENV
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+          echo "💡 BUILD_FROM=$BUILD_FROM"
+          echo "💡 BUILD_ARCH=$BUILD_ARCH"
+          echo "💡 VERSION=$VERSION"
