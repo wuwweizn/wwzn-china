@@ -7,5 +7,5 @@ mkdir -p "${HASSIO_DATA:-/data}"
 # 进入 data 目录
 cd "${HASSIO_DATA:-/data}"
 
-# 启动 Alist
-alist server --port ${port:-5244} ${additional_args}
+# 启动 Alist（用绝对路径）
+/opt/alist/alist server --port ${port:-5244} ${additional_args}
