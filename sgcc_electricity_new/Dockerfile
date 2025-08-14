@@ -10,7 +10,7 @@ ENV \
 
 # 构建参数（可在 build.yaml 中覆盖）
 ARG REPO_URL=https://github.com/ARC-MX/sgcc_electricity_new
-ARG REPO_REF=main
+ARG REPO_REF=master
 
 # 运行所需软件
 RUN apk add --no-cache \
