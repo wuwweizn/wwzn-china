@@ -45,6 +45,11 @@ zigbee2mqtt加载项：https://github.com/zigbee2mqtt/hassio-zigbee2mqtt
 thejeffreystone加载项【mqtt】：https://github.com/thejeffreystone/hassio_addons
 GollumDom加载项【mqtt】：https://github.com/GollumDom/addon-repository
 pbkhrv加载项【rtl433】https://github.com/pbkhrv/rtl_433-hass-addons
+lolouk44加载项【小米体重称】https://github.com/lolouk44/hassio-addons
+davidramosweb加载项【树莓派无线热点】https://github.com/davidramosweb/hassio-addons
 
 SirUli加载项：https://github.com/SirUli/homeassistant-ollama-addon
 【引用的项目：ollama】
+
+hasscc加载项：https://github.com/hasscc/addons
+【引用的项目：moontv】
