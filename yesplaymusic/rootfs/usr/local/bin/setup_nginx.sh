@@ -1,21 +1,24 @@
 # =============================================================================
 # rootfs/usr/local/bin/setup_nginx.sh  
 # =============================================================================
-#!/usr/bin/env bashio
+#!/bin/bash
 
-# 读取配置
-NETEASE_API_URL=$(bashio::config 'netease_api_url')
-SSL=$(bashio::config 'ssl')
-CERTFILE=$(bashio::config 'certfile')
-KEYFILE=$(bashio::config 'keyfile')
-CUSTOM_TITLE=$(bashio::config 'custom_title')
+# 使用环境变量或默认值
+NETEASE_API_URL="${NETEASE_API_URL:-https://music-api.hankqin.com}"
+SSL="${SSL:-false}"
+CERTFILE="${CERTFILE:-fullchain.pem}"
+KEYFILE="${KEYFILE:-privkey.pem}"
+
+echo "Configuring Nginx..."
+echo "SSL enabled: ${SSL}"
+echo "API URL: ${NETEASE_API_URL}"
 
 # 创建nginx配置
-cat > /etc/nginx/nginx.conf << 'EOF'
+cat > /etc/nginx/nginx.conf << EOF
 user nginx;
 worker_processes auto;
 pid /run/nginx.pid;
-error_log /var/log/nginx/error.log;
+error_log /var/log/nginx/error.log warn;
 
 events {
     worker_connections 1024;
@@ -27,9 +30,9 @@ http {
     include /etc/nginx/mime.types;
     default_type application/octet-stream;
 
-    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
-                    '$status $body_bytes_sent "$http_referer" '
-                    '"$http_user_agent" "$http_x_forwarded_for"';
+    log_format main '\$remote_addr - \$remote_user [\$time_local] "\$request" '
+                    '\$status \$body_bytes_sent "\$http_referer" '
+                    '"\$http_user_agent" "\$http_x_forwarded_for"';
 
     access_log /var/log/nginx/access.log main;
 
@@ -55,16 +58,11 @@ http {
         application/atom+xml
         image/svg+xml;
 
-    upstream netease_api {
-        server music-api.hankqin.com:443;
-        keepalive 32;
-    }
-
     server {
 EOF
 
 # SSL配置
-if bashio::var.true "${SSL}"; then
+if [ "${SSL}" = "true" ]; then
     cat >> /etc/nginx/nginx.conf << EOF
         listen 80 ssl http2;
         ssl_certificate /ssl/${CERTFILE};
@@ -135,4 +133,4 @@ cat >> /etc/nginx/nginx.conf << EOF
 }
 EOF
 
-bashio::log.info "Nginx configuration created"
+echo "Nginx configuration created successfully"

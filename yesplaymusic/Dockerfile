@@ -1,20 +1,12 @@
-ARG BUILD_FROM=alpine:latest
-FROM $BUILD_FROM
+FROM alpine:latest
 
-# 安装系统依赖和bashio
+# 安装必要的系统包
 RUN apk add --no-cache \
         curl \
         bash \
         jq \
         nginx \
-        supervisor && \
-    curl -J -L -o /tmp/bashio.tar.gz \
-        "https://github.com/hassio-addons/bashio/archive/v0.16.2.tar.gz" && \
-    mkdir /tmp/bashio && \
-    tar zxvf /tmp/bashio.tar.gz --strip 1 -C /tmp/bashio && \
-    mv /tmp/bashio/lib /usr/lib/bashio && \
-    ln -s /usr/lib/bashio/bashio /usr/bin/bashio && \
-    rm -rf /tmp/bashio.tar.gz /tmp/bashio
+        supervisor
 
 # 创建必要的目录
 RUN mkdir -p /var/www/html \
@@ -40,6 +32,13 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
 
 # 暴露端口
 EXPOSE 80
+
+# 环境变量
+ENV NETEASE_API_URL=https://music-api.hankqin.com
+ENV SSL=false
+ENV CERTFILE=fullchain.pem
+ENV KEYFILE=privkey.pem
+ENV CUSTOM_TITLE=YesPlayMusic
 
 # 标签
 LABEL \
