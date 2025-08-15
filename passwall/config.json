@@ -1,6 +1,6 @@
 {
   "name": "Passwall",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "slug": "passwall",
   "description": "Passwall (OpenWrt + LuCI) as a Home Assistant add-on",
   "url": "https://github.com/wuwweizn/wwzn-china/tree/main/passwall",
