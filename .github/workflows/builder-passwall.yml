@@ -6,31 +6,33 @@ on:
     branches:
       - main
     paths:
-      - 'passwall/**'
-      - '.github/workflows/passwall.yml'
+      - 'wwzn-china/**'
+      - '.github/workflows/builder.yml'
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     strategy:
       matrix:
-        arch: [amd64, arm64, armv7]
+        arch: [amd64, arm64]
+
     permissions:
       contents: read
       packages: write
+
     env:
-      DEFAULT_BUILD_FROM_amd64: openwrtorg/rootfs:x86-64
-      DEFAULT_BUILD_FROM_aarch64: openwrtorg/rootfs:arm64
-      DEFAULT_BUILD_FROM_armv7: openwrtorg/rootfs:armvirt-32
+      DEFAULT_BUILD_FROM_amd64: alpine:3.21.3
+      DEFAULT_BUILD_FROM_aarch64: alpine:3.21.3
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Install yq and jq
         run: |
-          sudo apt-get update
-          sudo apt-get install -y jq python3-yaml python3-toml
+          sudo apt-get install -y jq || sudo apt-get install -y jq
+          sudo apt-get install -y python3-yaml python3-toml
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -53,29 +55,33 @@ jobs:
         run: |
           if [[ "${{ matrix.arch }}" == "arm64" ]]; then
             BUILD_ARCH="aarch64"
-          elif [[ "${{ matrix.arch }}" == "armv7" ]]; then
-            BUILD_ARCH="armv7"
           else
             BUILD_ARCH="${{ matrix.arch }}"
           fi
+
           ADDON_DIR="passwall"
           YAML_PATH="${ADDON_DIR}/build.yaml"
           CONFIG_PATH="${ADDON_DIR}/config.json"
+
           if [[ -f "$YAML_PATH" ]]; then
             BUILD_FROM=$(yq e ".build_from.${BUILD_ARCH}" "$YAML_PATH")
           else
             DEFAULT_VAR_NAME="DEFAULT_BUILD_FROM_${BUILD_ARCH}"
             BUILD_FROM="${!DEFAULT_VAR_NAME}"
           fi
+
           if [[ -f "$CONFIG_PATH" ]]; then
             VERSION=$(jq -r .version "$CONFIG_PATH")
           else
-            echo "❌ ERROR: $CONFIG_PATH not found!" && exit 1
+            echo "❌ ERROR: $CONFIG_PATH not found!"
+            exit 1
           fi
+
           echo "BUILD_ARCH=$BUILD_ARCH" >> $GITHUB_ENV
           echo "BUILD_FROM=$BUILD_FROM" >> $GITHUB_ENV
           echo "ADDON_NAME=passwall" >> $GITHUB_ENV
           echo "VERSION=$VERSION" >> $GITHUB_ENV
+
           echo "💡 BUILD_FROM=$BUILD_FROM"
           echo "💡 BUILD_ARCH=$BUILD_ARCH"
           echo "💡 VERSION=$VERSION"
@@ -91,10 +97,7 @@ jobs:
         with:
           context: passwall
           file: passwall/Dockerfile
-          platforms: |
-            linux/amd64
-            linux/arm64
-            linux/arm/v7
+          platforms: linux/${{ matrix.arch }}
           push: true
           tags: |
             ghcr.io/${{ env.REPO_OWNER_LC }}/passwall-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
