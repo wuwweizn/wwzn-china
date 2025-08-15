@@ -5,13 +5,14 @@ FROM node:18-alpine
 WORKDIR /app
 
 # 安装必要工具
-RUN apk add --no-cache bash git curl
+RUN apk add --no-cache bash git curl python3 make g++ 
 
 # 克隆 YesPlayMusic 仓库
 RUN git clone https://github.com/qier222/YesPlayMusic.git /app
 
-# 设置 npm 镜像源并安装依赖
-RUN npm config set registry https://registry.npmmirror.com && npm install --production
+# 使用 npm 镜像源并安装依赖
+RUN npm config set registry https://registry.npmmirror.com
+RUN npm install --legacy-peer-deps --production
 
 # 复制运行脚本
 COPY run.sh /run.sh
