@@ -13,5 +13,5 @@
   "schema": {
     "API_URL": "string"
   },
-  "image": "fogforest/yesplaymusic"
+  "image": "ghcr.io/fogforest/yesplaymusic-{arch}"
 }
