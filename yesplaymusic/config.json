@@ -1,17 +1,17 @@
 {
   "name": "YesPlayMusic",
-  "version": "1.0",
+  "version": "0.4.9",
   "slug": "yesplaymusic",
-  "description": "YesPlayMusic running in Home Assistant",
-  "arch": ["amd64", "armv7", "armhf", "aarch64"],
+  "description": "YesPlayMusic Docker 版（fogforest/yesplaymusic），支持自定义 API 地址",
+  "arch": ["amd64", "armv7", "aarch64"],
   "startup": "services",
   "boot": "auto",
   "host_network": true,
-  "map": ["config:rw"],
   "options": {
     "API_URL": "http://47.121.211.116:3001/"
   },
   "schema": {
     "API_URL": "string"
-  }
+  },
+  "image": "fogforest/yesplaymusic"
 }
