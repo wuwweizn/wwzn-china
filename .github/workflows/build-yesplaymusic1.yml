@@ -19,9 +19,9 @@ jobs:
       contents: read
       packages: write
     env:
-      DEFAULT_BUILD_FROM_amd64: alpine:3.21.3
-      DEFAULT_BUILD_FROM_aarch64: alpine:3.21.3
-      DEFAULT_BUILD_FROM_armv7: alpine:3.21.3
+      DEFAULT_BUILD_FROM_amd64: alpine:latest
+      DEFAULT_BUILD_FROM_aarch64: alpine:latest
+      DEFAULT_BUILD_FROM_armv7: alpine:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -96,7 +96,7 @@ jobs:
         with:
           context: yesplaymusic
           file: yesplaymusic/Dockerfile
-          platforms: linux/${{ matrix.arch }}
+          platforms: linux/${{ matrix.arch == 'armv7' && 'arm/v7' || matrix.arch }}
           push: true
           tags: |
             ghcr.io/${{ env.REPO_OWNER_LC }}/yesplaymusic-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
