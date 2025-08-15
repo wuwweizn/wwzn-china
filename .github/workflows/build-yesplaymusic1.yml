@@ -19,9 +19,9 @@ jobs:
       contents: read
       packages: write
     env:
-      DEFAULT_BUILD_FROM_amd64: node:18-alpine
-      DEFAULT_BUILD_FROM_aarch64: node:18-alpine
-      DEFAULT_BUILD_FROM_armv7: node:18-alpine
+      DEFAULT_BUILD_FROM_amd64: alpine:3.21.3
+      DEFAULT_BUILD_FROM_aarch64: alpine:3.21.3
+      DEFAULT_BUILD_FROM_armv7: alpine:3.21.3
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

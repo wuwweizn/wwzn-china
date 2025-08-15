@@ -1,7 +1,7 @@
 build_from:
-  aarch64: node:18-alpine
-  amd64: node:18-alpine
-  armv7: node:18-alpine
+  aarch64: alpine:3.21.3
+  amd64: alpine:3.21.3
+  armv7: alpine:3.21.3
 
 labels:
   org.opencontainers.image.title: "YesPlayMusic"
