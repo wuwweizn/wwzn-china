@@ -1,0 +1,8 @@
+build_from:
+  amd64: alpine:3.21.3
+  aarch64: alpine:3.21.3
+  armv7: alpine:3.21.3
+labels:
+  maintainer: "wuwweizn"
+args:
+  PASSWALL_VERSION: latest

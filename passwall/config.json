@@ -1,0 +1,14 @@
+{
+  "name": "Passwall",
+  "version": "1.0.0",
+  "slug": "passwall",
+  "description": "Passwall integration for Home Assistant",
+  "arch": ["amd64", "armv7", "aarch64"],
+  "startup": "services",
+  "boot": "auto",
+  "ports": {
+    "80/tcp": 8080
+  },
+  "map": ["config", "share", "ssl"],
+  "image": "ghcr.io/wuwweizn/passwall-{arch}"
+}
