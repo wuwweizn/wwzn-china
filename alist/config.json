@@ -54,7 +54,7 @@
     "UMASK": "022",
     "TZ": "Asia/Shanghai"
   },
-  "image": "ghcr.io/wuwweizn/alist-hassio",
+  "image": "ghcr.io/wuwweizn/alist-{arch}",
   "webui": "http://[HOST]:[PORT:5244]",
   "panel_icon": "mdi:folder-multiple-outline",
   "panel_title": "Alist",
