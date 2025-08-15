@@ -86,20 +86,31 @@ cat >> /etc/nginx/nginx.conf << EOF
         root /var/www/html;
         index index.html;
 
-        # API代理
+        # API代理到网易云音乐API
         location /api/ {
             proxy_pass ${NETEASE_API_URL}/;
-            proxy_set_header Host \$host;
+            proxy_set_header Host \$(echo "${NETEASE_API_URL}" | sed 's|https\?://||' | cut -d'/' -f1);
             proxy_set_header X-Real-IP \$remote_addr;
             proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto \$scheme;
-            proxy_set_header X-Forwarded-Host \$host;
-            proxy_set_header X-Forwarded-Port \$server_port;
+            proxy_set_header User-Agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
+            proxy_set_header Referer "${NETEASE_API_URL}";
+            proxy_set_header Origin "${NETEASE_API_URL}";
+            
+            # SSL相关
+            proxy_ssl_verify off;
+            proxy_ssl_server_name on;
+            
+            # 超时设置
+            proxy_connect_timeout 30s;
+            proxy_send_timeout 30s;
+            proxy_read_timeout 30s;
             
             # CORS headers
             add_header 'Access-Control-Allow-Origin' '*' always;
             add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
             add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization' always;
+            add_header 'Access-Control-Allow-Credentials' 'true' always;
             
             # Handle preflight requests
             if (\$request_method = 'OPTIONS') {
@@ -113,20 +124,36 @@ cat >> /etc/nginx/nginx.conf << EOF
             }
         }
 
-        # 静态文件
+        # 静态文件服务
         location / {
             try_files \$uri \$uri/ /index.html;
+            
+            # 设置正确的MIME类型
+            location ~* \.(?:manifest|appcache|html?|xml|json)\$ {
+                expires -1;
+                add_header Cache-Control "no-cache, no-store, must-revalidate";
+            }
             
             # 缓存静态资源
             location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)\$ {
                 expires 1y;
                 add_header Cache-Control "public, immutable";
+                add_header Access-Control-Allow-Origin "*";
+            }
+            
+            # 特殊处理字体文件
+            location ~* \.(woff|woff2|ttf|eot)\$ {
+                add_header Access-Control-Allow-Origin "*";
             }
         }
+        
+        # 错误页面
+        error_page 404 /index.html;
+        error_page 500 502 503 504 /index.html;
 
         # 安全头
         add_header X-Content-Type-Options nosniff;
-        add_header X-Frame-Options DENY;
+        add_header X-Frame-Options SAMEORIGIN;
         add_header X-XSS-Protection "1; mode=block";
         add_header Referrer-Policy "strict-origin-when-cross-origin";
     }
