@@ -1,0 +1,12 @@
+{
+  "name": "iStoreOS",
+  "version": "1.0.0",
+  "slug": "istoreos",
+  "description": "iStoreOS application as a Home Assistant Add-on",
+  "arch": ["amd64", "armv7", "arm64"],
+  "startup": "services",
+  "boot": "auto",
+  "map": ["config:rw", "ssl:rw"],
+  "options": {},
+  "schema": {}
+}
