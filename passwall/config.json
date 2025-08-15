@@ -2,13 +2,21 @@
   "name": "Passwall",
   "version": "1.0.0",
   "slug": "passwall",
-  "description": "Passwall integration for Home Assistant",
-  "arch": ["amd64", "armv7", "aarch64"],
+  "description": "Passwall (OpenWrt + LuCI) as a Home Assistant add-on",
+  "url": "https://github.com/wuwweizn/wwzn-china/tree/main/passwall",
+  "arch": ["amd64", "aarch64", "armv7"],
   "startup": "services",
   "boot": "auto",
+  "init": true,
+  "image": "ghcr.io/wuwweizn/passwall-{arch}",
   "ports": {
-    "80/tcp": 8080
+    "8080/tcp": 8080
   },
   "map": ["config", "share", "ssl"],
-  "image": "ghcr.io/wuwweizn/passwall-{arch}"
+  "ingress": false,
+  "webui": "http://[HOST]:[PORT:8080]/cgi-bin/luci/admin/services/passwall",
+  "host_network": false,
+  "privileged": ["NET_ADMIN"],
+  "environment": {},
+  "schema": {}
 }

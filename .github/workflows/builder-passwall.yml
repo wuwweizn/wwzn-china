@@ -1,4 +1,5 @@
 name: Build and Push passwall (Multi-Arch, Docker Hub + GHCR)
+
 on:
   workflow_dispatch:
   push:
@@ -7,6 +8,7 @@ on:
     paths:
       - 'passwall/**'
       - '.github/workflows/passwall.yml'
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,12 +19,13 @@ jobs:
       contents: read
       packages: write
     env:
-      DEFAULT_BUILD_FROM_amd64: alpine:3.21.3
-      DEFAULT_BUILD_FROM_aarch64: alpine:3.21.3
-      DEFAULT_BUILD_FROM_armv7: alpine:3.21.3
+      DEFAULT_BUILD_FROM_amd64: openwrtorg/rootfs:x86-64
+      DEFAULT_BUILD_FROM_aarch64: openwrtorg/rootfs:arm64
+      DEFAULT_BUILD_FROM_armv7: openwrtorg/rootfs:armvirt-32
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install yq and jq
         run: |
@@ -67,13 +70,15 @@ jobs:
           if [[ -f "$CONFIG_PATH" ]]; then
             VERSION=$(jq -r .version "$CONFIG_PATH")
           else
-            echo "❌ ERROR: $CONFIG_PATH not found!"
-            exit 1
+            echo "❌ ERROR: $CONFIG_PATH not found!" && exit 1
           fi
           echo "BUILD_ARCH=$BUILD_ARCH" >> $GITHUB_ENV
           echo "BUILD_FROM=$BUILD_FROM" >> $GITHUB_ENV
           echo "ADDON_NAME=passwall" >> $GITHUB_ENV
           echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "💡 BUILD_FROM=$BUILD_FROM"
+          echo "💡 BUILD_ARCH=$BUILD_ARCH"
+          echo "💡 VERSION=$VERSION"
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
