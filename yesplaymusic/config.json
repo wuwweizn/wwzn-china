@@ -1,17 +1,50 @@
 {
   "name": "YesPlayMusic",
-  "version": "0.4.9",
+  "version": "1.0.5",
   "slug": "yesplaymusic",
-  "description": "YesPlayMusic Docker 版（fogforest/yesplaymusic），支持自定义 API 地址",
-  "arch": ["amd64", "armv7", "aarch64"],
-  "startup": "services",
-  "boot": "auto",
-  "host_network": true,
+  "description": "高颜值的第三方网易云播放器，支持本地部署",
+  "url": "https://github.com/qier222/YesPlayMusic",
+  "startup": "application",
+  "panel_icon": "mdi:music",
+  "panel_title": "YesPlayMusic",
+  "panel_admin": false,
+  "arch": [
+    "aarch64",
+    "amd64", 
+    "armv7"
+  ],
+  "ports": {
+    "80/tcp": 8080
+  },
+  "ports_description": {
+    "80/tcp": "Web界面端口"
+  },
+  "webui": "[PROTO:ssl]://[HOST]:[PORT:80]",
+  "ingress": true,
+  "ingress_port": 80,
+  "ingress_stream": false,
+  "map": [
+    "ssl"
+  ],
   "options": {
-    "API_URL": "http://47.121.211.116:3001/"
+    "netease_api_url": "https://music-api.hankqin.com",
+    "ssl": false,
+    "certfile": "fullchain.pem",
+    "keyfile": "privkey.pem",
+    "custom_title": "YesPlayMusic",
+    "log_level": "info"
   },
   "schema": {
-    "API_URL": "string"
+    "netease_api_url": "str",
+    "ssl": "bool",
+    "certfile": "str",
+    "keyfile": "str", 
+    "custom_title": "str",
+    "log_level": "list(trace|debug|info|notice|warning|error|fatal)?"
   },
-  "image": "ghcr.io/fogforest/yesplaymusic-{arch}"
+  "environment": {
+    "VUE_APP_NETEASE_API_URL": "/api"
+  },
+  "image": "ghcr.io/wuwweizn/yesplaymusic-{arch}",
+  "tmpfs": "size=100m,uid=1000,rw,noexec,nosuid,nodev"
 }
