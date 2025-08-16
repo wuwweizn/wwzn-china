@@ -1,4 +1,4 @@
-name: Build and Push AList2 (Multi-Arch, Docker Hub + GHCR)
+name: Build and Push AList (Multi-Arch, Docker Hub + GHCR)
 
 on:
   workflow_dispatch:
@@ -100,10 +100,7 @@ jobs:
         with:
           context: alist
           file: alist/Dockerfile
-          platforms: |
-            linux/amd64
-            linux/arm64
-            linux/arm/v7
+          platforms: linux/${{ matrix.arch }}
           push: true
           tags: |
             ghcr.io/${{ env.REPO_OWNER_LC }}/alist-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
