@@ -1,5 +1,8 @@
-ARG BUILD_FROM
-FROM $BUILD_FROM
+# 根据目标架构设置基础镜像
+ARG TARGETARCH
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:15.0.7
+
+FROM ${BUILD_FROM}
 
 # 设置环境变量
 ENV LANG C.UTF-8
@@ -16,7 +19,7 @@ ARG TARGETARCH
 RUN case "${TARGETARCH}" in \
         "amd64")  XRAY_ARCH="64" ;; \
         "arm64")  XRAY_ARCH="arm64-v8a" ;; \
-        "arm/v7") XRAY_ARCH="arm32-v7a" ;; \
+        "arm")    XRAY_ARCH="arm32-v7a" ;; \
         *) echo "Unsupported architecture: ${TARGETARCH}" && exit 1 ;; \
     esac \
     && echo "XRAY_ARCH=${XRAY_ARCH}" > /tmp/xray_arch

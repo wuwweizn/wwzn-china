@@ -7,5 +7,3 @@ labels:
   org.opencontainers.image.description: "XRay proxy platform for bypassing network restrictions"
   org.opencontainers.image.source: "https://github.com/wuwweizn/wwzn-china"
   org.opencontainers.image.licenses: "MPL-2.0"
-args:
-  TEMPIO_VERSION: "2023.01.0"

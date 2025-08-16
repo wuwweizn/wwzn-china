@@ -66,6 +66,15 @@ jobs:
         uses: docker/setup-qemu-action@v3
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
+      - name: Set architecture specific base image
+        id: set_base_image
+        run: |
+          case "${{ matrix.arch }}" in
+            "amd64")  BASE_IMAGE="ghcr.io/hassio-addons/base/amd64:15.0.7" ;;
+            "arm64")  BASE_IMAGE="ghcr.io/hassio-addons/base/aarch64:15.0.7" ;;
+            "armv7")  BASE_IMAGE="ghcr.io/hassio-addons/base/armv7:15.0.7" ;;
+          esac
+          echo "BASE_IMAGE=$BASE_IMAGE" >> $GITHUB_ENV
       - name: Build and push XRay for ${{ matrix.arch }}
         uses: docker/build-push-action@v5
         with:
@@ -73,6 +82,9 @@ jobs:
           file: xray/Dockerfile
           platforms: ${{ matrix.platform }}
           push: true
+          build-args: |
+            TARGETARCH=${{ matrix.arch }}
+            BUILD_FROM=${{ env.BASE_IMAGE }}
           tags: |
             ghcr.io/${{ env.REPO_OWNER_LC }}/xray-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
             ${{ secrets.DOCKER_USERNAME }}/xray-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
