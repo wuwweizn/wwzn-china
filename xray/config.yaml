@@ -1,8 +1,9 @@
-name: "XRay Proxy"
-version: "1.8.24"
+name: XRay Proxy
+version: 1.8.24
 slug: xray
-description: "XRay is a platform for building proxies to bypass network restrictions"
-url: "https://github.com/XTLS/Xray-core"
+description: XRay is a platform for building proxies to bypass network restrictions
+url: https://github.com/XTLS/Xray-core
+webui: null
 arch:
   - amd64
   - aarch64
@@ -19,20 +20,20 @@ map:
   - "config:rw"
   - "ssl:rw"
 ports:
-  10808/tcp: 10808
-  10809/tcp: 10809
+  "10808/tcp": 10808
+  "10809/tcp": 10809
 ports_description:
-  10808/tcp: "SOCKS Proxy Port"
-  10809/tcp: "HTTP Proxy Port"
+  "10808/tcp": SOCKS Proxy Port
+  "10809/tcp": HTTP Proxy Port
 environment:
-  XRAY_CONF_PATH: "/data/config/config.json"
+  XRAY_CONF_PATH: /data/config/config.json
 options:
-  log_level: "warning"
-  config_file: "/data/config/config.json"
+  log_level: warning
+  config_file: /data/config/config.json
 schema:
-  log_level: "list(debug|info|warning|error|none)"
-  config_file: "str"
-image: "ghcr.io/wuwweizn/xray-{arch}"
+  log_level: list(debug|info|warning|error|none)
+  config_file: str
+image: ghcr.io/wuwweizn/xray-{arch}
 auth_api: false
 ingress: false
 homeassistant_api: false
