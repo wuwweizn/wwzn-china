@@ -3,11 +3,11 @@ version: "3.41.0"
 slug: "alist"
 description: "A file list program that supports multiple storage, provides a web interface and supports WebDAV"
 url: "https://github.com/AlistGo/alist"
-startup: application
+startup: "application"
 arch:
-  - amd64
-  - aarch64
-  - armv7
+  - "amd64"
+  - "aarch64" 
+  - "armv7"
 image: "ghcr.io/wuwweizn/alist-{arch}"
 init: false
 map:
@@ -25,9 +25,6 @@ ports:
   "5244/tcp": 5244
 ports_description:
   "5244/tcp": "Web interface"
-environment:
-  PUID: 0
-  PGID: 0
 host_network: false
 privileged:
   - "SYS_ADMIN"
@@ -39,7 +36,6 @@ legacy: false
 panel_icon: "mdi:folder-multiple"
 panel_title: "AList"
 panel_admin: true
-auto_uart: false
 ingress: true
 ingress_port: 5244
 ingress_entry: "/"
