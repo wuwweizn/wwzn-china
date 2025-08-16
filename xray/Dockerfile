@@ -16,13 +16,16 @@ RUN apk add --no-cache \
 
 # 获取架构信息并设置XRay架构名称
 ARG TARGETARCH
-RUN case "${TARGETARCH}" in \
+RUN echo "Target architecture: ${TARGETARCH}" \
+    && case "${TARGETARCH}" in \
         "amd64")  XRAY_ARCH="64" ;; \
         "arm64")  XRAY_ARCH="arm64-v8a" ;; \
+        "arm/v7") XRAY_ARCH="arm32-v7a" ;; \
         "arm")    XRAY_ARCH="arm32-v7a" ;; \
-        *) echo "Unsupported architecture: ${TARGETARCH}" && exit 1 ;; \
+        *) echo "Unsupported architecture: ${TARGETARCH}"; exit 1 ;; \
     esac \
-    && echo "XRAY_ARCH=${XRAY_ARCH}" > /tmp/xray_arch
+    && echo "XRAY_ARCH=${XRAY_ARCH}" > /tmp/xray_arch \
+    && echo "Selected XRay architecture: ${XRAY_ARCH}"
 
 # 下载并安装XRay
 RUN . /tmp/xray_arch \

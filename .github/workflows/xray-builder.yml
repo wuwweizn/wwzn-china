@@ -70,11 +70,22 @@ jobs:
         id: set_base_image
         run: |
           case "${{ matrix.arch }}" in
-            "amd64")  BASE_IMAGE="ghcr.io/hassio-addons/base/amd64:15.0.7" ;;
-            "arm64")  BASE_IMAGE="ghcr.io/hassio-addons/base/aarch64:15.0.7" ;;
-            "armv7")  BASE_IMAGE="ghcr.io/hassio-addons/base/armv7:15.0.7" ;;
+            "amd64")  
+              BASE_IMAGE="ghcr.io/hassio-addons/base/amd64:15.0.7"
+              TARGET_ARCH="amd64"
+              ;;
+            "arm64")  
+              BASE_IMAGE="ghcr.io/hassio-addons/base/aarch64:15.0.7" 
+              TARGET_ARCH="arm64"
+              ;;
+            "armv7")  
+              BASE_IMAGE="ghcr.io/hassio-addons/base/armv7:15.0.7"
+              TARGET_ARCH="arm/v7"
+              ;;
           esac
           echo "BASE_IMAGE=$BASE_IMAGE" >> $GITHUB_ENV
+          echo "TARGET_ARCH=$TARGET_ARCH" >> $GITHUB_ENV
+          echo "Using base image: $BASE_IMAGE for target arch: $TARGET_ARCH"
       - name: Build and push XRay for ${{ matrix.arch }}
         uses: docker/build-push-action@v5
         with:
@@ -83,7 +94,7 @@ jobs:
           platforms: ${{ matrix.platform }}
           push: true
           build-args: |
-            TARGETARCH=${{ matrix.arch }}
+            TARGETARCH=${{ env.TARGET_ARCH }}
             BUILD_FROM=${{ env.BASE_IMAGE }}
           tags: |
             ghcr.io/${{ env.REPO_OWNER_LC }}/xray-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
