@@ -1,16 +1,37 @@
-# 最简化的config.yaml用于调试
+# 第三版 - 添加更多配置
 name: XRay Proxy
 version: 1.8.24
 slug: xray
-description: XRay proxy platform
+description: XRay is a platform for building proxies to bypass network restrictions
+url: https://github.com/XTLS/Xray-core
 arch:
   - amd64
   - aarch64
   - armv7
+init: false
 startup: services
+stage: stable
 image: ghcr.io/wuwweizn/xray-{arch}
 ports:
   "10808/tcp": 10808
   "10809/tcp": 10809
-options: {}
-schema: {}
+ports_description:
+  "10808/tcp": SOCKS Proxy Port
+  "10809/tcp": HTTP Proxy Port
+map:
+  - config:rw
+  - ssl:rw
+environment:
+  XRAY_CONF_PATH: /data/config/config.json
+options:
+  log_level: warning
+  config_file: /data/config/config.json
+schema:
+  log_level: list(debug|info|warning|error|none)
+  config_file: str
+auth_api: false
+ingress: false
+homeassistant_api: false
+host_network: false
+full_access: false
+apparmor: false
