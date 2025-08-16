@@ -1,58 +1,48 @@
-{
-  "name": "AList",
-  "version": "3.41.0",
-  "slug": "alist",
-  "description": "A file list program that supports multiple storage, provides a web interface and supports WebDAV",
-  "url": "https://github.com/AlistGo/alist",
-  "startup": "application",
-  "arch": [
-    "amd64",
-    "aarch64",
-    "armhf",
-    "armv7"
-  ],
-  "image": "ghcr.io/{arch}/alist-{arch}",
-  "init": false,
-  "map": [
-    "share",
-    "config"
-  ],
-  "options": {
-    "ssl": false,
-    "certfile": "fullchain.pem",
-    "keyfile": "privkey.pem"
-  },
-  "schema": {
-    "ssl": "bool",
-    "certfile": "str",
-    "keyfile": "str"
-  },
-  "ports": {
-    "5244/tcp": 5244
-  },
-  "ports_description": {
-    "5244/tcp": "Web interface"
-  },
-  "environment": {
-    "PUID": 0,
-    "PGID": 0
-  },
-  "host_network": false,
-  "privileged": [
-    "SYS_ADMIN",
-    "DAC_READ_SEARCH"
-  ],
-  "full_access": false,
-  "homeassistant_api": false,
-  "stdin": false,
-  "legacy": false,
-  "panel_icon": "mdi:folder-multiple",
-  "panel_title": "AList",
-  "panel_admin": true,
-  "auto_uart": false,
-  "ingress": true,
-  "ingress_port": 5244,
-  "ingress_entry": "/",
-  "backup": "cold",
-  "webui": "[PROTO:ssl]://[HOST]:[PORT:5244]/"
-}
+name: "AList"
+version: "3.41.0"
+slug: "alist"
+description: "A file list program that supports multiple storage, provides a web interface and supports WebDAV"
+url: "https://github.com/AlistGo/alist"
+startup: application
+arch:
+  - amd64
+  - aarch64
+  - armhf
+  - armv7
+image: "ghcr.io/wuwweizn/alist-{arch}"
+init: false
+map:
+  - "share:rw"
+  - "config:rw"
+options:
+  ssl: false
+  certfile: "fullchain.pem"
+  keyfile: "privkey.pem"
+schema:
+  ssl: "bool"
+  certfile: "str"
+  keyfile: "str"
+ports:
+  "5244/tcp": 5244
+ports_description:
+  "5244/tcp": "Web interface"
+environment:
+  PUID: 0
+  PGID: 0
+host_network: false
+privileged:
+  - "SYS_ADMIN"
+  - "DAC_READ_SEARCH"
+full_access: false
+homeassistant_api: false
+stdin: false
+legacy: false
+panel_icon: "mdi:folder-multiple"
+panel_title: "AList"
+panel_admin: true
+auto_uart: false
+ingress: true
+ingress_port: 5244
+ingress_entry: "/"
+backup: "cold"
+webui: "[PROTO:ssl]://[HOST]:[PORT:5244]/"
