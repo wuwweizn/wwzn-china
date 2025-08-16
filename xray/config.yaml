@@ -1,4 +1,4 @@
-# 逐步完善的config.yaml - 第二版
+# 第四版 - 测试可能有问题的配置项
 name: XRay Proxy
 version: 1.8.24
 slug: xray
@@ -16,6 +16,10 @@ ports:
 ports_description:
   "10808/tcp": SOCKS Proxy Port
   "10809/tcp": HTTP Proxy Port
+# 测试这个配置是否有问题
+services:
+  - xray:tcp:10808
+  - xray:tcp:10809
 options:
   log_level: warning
   config_file: /data/config/config.json
