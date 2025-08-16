@@ -1,46 +1,32 @@
+# 使用官方 AList 镜像作为基础镜像
 ARG BUILD_FROM=alpine:3.21.3
-FROM $BUILD_FROM
+FROM xhofe/alist:v3.41.0
 
-# Install dependencies
+# 切换到 root 用户
+USER root
+
+# 安装必要的依赖
 RUN apk add --no-cache \
     bash \
     curl \
-    ca-certificates \
+    tini \
     tzdata \
-    tini
+    ca-certificates
 
-# Set the working directory
-WORKDIR /opt/alist
-
-# Download AList binary
-ARG BUILD_ARCH
-ARG ALIST_VERSION=v3.41.0
-
-RUN case "${BUILD_ARCH}" in \
-    amd64) ARCH="amd64" ;; \
-    aarch64) ARCH="arm64" ;; \
-    armv7) ARCH="armv7" ;; \
-    *) echo "Unsupported architecture: ${BUILD_ARCH}" && exit 1 ;; \
-    esac && \
-    curl -L -o alist.tar.gz "https://github.com/AlistGo/alist/releases/download/${ALIST_VERSION}/alist-linux-${ARCH}.tar.gz" && \
-    tar -xzf alist.tar.gz && \
-    rm alist.tar.gz && \
-    chmod +x alist
-
-# Create data directory
+# 创建数据目录
 RUN mkdir -p /data
 
-# Copy startup script
+# 复制启动脚本
 COPY run.sh /usr/bin/run.sh
 RUN chmod +x /usr/bin/run.sh
 
-# Set environment variables
+# 设置环境变量
 ENV PUID=0
 ENV PGID=0
 
-# Expose port
+# 暴露端口
 EXPOSE 5244
 
-# Use tini as entrypoint
+# 使用 tini 作为入口点
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["/usr/bin/run.sh"]

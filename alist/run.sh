@@ -1,21 +1,19 @@
 #!/bin/bash
 set -e
 
-# Set data directory
+# 设置数据目录
 export DATA_DIR="/data"
 
-# Create directories if they don't exist
+# 创建目录（如果不存在）
 mkdir -p "${DATA_DIR}"
 
-# Change to working directory
-cd /opt/alist
-
-# Check if config exists, if not, create initial admin password
+# 如果配置文件不存在，生成初始管理员密码
 if [ ! -f "${DATA_DIR}/config.json" ]; then
-    echo "First run detected, generating admin password..."
-    ./alist admin random --data "${DATA_DIR}"
+    echo "首次运行检测到，正在生成管理员密码..."
+    /opt/alist/alist admin random --data "${DATA_DIR}"
+    echo "管理员密码已生成，请查看上面的输出。"
 fi
 
-# Start AList server
-echo "Starting AList server..."
-exec ./alist server --data "${DATA_DIR}" --no-prefix
+# 启动 AList 服务器
+echo "正在启动 AList 服务器..."
+exec /opt/alist/alist server --data "${DATA_DIR}" --no-prefix
