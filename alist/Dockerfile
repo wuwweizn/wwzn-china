@@ -1,5 +1,4 @@
-# 使用官方 AList 镜像作为基础镜像
-ARG BUILD_FROM=alpine:3.21.3
+# 直接使用官方 AList 镜像
 FROM xhofe/alist:v3.41.0
 
 # 切换到 root 用户
@@ -8,7 +7,6 @@ USER root
 # 安装必要的依赖
 RUN apk add --no-cache \
     bash \
-    curl \
     tini \
     tzdata \
     ca-certificates
