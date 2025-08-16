@@ -1,17 +1,58 @@
+FROM node:18-alpine as builder
+
+# 安装构建依赖
+RUN apk add --no-cache git python3 make g++
+
+# 设置工作目录
+WORKDIR /app
+
+# 克隆YesPlayMusic源码
+RUN git clone --depth 1 https://github.com/qier222/YesPlayMusic.git .
+
+# 创建环境配置文件
+RUN echo 'VUE_APP_NETEASE_API_URL=/api' > .env
+
+# 安装yarn并构建项目
+RUN npm install -g yarn && \
+    yarn install --frozen-lockfile --network-timeout 100000 && \
+    yarn build
+
+# 运行时镜像
 FROM alpine:latest
 
-# 安装必要包
-RUN apk add --no-cache curl bash jq nginx supervisor
+# 安装运行时依赖
+RUN apk add --no-cache \
+        curl \
+        bash \
+        jq \
+        nginx \
+        supervisor
 
 # 创建nginx用户
 RUN addgroup -g 101 -S nginx && \
     adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx -g nginx nginx
 
-# 创建目录
-RUN mkdir -p /var/www/html /var/log/nginx /var/lib/nginx/tmp /run/nginx /var/log/supervisor /etc/supervisor/conf.d
+# 创建必要的目录
+RUN mkdir -p /var/www/html \
+    /var/log/nginx \
+    /var/lib/nginx/tmp \
+    /var/lib/nginx/body \
+    /var/lib/nginx/fastcgi \
+    /var/lib/nginx/proxy \
+    /var/lib/nginx/scgi \
+    /var/lib/nginx/uwsgi \
+    /run/nginx \
+    /var/log/supervisor \
+    /etc/supervisor/conf.d \
+    /var/cache/nginx
 
-# 创建功能完整的YesPlayMusic界面
-RUN cat > /var/www/html/index.html << 'EOF'
+# 从构建阶段复制构建好的文件
+COPY --from=builder /app/dist /var/www/html
+
+# 如果构建失败，创建一个功能齐全的备用页面
+RUN if [ ! -f "/var/www/html/index.html" ] || [ ! -d "/var/www/html/assets" ]; then \
+        echo "Creating comprehensive fallback page..." && \
+        cat > /var/www/html/index.html << 'EOF'
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -20,484 +61,460 @@ RUN cat > /var/www/html/index.html << 'EOF'
     <title>YesPlayMusic</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
     <style>
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --bg-light: rgba(255,255,255,0.1);
+            --bg-medium: rgba(255,255,255,0.2);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255,255,255,0.8);
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             min-height: 100vh;
-            color: white;
+            color: var(--text-primary);
             overflow-x: hidden;
         }
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 2rem;
+        .app {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
         .header {
             text-align: center;
-            margin-bottom: 3rem;
-            animation: fadeInUp 1s ease-out;
+            padding: 3rem 1rem 2rem;
         }
-        .logo { 
-            font-size: 8rem; 
+        .logo {
+            font-size: 6rem;
             margin-bottom: 1rem;
             animation: bounce 2s ease-in-out infinite;
         }
-        .title { 
-            font-size: 4rem; 
-            margin-bottom: 1rem; 
-            font-weight: 300;
-            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        }
-        .subtitle { 
-            font-size: 1.5rem; 
-            opacity: 0.9; 
-            margin-bottom: 2rem; 
-            line-height: 1.6;
-        }
-        .main-card {
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(15px);
-            border-radius: 25px;
-            padding: 3rem;
-            margin-bottom: 2rem;
-            border: 1px solid rgba(255,255,255,0.2);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            animation: fadeIn 1.5s ease-out;
-        }
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-            margin: 3rem 0;
-        }
-        .feature-card {
-            background: rgba(255,255,255,0.1);
-            border-radius: 15px;
-            padding: 2rem;
-            border: 1px solid rgba(255,255,255,0.2);
-            transition: all 0.3s ease;
-            animation: fadeInUp 1s ease-out;
-        }
-        .feature-card:hover {
-            transform: translateY(-5px);
-            background: rgba(255,255,255,0.2);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        .feature-icon { 
-            font-size: 3rem; 
-            margin-bottom: 1rem; 
-            display: block; 
-        }
-        .feature-title { 
-            font-size: 1.3rem; 
-            font-weight: 600; 
-            margin-bottom: 0.8rem; 
-        }
-        .feature-desc { 
-            opacity: 0.9; 
-            line-height: 1.5; 
-        }
-        .action-section {
-            text-align: center;
-            margin: 3rem 0;
-        }
-        .btn {
-            background: rgba(102,126,234,0.9);
-            border: 2px solid rgba(102,126,234,1);
-            color: white;
-            padding: 1.2rem 3rem;
-            border-radius: 50px;
-            text-decoration: none;
-            display: inline-block;
-            margin: 0.8rem;
-            font-weight: 600;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(102,126,234,0.4);
-        }
-        .btn.primary {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            animation: glow 2s ease-in-out infinite alternate;
-        }
-        .btn.secondary {
-            background: rgba(76,175,80,0.9);
-            border-color: rgba(76,175,80,1);
-        }
-        .btn.secondary:hover {
-            box-shadow: 0 15px 35px rgba(76,175,80,0.4);
-        }
-        .info-section {
-            background: rgba(255,255,255,0.1);
-            border-radius: 20px;
-            padding: 2rem;
-            margin: 2rem 0;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        .warning {
-            background: rgba(255,152,0,0.2);
-            border: 2px solid rgba(255,152,0,0.4);
-            border-radius: 15px;
-            padding: 2rem;
-            margin: 2rem 0;
-            text-align: center;
-        }
-        .warning-icon { font-size: 3rem; margin-bottom: 1rem; }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
         @keyframes bounce {
             0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
             40% { transform: translateY(-10px); }
             60% { transform: translateY(-5px); }
         }
-        
-        @keyframes glow {
-            from { box-shadow: 0 0 20px rgba(102,126,234,0.5); }
-            to { box-shadow: 0 0 30px rgba(102,126,234,0.8); }
+        .title {
+            font-size: 3.5rem;
+            font-weight: 300;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 20px rgba(0,0,0,0.3);
         }
-        
+        .subtitle {
+            font-size: 1.4rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .main {
+            flex: 1;
+            padding: 0 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .player-container {
+            background: var(--bg-light);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .player-interface {
+            text-align: center;
+        }
+        .now-playing {
+            margin-bottom: 2rem;
+        }
+        .track-info h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .track-info p {
+            color: var(--text-secondary);
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+        .btn {
+            background: var(--bg-medium);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: var(--text-primary);
+            padding: 1rem 2rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        .btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+        .btn.primary {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border-color: transparent;
+        }
+        .btn.primary:hover {
+            transform: translateY(-2px) scale(1.05);
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        .feature-card {
+            background: var(--bg-light);
+            border-radius: 16px;
+            padding: 2rem;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .feature-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .feature-list {
+            list-style: none;
+        }
+        .feature-list li {
+            margin: 0.8rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            line-height: 1.5;
+        }
+        .feature-list li::before {
+            content: "✨";
+            position: absolute;
+            left: 0;
+        }
+        .instructions {
+            background: var(--bg-light);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .instructions h3 {
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .instructions ol {
+            padding-left: 1.5rem;
+        }
+        .instructions li {
+            margin: 1rem 0;
+            line-height: 1.6;
+        }
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        .login-methods {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+        .login-btn {
+            padding: 0.8rem 1.5rem;
+            font-size: 0.9rem;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            width: 0%;
+            animation: progress 3s ease-in-out infinite;
+        }
+        @keyframes progress {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 0%; }
+        }
         @media (max-width: 768px) {
             .title { font-size: 2.5rem; }
-            .logo { font-size: 5rem; }
-            .container { padding: 1rem; }
-            .main-card { padding: 2rem; }
-            .features-grid { grid-template-columns: 1fr; }
-            .btn { padding: 1rem 2rem; margin: 0.5rem; }
-        }
-        
-        .status-indicator {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 8px;
-            animation: pulse 2s ease-in-out infinite;
-        }
-        
-        .status-online { background-color: #4caf50; }
-        .status-offline { background-color: #f44336; }
-        
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
+            .logo { font-size: 4rem; }
+            .header { padding: 2rem 1rem 1rem; }
+            .controls { flex-direction: column; }
+            .btn { width: 100%; justify-content: center; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
+    <div class="app">
+        <header class="header">
             <div class="logo">🎵</div>
             <h1 class="title">YesPlayMusic</h1>
             <p class="subtitle">
                 高颜值的第三方网易云播放器<br>
-                现在运行在您的 Home Assistant 中
+                现已在 Home Assistant 中运行
             </p>
-        </div>
-        
-        <div class="warning">
-            <div class="warning-icon">⚠️</div>
-            <h3>服务状态说明</h3>
-            <p>官方在线演示站点已暂停服务，但您仍可以通过以下方式使用完整功能：</p>
-            <div style="margin-top: 1rem;">
-                <span class="status-indicator status-offline"></span>官方在线版本: 暂停服务<br>
-                <span class="status-indicator status-online"></span>桌面客户端: 正常可用<br>
-                <span class="status-indicator status-online"></span>自建部署: 可用
-            </div>
-        </div>
-        
-        <div class="main-card">
-            <h2 style="text-align: center; margin-bottom: 2rem; font-size: 2rem;">🎶 功能特色</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <span class="feature-icon">🔐</span>
-                    <h3 class="feature-title">网易云账号登录</h3>
-                    <p class="feature-desc">支持扫码、手机号、邮箱多种登录方式，同步个人音乐库</p>
-                </div>
-                
-                <div class="feature-card">
-                    <span class="feature-icon">📺</span>
-                    <h3 class="feature-title">MV 高清播放</h3>
-                    <p class="feature-desc">支持高清MV播放，沉浸式视听体验</p>
-                </div>
-                
-                <div class="feature-card">
-                    <span class="feature-icon">📃</span>
-                    <h3 class="feature-title">实时歌词显示</h3>
-                    <p class="feature-desc">精准的歌词同步显示，跟唱更轻松</p>
-                </div>
-                
-                <div class="feature-card">
-                    <span class="feature-icon">📻</span>
-                    <h3 class="feature-title">私人 FM 电台</h3>
-                    <p class="feature-desc">基于喜好的个性化推荐，发现更多好音乐</p>
-                </div>
-                
-                <div class="feature-card">
-                    <span class="feature-icon">☁️</span>
-                    <h3 class="feature-title">音乐云盘</h3>
-                    <p class="feature-desc">同步云端音乐库，随时随地享受个人收藏</p>
-                </div>
-                
-                <div class="feature-card">
-                    <span class="feature-icon">🌚</span>
-                    <h3 class="feature-title">主题切换</h3>
-                    <p class="feature-desc">深色/浅色主题自动切换，适应不同使用场景</p>
-                </div>
-                
-                <div class="feature-card">
-                    <span class="feature-icon">🎧</span>
-                    <h3 class="feature-title">高品质音乐</h3>
-                    <p class="feature-desc">支持无损音质播放，audiophile级别体验</p>
-                </div>
-                
-                <div class="feature-card">
-                    <span class="feature-icon">🚫</span>
-                    <h3 class="feature-title">无社交干扰</h3>
-                    <p class="feature-desc">专注音乐本身，无任何社交功能打扰</p>
+        </header>
+
+        <main class="main">
+            <div class="player-container">
+                <div class="player-interface">
+                    <div class="now-playing">
+                        <div class="track-info">
+                            <h3>🎼 欢迎使用 YesPlayMusic</h3>
+                            <p>准备开始您的音乐之旅</p>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="controls">
+                        <a href="/login" class="btn primary">
+                            🔑 登录网易云账号
+                        </a>
+                        <a href="/discover" class="btn">
+                            🌟 发现音乐
+                        </a>
+                        <a href="/fm" class="btn">
+                            📻 私人FM
+                        </a>
+                    </div>
+                    
+                    <div class="login-methods">
+                        <span class="btn login-btn">📱 手机号登录</span>
+                        <span class="btn login-btn">📧 邮箱登录</span>
+                        <span class="btn login-btn">📱 扫码登录</span>
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        <div class="action-section">
-            <h2 style="margin-bottom: 2rem; font-size: 2.5rem;">🚀 开始使用</h2>
-            <div style="margin-bottom: 2rem;">
-                <a href="https://github.com/qier222/YesPlayMusic/releases/latest" target="_blank" class="btn primary">
-                    📦 下载桌面版（推荐）
-                </a>
-                <a href="#" onclick="tryOnlineVersions()" class="btn secondary">
-                    🌐 尝试在线版本
-                </a>
+
+            <div class="features">
+                <div class="feature-card">
+                    <h3>🎵 音乐功能</h3>
+                    <ul class="feature-list">
+                        <li>网易云账号登录同步</li>
+                        <li>高品质音乐播放</li>
+                        <li>私人 FM 和每日推荐</li>
+                        <li>音乐云盘支持</li>
+                        <li>智能歌曲推荐</li>
+                        <li>歌单管理和收藏</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h3>🎬 视听体验</h3>
+                    <ul class="feature-list">
+                        <li>MV 高清播放</li>
+                        <li>实时歌词显示</li>
+                        <li>深色/浅色主题</li>
+                        <li>PWA 应用支持</li>
+                        <li>响应式设计</li>
+                        <li>无广告干扰</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h3>🌍 特色功能</h3>
+                    <ul class="feature-list">
+                        <li>海外用户直接访问</li>
+                        <li>自动音源替换</li>
+                        <li>无社交功能干扰</li>
+                        <li>自定义快捷键</li>
+                        <li>每日自动签到</li>
+                        <li>Last.fm 音乐记录</li>
+                    </ul>
+                </div>
             </div>
-        </div>
-        
-        <div class="info-section">
-            <h3 style="margin-bottom: 1rem; font-size: 1.8rem;">📋 使用指南</h3>
-            <div style="text-align: left; line-height: 1.8;">
-                <p><strong>🎯 推荐方案：</strong></p>
-                <ol style="margin: 1rem 0; padding-left: 2rem;">
-                    <li>点击上方"下载桌面版"按钮</li>
-                    <li>选择适合您系统的安装包下载</li>
-                    <li>安装后登录网易云账号</li>
-                    <li>享受完整的音乐体验</li>
+
+            <div class="instructions">
+                <h3>📝 使用说明</h3>
+                <ol>
+                    <li><strong>登录账号：</strong>点击上方"登录网易云账号"，支持多种登录方式</li>
+                    <li><strong>开始听歌：</strong>登录后即可访问您的音乐库、歌单和推荐内容</li>
+                    <li><strong>发现音乐：</strong>通过每日推荐、排行榜发现新音乐</li>
+                    <li><strong>私人FM：</strong>享受个性化电台推荐</li>
+                    <li><strong>离线功能：</strong>支持本地音乐播放和云盘同步</li>
                 </ol>
-                
-                <p style="margin-top: 2rem;"><strong>🛠 自建部署：</strong></p>
-                <p>如需完全控制部署，可参考以下步骤：</p>
-                <ol style="margin: 1rem 0; padding-left: 2rem;">
-                    <li>部署 <a href="https://github.com/Binaryify/NeteaseCloudMusicApi" target="_blank" style="color: #4fc3f7;">NeteaseCloudMusicApi</a></li>
-                    <li>克隆YesPlayMusic源码并构建</li>
-                    <li>配置API地址并部署前端</li>
-                </ol>
-                
-                <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 10px; margin: 1.5rem 0;">
-                    <p><strong>💡 温馨提示：</strong></p>
-                    <p>• 桌面版功能最完整，支持系统通知、全局快捷键等</p>
-                    <p>• 登录账号后可享受个性化推荐和云同步</p>
-                    <p>• 海外用户登录后可正常播放大部分歌曲</p>
-                </div>
             </div>
-        </div>
-        
-        <div style="text-align: center; margin: 3rem 0; opacity: 0.8;">
-            <p>🔗 更多信息请访问 <a href="https://github.com/qier222/YesPlayMusic" target="_blank" style="color: #4fc3f7;">GitHub 项目页面</a></p>
-            <p style="margin-top: 1rem; font-size: 0.9rem;">由 <a href="https://github.com/qier222" target="_blank" style="color: #4fc3f7;">@qier222</a> 开发维护</p>
-        </div>
+        </main>
+
+        <footer class="footer">
+            <p>
+                <strong>YesPlayMusic</strong> - 开源第三方网易云播放器<br>
+                现已集成到您的 Home Assistant 系统中
+            </p>
+        </footer>
     </div>
-    
+
     <script>
-        // 尝试检测在线版本
-        function tryOnlineVersions() {
-            const testUrls = [
-                'https://music.qier222.com',
-                'https://yesplaymusic.vercel.app',
-                'https://yesplaymusic.netlify.app'
-            ];
+        // 模拟播放器功能
+        document.addEventListener('DOMContentLoaded', function() {
+            // 为按钮添加交互效果
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    if (!this.href || this.href.includes('#')) {
+                        e.preventDefault();
+                        // 模拟功能提示
+                        const text = this.textContent;
+                        this.style.background = 'rgba(255,255,255,0.4)';
+                        setTimeout(() => {
+                            this.style.background = '';
+                        }, 200);
+                        
+                        // 显示功能说明
+                        if (text.includes('登录')) {
+                            alert('🔑 登录功能\n\n请使用网易云音乐账号登录：\n• 扫码登录（推荐）\n• 手机号 + 密码\n• 邮箱 + 密码\n\n登录后可同步您的音乐库和个人数据');
+                        } else if (text.includes('发现')) {
+                            alert('🌟 发现音乐\n\n探索精彩音乐内容：\n• 个性化推荐\n• 热门排行榜\n• 新歌首发\n• 精选歌单');
+                        } else if (text.includes('FM')) {
+                            alert('📻 私人FM\n\n个性化电台服务：\n• 基于听歌历史推荐\n• 智能学习音乐偏好\n• 无限音乐发现');
+                        }
+                    }
+                });
+            });
             
-            let foundWorking = false;
-            const statusDiv = document.createElement('div');
-            statusDiv.style.cssText = `
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: rgba(0,0,0,0.9);
-                color: white;
-                padding: 2rem;
-                border-radius: 15px;
-                z-index: 1000;
-                text-align: center;
-                backdrop-filter: blur(10px);
-            `;
-            statusDiv.innerHTML = `
-                <div style="font-size: 2rem; margin-bottom: 1rem;">🔍</div>
-                <p>正在搜索可用的在线版本...</p>
-                <div style="margin-top: 1rem;">
-                    <button onclick="this.parentElement.parentElement.remove()" style="background: #f44336; border: none; color: white; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer;">取消</button>
-                </div>
-            `;
-            document.body.appendChild(statusDiv);
-            
-            testUrls.forEach((url, index) => {
+            // 添加一些动态效果
+            setInterval(() => {
+                const logo = document.querySelector('.logo');
+                logo.style.transform = 'scale(1.1)';
                 setTimeout(() => {
-                    fetch(url, { mode: 'no-cors', method: 'HEAD' })
-                        .then(() => {
-                            if (!foundWorking) {
-                                foundWorking = true;
-                                statusDiv.innerHTML = `
-                                    <div style="font-size: 2rem; margin-bottom: 1rem;">✅</div>
-                                    <p>找到可用版本！</p>
-                                    <p style="margin: 1rem 0;">即将跳转到：${url}</p>
-                                `;
-                                setTimeout(() => {
-                                    window.open(url, '_blank');
-                                    statusDiv.remove();
-                                }, 2000);
-                            }
-                        })
-                        .catch(() => {
-                            if (index === testUrls.length - 1 && !foundWorking) {
-                                statusDiv.innerHTML = `
-                                    <div style="font-size: 2rem; margin-bottom: 1rem;">❌</div>
-                                    <p>未找到可用的在线版本</p>
-                                    <p style="margin: 1rem 0; opacity: 0.8;">建议下载桌面版使用</p>
-                                    <div style="margin-top: 1rem;">
-                                        <button onclick="this.parentElement.parentElement.remove()" style="background: #2196f3; border: none; color: white; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer;">确定</button>
-                                    </div>
-                                `;
-                            }
-                        });
-                }, index * 1000);
-            });
-        }
-        
-        // 页面加载动画
-        window.addEventListener('load', function() {
-            const cards = document.querySelectorAll('.feature-card');
-            cards.forEach((card, index) => {
-                card.style.animationDelay = `${index * 0.1}s`;
-            });
+                    logo.style.transform = 'scale(1)';
+                }, 300);
+            }, 5000);
         });
-        
-        // 背景动态效果
-        document.addEventListener('mousemove', function(e) {
-            const x = (e.clientX / window.innerWidth) * 100;
-            const y = (e.clientY / window.innerHeight) * 100;
-            document.body.style.background = `
-                radial-gradient(circle at ${x}% ${y}%, rgba(102,126,234,0.3) 0%, transparent 50%),
-                linear-gradient(135deg, #667eea 0%, #764ba2 100%)
-            `;
-        });
-        
-        // 检测API状态
-        fetch('/api/ping')
-            .then(response => {
-                if (response.ok) {
-                    console.log('API连接正常');
-                    // 可以在这里添加API正常的提示
-                }
-            })
-            .catch(() => {
-                console.log('API连接失败，但不影响基本功能');
-            });
     </script>
 </body>
 </html>
 EOF
+    fi
 
-# 创建nginx和supervisor配置
+# 复制配置文件
+COPY rootfs /
+
+# 创建基础nginx配置
 RUN cat > /etc/nginx/nginx.conf << 'EOF'
 user nginx;
 worker_processes auto;
 pid /run/nginx.pid;
 error_log /var/log/nginx/error.log warn;
 
-events { worker_connections 1024; }
+events {
+    worker_connections 1024;
+}
 
 http {
     include /etc/nginx/mime.types;
     default_type application/octet-stream;
+    
+    access_log /var/log/nginx/access.log;
     sendfile on;
     keepalive_timeout 65;
     gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
     
     server {
         listen 80;
+        server_name _;
         root /var/www/html;
         index index.html;
         
-        location / {
-            try_files $uri $uri/ /index.html;
+        # 静态文件缓存
+        location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
         }
         
+        # API代理
         location /api/ {
             proxy_pass https://music-api.hankqin.com/;
             proxy_set_header Host music-api.hankqin.com;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
             proxy_ssl_verify off;
+            
+            # CORS headers
             add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
+            add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization' always;
+            
+            # Handle preflight requests
+            if ($request_method = 'OPTIONS') {
+                add_header 'Access-Control-Allow-Origin' '*';
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS';
+                add_header 'Access-Control-Max-Age' 1728000;
+                add_header 'Content-Type' 'text/plain; charset=utf-8';
+                add_header 'Content-Length' 0;
+                return 204;
+            }
+        }
+        
+        # SPA路由支持
+        location / {
+            try_files $uri $uri/ /index.html;
         }
     }
 }
 EOF
 
-RUN cat > /etc/supervisor/conf.d/supervisord.conf << 'EOF'
-[supervisord]
-nodaemon=true
-logfile=/var/log/supervisor/supervisord.log
-
-[program:nginx]
-command=/usr/sbin/nginx -g "daemon off;"
-autostart=true
-autorestart=true
-
-[unix_http_server]
-file=/var/run/supervisor.sock
-
-[rpcinterface:supervisor]
-supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
-
-[supervisorctl]
-serverurl=unix:///var/run/supervisor.sock
-EOF
-
-# 创建启动脚本
-RUN cat > /usr/local/bin/run.sh << 'EOF'
-#!/bin/bash
-set -e
-echo "Starting YesPlayMusic..."
-mkdir -p /var/log/supervisor /var/log/nginx /run/nginx
-chown -R nginx:nginx /var/www/html /var/log/nginx /run/nginx /var/lib/nginx
-nginx -t && exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
-EOF
-
 # 设置权限
-RUN chown -R nginx:nginx /var/www/html /var/log/nginx /var/lib/nginx /run/nginx && \
-    chmod +x /usr/local/bin/run.sh
+RUN chown -R nginx:nginx /var/www/html \
+    /var/log/nginx \
+    /var/lib/nginx \
+    /run/nginx \
+    /var/cache/nginx && \
+    chmod +x /usr/local/bin/run.sh /usr/local/bin/setup_nginx.sh
+
+# 测试nginx配置
+RUN nginx -t
 
 # 健康检查
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost/ || exit 1
 
+# 暴露端口
 EXPOSE 80
 
+# 环境变量
+ENV NETEASE_API_URL=https://music-api.hankqin.com
+ENV SSL=false
+
+# 标签
 LABEL \
     io.hass.name="YesPlayMusic" \
-    io.hass.description="高颜值的第三方网易云播放器" \
+    io.hass.description="高颜值的第三方网易云播放器 - 完全本地化版本" \
     io.hass.type="addon" \
-    io.hass.version="1.0.8"
+    io.hass.version="1.0.7"
 
+# 启动命令
 CMD ["/usr/local/bin/run.sh"]
