@@ -1,68 +1,58 @@
 {
-  "name": "Alist",
-  "version": "3.45.0",
+  "name": "AList",
+  "version": "3.41.0",
   "slug": "alist",
-  "description": "🗂️多存储文件列表/WebDAV程序 - 支持60+种存储后端的统一文件管理系统",
-  "url": "https://github.com/wuwweizn/wwzn-china/tree/main/alist",
-  "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
+  "description": "A file list program that supports multiple storage, provides a web interface and supports WebDAV",
+  "url": "https://github.com/AlistGo/alist",
   "startup": "application",
-  "boot": "auto",
+  "arch": [
+    "amd64",
+    "aarch64",
+    "armhf",
+    "armv7"
+  ],
+  "image": "ghcr.io/{arch}/alist-{arch}",
   "init": false,
-  "map": ["config:rw", "share:rw", "backup:rw", "media:rw"],
+  "map": [
+    "share",
+    "config"
+  ],
   "options": {
-    "web_port": 5244,
-    "admin_username": "admin",
-    "admin_password": "",
-    "log_level": "INFO",
-    "enable_aria2": false,
-    "enable_ffmpeg": false,
-    "enable_webdav": true,
-    "custom_config": {}
+    "ssl": false,
+    "certfile": "fullchain.pem",
+    "keyfile": "privkey.pem"
   },
   "schema": {
-    "web_port": "port",
-    "admin_username": "str",
-    "admin_password": "password",
-    "log_level": "list(DEBUG|INFO|WARN|ERROR)",
-    "enable_aria2": "bool",
-    "enable_ffmpeg": "bool", 
-    "enable_webdav": "bool",
-    "custom_config": "dict?"
+    "ssl": "bool",
+    "certfile": "str",
+    "keyfile": "str"
   },
   "ports": {
     "5244/tcp": 5244
   },
   "ports_description": {
-    "5244/tcp": "Alist Web管理界面和文件访问端口"
+    "5244/tcp": "Web interface"
+  },
+  "environment": {
+    "PUID": 0,
+    "PGID": 0
   },
   "host_network": false,
-  "privileged": [],
+  "privileged": [
+    "SYS_ADMIN",
+    "DAC_READ_SEARCH"
+  ],
   "full_access": false,
   "homeassistant_api": false,
-  "hassio_api": true,
-  "docker_api": false,
-  "audio": false,
-  "video": true,
-  "gpio": false,
-  "usb": true,
-  "uart": false,
   "stdin": false,
   "legacy": false,
-  "environment": {
-    "PUID": "0",
-    "PGID": "0",
-    "UMASK": "022",
-    "TZ": "Asia/Shanghai"
-  },
-  "image": "ghcr.io/wuwweizn/alist-{arch}",
-  "webui": "http://[HOST]:[PORT:5244]",
-  "panel_icon": "mdi:folder-multiple-outline",
-  "panel_title": "Alist",
+  "panel_icon": "mdi:folder-multiple",
+  "panel_title": "AList",
   "panel_admin": true,
-  "ingress": false,
-  "ingress_port": 0,
+  "auto_uart": false,
+  "ingress": true,
+  "ingress_port": 5244,
   "ingress_entry": "/",
-  "timeout": 10,
-  "tmpfs": "size=100m,uid=0,rw,noatime,nosuid,nodev,noexec,mode=0755",
-  "services": []
+  "backup": "cold",
+  "webui": "[PROTO:ssl]://[HOST]:[PORT:5244]/"
 }

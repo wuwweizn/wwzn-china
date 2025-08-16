@@ -1,25 +1,46 @@
-FROM xhofe/alist:latest
+ARG BUILD_FROM=alpine:3.21.3
+FROM $BUILD_FROM
 
-# 设置环境变量
-ENV LANG=C.UTF-8 \
-    TZ=Asia/Shanghai
+# Install dependencies
+RUN apk add --no-cache \
+    bash \
+    curl \
+    ca-certificates \
+    tzdata \
+    tini
 
-# 安装jq用于解析Home Assistant配置
-RUN apk add --no-cache jq
+# Set the working directory
+WORKDIR /opt/alist
 
-# 复制Home Assistant加载项启动脚本
-COPY run.sh /run.sh
-RUN chmod +x /run.sh
+# Download AList binary
+ARG BUILD_ARCH
+ARG ALIST_VERSION=v3.41.0
 
-# 创建配置目录
-RUN mkdir -p /config
+RUN case "${BUILD_ARCH}" in \
+    amd64) ARCH="amd64" ;; \
+    aarch64) ARCH="arm64" ;; \
+    armv7) ARCH="armv7" ;; \
+    *) echo "Unsupported architecture: ${BUILD_ARCH}" && exit 1 ;; \
+    esac && \
+    curl -L -o alist.tar.gz "https://github.com/AlistGo/alist/releases/download/${ALIST_VERSION}/alist-linux-${ARCH}.tar.gz" && \
+    tar -xzf alist.tar.gz && \
+    rm alist.tar.gz && \
+    chmod +x alist
 
-# 暴露端口
+# Create data directory
+RUN mkdir -p /data
+
+# Copy startup script
+COPY run.sh /usr/bin/run.sh
+RUN chmod +x /usr/bin/run.sh
+
+# Set environment variables
+ENV PUID=0
+ENV PGID=0
+
+# Expose port
 EXPOSE 5244
 
-# 健康检查
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:5244/ping || exit 1
-
-# 启动命令
-CMD ["/run.sh"]
+# Use tini as entrypoint
+ENTRYPOINT ["/sbin/tini", "--"]
+CMD ["/usr/bin/run.sh"]
