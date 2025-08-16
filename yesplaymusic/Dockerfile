@@ -52,7 +52,7 @@ COPY --from=builder /app/dist /var/www/html
 # 如果构建失败，创建一个功能齐全的备用页面
 RUN if [ ! -f "/var/www/html/index.html" ] || [ ! -d "/var/www/html/assets" ]; then \
         echo "Creating comprehensive fallback page..." && \
-        cat > /var/www/html/index.html << 'EOF'
+        cat > /var/www/html/index.html << 'FALLBACK_EOF' && \
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -77,15 +77,8 @@ RUN if [ ! -f "/var/www/html/index.html" ] || [ ! -d "/var/www/html/assets" ]; t
             color: var(--text-primary);
             overflow-x: hidden;
         }
-        .app {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        .header {
-            text-align: center;
-            padding: 3rem 1rem 2rem;
-        }
+        .app { min-height: 100vh; display: flex; flex-direction: column; }
+        .header { text-align: center; padding: 3rem 1rem 2rem; }
         .logo {
             font-size: 6rem;
             margin-bottom: 1rem;
@@ -109,13 +102,7 @@ RUN if [ ! -f "/var/www/html/index.html" ] || [ ! -d "/var/www/html/assets" ]; t
             max-width: 600px;
             margin: 0 auto;
         }
-        .main {
-            flex: 1;
-            padding: 0 1rem;
-            max-width: 1200px;
-            margin: 0 auto;
-            width: 100%;
-        }
+        .main { flex: 1; padding: 0 1rem; max-width: 1200px; margin: 0 auto; width: 100%; }
         .player-container {
             background: var(--bg-light);
             border-radius: 20px;
@@ -125,19 +112,10 @@ RUN if [ ! -f "/var/www/html/index.html" ] || [ ! -d "/var/www/html/assets" ]; t
             border: 1px solid rgba(255,255,255,0.2);
             box-shadow: 0 8px 32px rgba(0,0,0,0.1);
         }
-        .player-interface {
-            text-align: center;
-        }
-        .now-playing {
-            margin-bottom: 2rem;
-        }
-        .track-info h3 {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
-        .track-info p {
-            color: var(--text-secondary);
-        }
+        .player-interface { text-align: center; }
+        .now-playing { margin-bottom: 2rem; }
+        .track-info h3 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .track-info p { color: var(--text-secondary); }
         .controls {
             display: flex;
             justify-content: center;
@@ -170,9 +148,7 @@ RUN if [ ! -f "/var/www/html/index.html" ] || [ ! -d "/var/www/html/assets" ]; t
             background: linear-gradient(45deg, var(--primary), var(--secondary));
             border-color: transparent;
         }
-        .btn.primary:hover {
-            transform: translateY(-2px) scale(1.05);
-        }
+        .btn.primary:hover { transform: translateY(-2px) scale(1.05); }
         .features {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -193,20 +169,14 @@ RUN if [ ! -f "/var/www/html/index.html" ] || [ ! -d "/var/www/html/assets" ]; t
             align-items: center;
             gap: 0.5rem;
         }
-        .feature-list {
-            list-style: none;
-        }
+        .feature-list { list-style: none; }
         .feature-list li {
             margin: 0.8rem 0;
             padding-left: 1.5rem;
             position: relative;
             line-height: 1.5;
         }
-        .feature-list li::before {
-            content: "✨";
-            position: absolute;
-            left: 0;
-        }
+        .feature-list li::before { content: "✨"; position: absolute; left: 0; }
         .instructions {
             background: var(--bg-light);
             border-radius: 16px;
@@ -221,48 +191,13 @@ RUN if [ ! -f "/var/www/html/index.html" ] || [ ! -d "/var/www/html/assets" ]; t
             align-items: center;
             gap: 0.5rem;
         }
-        .instructions ol {
-            padding-left: 1.5rem;
-        }
-        .instructions li {
-            margin: 1rem 0;
-            line-height: 1.6;
-        }
+        .instructions ol { padding-left: 1.5rem; }
+        .instructions li { margin: 1rem 0; line-height: 1.6; }
         .footer {
             text-align: center;
             padding: 2rem;
             color: var(--text-secondary);
             font-size: 0.9rem;
-        }
-        .login-methods {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin: 1rem 0;
-            flex-wrap: wrap;
-        }
-        .login-btn {
-            padding: 0.8rem 1.5rem;
-            font-size: 0.9rem;
-        }
-        .progress-bar {
-            width: 100%;
-            height: 4px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 2px;
-            margin: 1rem 0;
-            overflow: hidden;
-        }
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            width: 0%;
-            animation: progress 3s ease-in-out infinite;
-        }
-        @keyframes progress {
-            0% { width: 0%; }
-            50% { width: 70%; }
-            100% { width: 0%; }
         }
         @media (max-width: 768px) {
             .title { font-size: 2.5rem; }
@@ -278,12 +213,8 @@ RUN if [ ! -f "/var/www/html/index.html" ] || [ ! -d "/var/www/html/assets" ]; t
         <header class="header">
             <div class="logo">🎵</div>
             <h1 class="title">YesPlayMusic</h1>
-            <p class="subtitle">
-                高颜值的第三方网易云播放器<br>
-                现已在 Home Assistant 中运行
-            </p>
+            <p class="subtitle">高颜值的第三方网易云播放器<br>现已在 Home Assistant 中运行</p>
         </header>
-
         <main class="main">
             <div class="player-container">
                 <div class="player-interface">
@@ -292,31 +223,14 @@ RUN if [ ! -f "/var/www/html/index.html" ] || [ ! -d "/var/www/html/assets" ]; t
                             <h3>🎼 欢迎使用 YesPlayMusic</h3>
                             <p>准备开始您的音乐之旅</p>
                         </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill"></div>
-                        </div>
                     </div>
-                    
                     <div class="controls">
-                        <a href="/login" class="btn primary">
-                            🔑 登录网易云账号
-                        </a>
-                        <a href="/discover" class="btn">
-                            🌟 发现音乐
-                        </a>
-                        <a href="/fm" class="btn">
-                            📻 私人FM
-                        </a>
-                    </div>
-                    
-                    <div class="login-methods">
-                        <span class="btn login-btn">📱 手机号登录</span>
-                        <span class="btn login-btn">📧 邮箱登录</span>
-                        <span class="btn login-btn">📱 扫码登录</span>
+                        <a href="#" class="btn primary" onclick="showLoginInfo()">🔑 登录说明</a>
+                        <a href="/api/ping" class="btn">🔗 测试API</a>
+                        <a href="#" class="btn" onclick="showFeatures()">✨ 功能介绍</a>
                     </div>
                 </div>
             </div>
-
             <div class="features">
                 <div class="feature-card">
                     <h3>🎵 音乐功能</h3>
@@ -329,7 +243,6 @@ RUN if [ ! -f "/var/www/html/index.html" ] || [ ! -d "/var/www/html/assets" ]; t
                         <li>歌单管理和收藏</li>
                     </ul>
                 </div>
-
                 <div class="feature-card">
                     <h3>🎬 视听体验</h3>
                     <ul class="feature-list">
@@ -341,7 +254,6 @@ RUN if [ ! -f "/var/www/html/index.html" ] || [ ! -d "/var/www/html/assets" ]; t
                         <li>无广告干扰</li>
                     </ul>
                 </div>
-
                 <div class="feature-card">
                     <h3>🌍 特色功能</h3>
                     <ul class="feature-list">
@@ -350,72 +262,37 @@ RUN if [ ! -f "/var/www/html/index.html" ] || [ ! -d "/var/www/html/assets" ]; t
                         <li>无社交功能干扰</li>
                         <li>自定义快捷键</li>
                         <li>每日自动签到</li>
-                        <li>Last.fm 音乐记录</li>
+                        <li>本地Home Assistant集成</li>
                     </ul>
                 </div>
             </div>
-
             <div class="instructions">
                 <h3>📝 使用说明</h3>
                 <ol>
-                    <li><strong>登录账号：</strong>点击上方"登录网易云账号"，支持多种登录方式</li>
+                    <li><strong>完整版本：</strong>如果构建成功，将显示完整的YesPlayMusic界面</li>
+                    <li><strong>登录账号：</strong>支持扫码、手机号、邮箱多种登录方式</li>
                     <li><strong>开始听歌：</strong>登录后即可访问您的音乐库、歌单和推荐内容</li>
-                    <li><strong>发现音乐：</strong>通过每日推荐、排行榜发现新音乐</li>
-                    <li><strong>私人FM：</strong>享受个性化电台推荐</li>
-                    <li><strong>离线功能：</strong>支持本地音乐播放和云盘同步</li>
+                    <li><strong>API连接：</strong>通过内置代理连接网易云音乐API</li>
+                    <li><strong>本地化：</strong>所有界面和功能完全在Home Assistant本地运行</li>
                 </ol>
             </div>
         </main>
-
         <footer class="footer">
-            <p>
-                <strong>YesPlayMusic</strong> - 开源第三方网易云播放器<br>
-                现已集成到您的 Home Assistant 系统中
-            </p>
+            <p><strong>YesPlayMusic</strong> - 开源第三方网易云播放器<br>现已集成到您的 Home Assistant 系统中</p>
         </footer>
     </div>
-
     <script>
-        // 模拟播放器功能
-        document.addEventListener('DOMContentLoaded', function() {
-            // 为按钮添加交互效果
-            const buttons = document.querySelectorAll('.btn');
-            buttons.forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    if (!this.href || this.href.includes('#')) {
-                        e.preventDefault();
-                        // 模拟功能提示
-                        const text = this.textContent;
-                        this.style.background = 'rgba(255,255,255,0.4)';
-                        setTimeout(() => {
-                            this.style.background = '';
-                        }, 200);
-                        
-                        // 显示功能说明
-                        if (text.includes('登录')) {
-                            alert('🔑 登录功能\n\n请使用网易云音乐账号登录：\n• 扫码登录（推荐）\n• 手机号 + 密码\n• 邮箱 + 密码\n\n登录后可同步您的音乐库和个人数据');
-                        } else if (text.includes('发现')) {
-                            alert('🌟 发现音乐\n\n探索精彩音乐内容：\n• 个性化推荐\n• 热门排行榜\n• 新歌首发\n• 精选歌单');
-                        } else if (text.includes('FM')) {
-                            alert('📻 私人FM\n\n个性化电台服务：\n• 基于听歌历史推荐\n• 智能学习音乐偏好\n• 无限音乐发现');
-                        }
-                    }
-                });
-            });
-            
-            // 添加一些动态效果
-            setInterval(() => {
-                const logo = document.querySelector('.logo');
-                logo.style.transform = 'scale(1.1)';
-                setTimeout(() => {
-                    logo.style.transform = 'scale(1)';
-                }, 300);
-            }, 5000);
-        });
+        function showLoginInfo() {
+            alert('🔑 登录功能\n\n• 扫码登录（推荐）\n• 手机号 + 密码\n• 邮箱 + 密码\n\n登录后可同步您的音乐库和个人数据');
+        }
+        function showFeatures() {
+            alert('✨ YesPlayMusic 功能特色\n\n🎵 完整音乐体验\n🎬 MV播放支持\n🌍 海外直接访问\n📱 响应式设计\n🔐 无广告干扰');
+        }
     </script>
 </body>
 </html>
-EOF
+FALLBACK_EOF
+        echo "Fallback page created successfully"; \
     fi
 
 # 复制配置文件
