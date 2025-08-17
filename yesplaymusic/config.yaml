@@ -1,0 +1,15 @@
+name: "YesPlayMusic"
+version: "1.0.0"
+slug: "yesplaymusic"
+description: "YesPlayMusic - 第三方网易云播放器"
+url: "https://github.com/qier222/YesPlayMusic"
+arch:
+  - amd64
+  - aarch64
+startup: services
+boot: auto
+ports:
+  8080/tcp: 8080
+options: {}
+schema: {}
+image: "wbsu2003/yesplaymusic:latest"
