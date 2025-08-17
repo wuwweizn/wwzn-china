@@ -40,4 +40,4 @@ ingress: true
 ingress_port: 5244
 ingress_entry: "/"
 backup: "cold"
-webui: "[PROTO:ssl]://[HOST]:[PORT:5244]/"
+webui: "http://[HOST]:[PORT:5244]"
