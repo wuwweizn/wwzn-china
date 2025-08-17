@@ -4,7 +4,7 @@
 【引用的项目：samb、configurator、matter_server、mosquitto、openwakeword、piper、ssh、whisper、speech_to_phrase、mariadb】
 
 官方增强加载项：https://github.com/hassio-addons/repository
-【引用的项目：adguard、ftp、node-red、plex、phpmyadmin、ssh、tailscale、zerotier】
+【引用的项目：adguard、ftp、node-red、plex、phpmyadmin、ssh、tailscale、zerotier、wireguard、tasmoadmin】
 
 ESPhome加载项：https://github.com/esphome/home-assistant-addon
 
@@ -22,6 +22,8 @@ jdeath加载项：https://github.com/jdeath/homeassistant-addons
 
 hass-panel加载项：https://github.com/mrtian2016/hass-panel
 【引用的项目：hass-panel、hass-panel-beta】
+
+
 
 FaserF加载项：https://github.com/FaserF/hassio-addons
 【引用的项目：Tado Auto Assist、bt-mqtt-gateway】
@@ -53,3 +55,8 @@ SirUli加载项：https://github.com/SirUli/homeassistant-ollama-addon
 
 hasscc加载项：https://github.com/hasscc/addons
 【引用的项目：moontv】
+
+ARC-MX加载项：https://github.com/ARC-MX/sgcc_electricity_new
+【引用的项目：sgcc_electricity_new】
+
+自学加载项：【alist、clash、ddnsto、istoreos、jdxb、libretv、lucky、musicn、NeteaseCloudMusicApi、passwall、v2rayn、xray、yesplaymusic】
