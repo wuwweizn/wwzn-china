@@ -1,8 +1,8 @@
-name: Clash Proxy
+name: Clash Meta
 version: 1.18.0
 slug: clash
-description: A rule-based tunnel with web dashboard for managing proxy subscriptions
-url: https://github.com/Dreamacro/clash
+description: A rule-based tunnel with web dashboard for managing proxy subscriptions (Clash.Meta/mihomo)
+url: https://github.com/MetaCubeX/mihomo
 arch:
   - amd64
   - aarch64

@@ -22,7 +22,7 @@ RUN apk add --no-cache \
 ARG TARGETARCH
 ENV TARGETARCH=${TARGETARCH}
 
-# 下载并安装Clash Premium
+# 下载并安装Clash.Meta (mihomo)
 RUN echo "Building for architecture: ${TARGETARCH}" \
     && if [ "${TARGETARCH}" = "amd64" ]; then \
          CLASH_ARCH="amd64"; \
@@ -34,29 +34,29 @@ RUN echo "Building for architecture: ${TARGETARCH}" \
          echo "Unsupported architecture: ${TARGETARCH}"; \
          exit 1; \
        fi \
-    && echo "Using Clash architecture: ${CLASH_ARCH}" \
-    && CLASH_VERSION="2023.08.17" \
-    && echo "Downloading Clash Premium ${CLASH_VERSION} for ${CLASH_ARCH}" \
-    && wget -O /tmp/clash.gz "https://github.com/Dreamacro/clash/releases/download/premium/clash-linux-${CLASH_ARCH}-${CLASH_VERSION}.gz" \
+    && echo "Using Clash.Meta architecture: ${CLASH_ARCH}" \
+    && CLASH_VERSION=$(curl -s "https://api.github.com/repos/MetaCubeX/mihomo/releases/latest" | jq -r .tag_name) \
+    && echo "Downloading Clash.Meta ${CLASH_VERSION} for ${CLASH_ARCH}" \
+    && wget -O /tmp/clash.gz "https://github.com/MetaCubeX/mihomo/releases/download/${CLASH_VERSION}/mihomo-linux-${CLASH_ARCH}-${CLASH_VERSION}.gz" \
     && gunzip /tmp/clash.gz \
     && mv /tmp/clash /usr/local/bin/clash \
     && chmod +x /usr/local/bin/clash \
     && clash -v
 
-# 下载Clash Dashboard
+# 下载Clash Dashboard (yacd-meta)
 RUN echo "Downloading Clash Dashboard..." \
-    && wget -O /tmp/dashboard.zip "https://github.com/Dreamacro/clash-dashboard/archive/gh-pages.zip" \
+    && wget -O /tmp/dashboard.zip "https://github.com/MetaCubeX/Yacd-meta/archive/gh-pages.zip" \
     && unzip /tmp/dashboard.zip -d /tmp \
     && mkdir -p /opt/clash-dashboard \
-    && mv /tmp/clash-dashboard-gh-pages/* /opt/clash-dashboard/ \
-    && rm -rf /tmp/dashboard.zip /tmp/clash-dashboard-gh-pages
+    && mv /tmp/Yacd-meta-gh-pages/* /opt/clash-dashboard/ \
+    && rm -rf /tmp/dashboard.zip /tmp/Yacd-meta-gh-pages
 
 # 下载GeoIP和GeoSite数据库
 RUN echo "Downloading GeoIP and GeoSite databases..." \
     && mkdir -p /opt/clash \
-    && wget -O /opt/clash/Country.mmdb "https://github.com/Dreamacro/maxmind-geoip/releases/latest/download/Country.mmdb" \
-    && wget -O /opt/clash/geosite.dat "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat" \
-    && wget -O /opt/clash/geoip.dat "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat"
+    && wget -O /opt/clash/Country.mmdb "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/country.mmdb" \
+    && wget -O /opt/clash/geosite.dat "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat" \
+    && wget -O /opt/clash/geoip.dat "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.dat"
 
 # 创建必要的目录
 RUN mkdir -p /data/config /data/logs
