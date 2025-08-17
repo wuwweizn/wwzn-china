@@ -11,7 +11,7 @@ CONFIG_PATH="/data/config/config.yaml"
 mkdir -p /data/config
 mkdir -p /data/logs
 
-# 创建一个干净的配置文件（一次性创建，避免重复）
+# 创建一个干净的配置文件（避免与内置节点冲突）
 create_clean_config() {
     bashio::log.info "Creating clean Clash configuration..."
     
@@ -37,10 +37,6 @@ dns:
   nameserver:
     - https://doh.pub/dns-query
     - https://dns.alidns.com/dns-query
-
-proxies:
-  - name: "DIRECT"
-    type: direct
 
 proxy-groups:
   - name: "🚀 代理选择"
