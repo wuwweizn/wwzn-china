@@ -58,13 +58,15 @@ RUN echo "Downloading GeoIP and GeoSite databases..." \
     && wget -O /opt/clash/geosite.dat "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat" \
     && wget -O /opt/clash/geoip.dat "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.dat"
 
-# 创建必要的目录
-RUN mkdir -p /data/config /data/logs
+# 创建必要的目录并设置权限
+RUN mkdir -p /data/config /data/logs /opt/clash \
+    && chmod 755 /data/config /data/logs /opt/clash
 
 # 复制启动脚本和配置文件
 COPY run.sh /
 COPY clash-config.yaml /opt/clash/default-config.yaml
-RUN chmod +x /run.sh
+RUN chmod +x /run.sh \
+    && chmod 644 /opt/clash/default-config.yaml
 
 # 设置工作目录
 WORKDIR /data

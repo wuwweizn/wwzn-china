@@ -10,10 +10,24 @@ AUTO_UPDATE=$(bashio::config 'auto_update')
 
 CONFIG_PATH="/data/config/config.yaml"
 
+# 确保配置目录存在
+mkdir -p /data/config
+mkdir -p /data/logs
+
 # 创建默认配置文件
 create_default_config() {
     bashio::log.info "Creating default Clash configuration..."
-    cp /opt/clash/default-config.yaml "$CONFIG_PATH"
+    
+    # 确保目标目录存在
+    mkdir -p "$(dirname "$CONFIG_PATH")"
+    
+    # 复制默认配置文件
+    if [[ -f "/opt/clash/default-config.yaml" ]]; then
+        cp /opt/clash/default-config.yaml "$CONFIG_PATH"
+    else
+        bashio::log.error "Default configuration template not found!"
+        exit 1
+    fi
     
     # 更新配置文件中的选项
     if [[ -n "$LOG_LEVEL" ]]; then
@@ -25,7 +39,11 @@ create_default_config() {
     fi
     
     if [[ -n "$SECRET" ]]; then
-        echo "secret: '$SECRET'" >> "$CONFIG_PATH"
+        if grep -q "secret:" "$CONFIG_PATH"; then
+            sed -i "s/secret: .*/secret: '$SECRET'/" "$CONFIG_PATH"
+        else
+            echo "secret: '$SECRET'" >> "$CONFIG_PATH"
+        fi
     fi
     
     bashio::log.info "Default configuration created at $CONFIG_PATH"
@@ -37,7 +55,7 @@ update_subscription() {
         bashio::log.info "Updating subscription from: $SUBSCRIPTION_URL"
         
         # 下载订阅配置
-        if curl -L -o "/tmp/subscription.yaml" "$SUBSCRIPTION_URL"; then
+        if curl -L -f -o "/tmp/subscription.yaml" "$SUBSCRIPTION_URL"; then
             bashio::log.info "Successfully downloaded subscription config"
             
             # 备份当前配置
@@ -54,10 +72,21 @@ update_subscription() {
                 echo "# Management API" >> "$CONFIG_PATH"
                 echo "external-controller: $EXTERNAL_CONTROLLER" >> "$CONFIG_PATH"
                 echo "external-ui: /opt/clash-dashboard" >> "$CONFIG_PATH"
+            else
+                sed -i "s/external-controller: .*/external-controller: $EXTERNAL_CONTROLLER/" "$CONFIG_PATH"
             fi
             
-            if [[ -n "$SECRET" ]] && ! grep -q "secret:" "$CONFIG_PATH"; then
-                echo "secret: '$SECRET'" >> "$CONFIG_PATH"
+            if [[ -n "$SECRET" ]]; then
+                if grep -q "secret:" "$CONFIG_PATH"; then
+                    sed -i "s/secret: .*/secret: '$SECRET'/" "$CONFIG_PATH"
+                else
+                    echo "secret: '$SECRET'" >> "$CONFIG_PATH"
+                fi
+            fi
+            
+            # 确保external-ui配置正确
+            if ! grep -q "external-ui:" "$CONFIG_PATH"; then
+                echo "external-ui: /opt/clash-dashboard" >> "$CONFIG_PATH"
             fi
             
             bashio::log.info "Subscription updated successfully"
@@ -88,7 +117,7 @@ schedule_updates() {
     fi
 }
 
-# 检查配置文件
+# 检查并创建配置文件
 if [[ ! -f "$CONFIG_PATH" ]]; then
     create_default_config
 fi
@@ -98,10 +127,16 @@ update_subscription
 
 # 验证配置文件
 bashio::log.info "Validating Clash configuration..."
-if ! clash -t -f "$CONFIG_PATH"; then
+if ! clash -t -f "$CONFIG_PATH" -d /opt/clash; then
     bashio::log.error "Invalid configuration file!"
     bashio::log.info "Falling back to default configuration..."
     create_default_config
+    
+    # 再次验证
+    if ! clash -t -f "$CONFIG_PATH" -d /opt/clash; then
+        bashio::log.error "Default configuration is also invalid!"
+        exit 1
+    fi
 fi
 
 # 启动定时更新（如果启用）
@@ -112,10 +147,10 @@ bashio::log.info "Starting Clash..."
 bashio::log.info "Configuration file: $CONFIG_PATH"
 bashio::log.info "Log level: $LOG_LEVEL"
 bashio::log.info "External controller: $EXTERNAL_CONTROLLER"
-bashio::log.info "Web dashboard: http://homeassistant-ip:9090/ui"
+bashio::log.info "Web dashboard: http://192.168.2.85:9090/ui"
 
 if [[ -n "$SUBSCRIPTION_URL" ]]; then
-    bashio::log.info "Subscription URL: $SUBSCRIPTION_URL"
+    bashio::log.info "Subscription URL configured"
     bashio::log.info "Auto update: $AUTO_UPDATE"
 fi
 
