@@ -6,7 +6,71 @@ bind-address: '*'
 mode: rule
 log-level: info
 external-controller: 0.0.0.0:9090
-external-ui: /opt/clash-dashboard
+external-ui: ui
+
+# DNS 配置
+dns:
+  enable: true
+  listen: 0.0.0.0:1053
+  ipv6: false
+  default-nameserver:
+    - 119.29.29.29
+    - 223.5.5.5
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  nameserver:
+    - https://doh.pub/dns-query
+    - https://dns.alidns.com/dns-query
+
+# 默认代理节点
+proxies:
+  - name: "DIRECT"
+    type: direct
+  - name: "REJECT"
+    type: reject
+
+# 代理组
+proxy-groups:
+  - name: "🚀 手动切换"
+    type: select
+    proxies:
+      - DIRECT
+      - REJECT
+  
+  - name: "🎯 全球直连"
+    type: select
+    proxies:
+      - DIRECT
+  
+  - name: "🛑 广告拦截"
+    type: select
+    proxies:
+      - REJECT
+      - DIRECT
+  
+  - name: "🐟 漏网之鱼"
+    type: select
+    proxies:
+      - "🚀 手动切换"
+      - DIRECT
+
+# 规则
+rules:
+  - IP-CIDR,192.168.0.0/16,🎯 全球直连
+  - IP-CIDR,10.0.0.0/8,🎯 全球直连
+  - IP-CIDR,172.16.0.0/12,🎯 全球直连
+  - IP-CIDR,127.0.0.0/8,🎯 全球直连
+  - GEOIP,LAN,🎯 全球直连
+  - GEOIP,CN,🎯 全球直连
+  - MATCH,🐟 漏网之鱼# Clash.Meta 简化默认配置文件
+port: 7890
+socks-port: 7891
+allow-lan: true
+bind-address: '*'
+mode: rule
+log-level: info
+external-controller: 0.0.0.0:9090
+external-ui: ui
 
 # DNS 配置
 dns:

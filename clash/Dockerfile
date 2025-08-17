@@ -43,12 +43,12 @@ RUN echo "Building for architecture: ${TARGETARCH}" \
     && chmod +x /usr/local/bin/clash \
     && clash -v
 
-# 下载Clash Dashboard (yacd-meta)
+# 下载Clash Dashboard到允许的目录
 RUN echo "Downloading Clash Dashboard..." \
     && wget -O /tmp/dashboard.zip "https://github.com/MetaCubeX/Yacd-meta/archive/gh-pages.zip" \
     && unzip /tmp/dashboard.zip -d /tmp \
-    && mkdir -p /opt/clash-dashboard \
-    && mv /tmp/Yacd-meta-gh-pages/* /opt/clash-dashboard/ \
+    && mkdir -p /opt/clash/ui \
+    && mv /tmp/Yacd-meta-gh-pages/* /opt/clash/ui/ \
     && rm -rf /tmp/dashboard.zip /tmp/Yacd-meta-gh-pages
 
 # 下载GeoIP和GeoSite数据库
@@ -60,7 +60,7 @@ RUN echo "Downloading GeoIP and GeoSite databases..." \
 
 # 创建必要的目录并设置权限
 RUN mkdir -p /data/config /data/logs /opt/clash \
-    && chmod 755 /data/config /data/logs /opt/clash
+    && chmod 755 /data/config /data/logs /opt/clash /opt/clash/ui
 
 # 复制启动脚本和配置文件
 COPY run.sh /

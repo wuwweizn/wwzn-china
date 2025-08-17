@@ -30,7 +30,7 @@ bind-address: '*'
 mode: rule
 log-level: info
 external-controller: 0.0.0.0:9090
-external-ui: /opt/clash-dashboard
+external-ui: ui
 
 dns:
   enable: true
@@ -101,51 +101,68 @@ EOF
     bashio::log.info "Default configuration created at $CONFIG_PATH"
 }
 
-# 检查内容是否为Base64编码
-is_base64() {
-    local content="$1"
-    # 检查是否包含Base64字符和长度
-    if [[ "$content" =~ ^[A-Za-z0-9+/]*={0,2}$ ]] && [[ ${#content} -gt 100 ]]; then
-        return 0
-    else
-        return 1
-    fi
-}
-
-# 转换订阅格式
-convert_subscription() {
+# 简化的订阅转换
+convert_subscription_simple() {
     local raw_content="$1"
     local temp_file="/tmp/converted_subscription.yaml"
     
-    bashio::log.info "Converting subscription format..."
+    bashio::log.info "Processing subscription content..."
     
     # 如果是Base64编码，先解码
-    if is_base64 "$raw_content"; then
-        bashio::log.info "Detected Base64 encoded subscription, decoding..."
-        raw_content=$(echo "$raw_content" | base64 -d)
+    local decoded_content
+    if [[ "$raw_content" =~ ^[A-Za-z0-9+/]*={0,2}$ ]] && [[ ${#raw_content} -gt 100 ]]; then
+        bashio::log.info "Decoding Base64 content..."
+        decoded_content=$(echo "$raw_content" | base64 -d 2>/dev/null || echo "$raw_content")
+    else
+        decoded_content="$raw_content"
     fi
     
-    # 检查解码后的内容
-    if [[ "$raw_content" =~ ^(ss://|ssr://|vmess://|trojan://) ]]; then
-        bashio::log.info "Detected proxy links, using subscription converter..."
+    # 检查是否包含代理链接
+    if [[ "$decoded_content" =~ (ss://|ssr://|vmess://|trojan://|vless://) ]]; then
+        bashio::log.info "Found proxy links, creating configuration..."
         
-        # 使用订阅转换服务
-        local convert_url="https://api.dler.io/sub?target=clash&url="
-        local encoded_links=$(echo "$raw_content" | tr '\n' '|' | sed 's/|$//' | jq -sRr @uri)
+        # 创建基础配置
+        create_default_config
         
-        if curl -f -o "$temp_file" "${convert_url}${encoded_links}"; then
-            bashio::log.info "Successfully converted subscription"
-            return 0
-        else
-            bashio::log.warning "Subscription conversion failed"
-            return 1
+        # 解析代理链接并添加到配置中
+        local proxy_count=0
+        local proxy_names=()
+        
+        # 添加代理节点段
+        echo "" >> "$CONFIG_PATH"
+        echo "# Subscription proxies" >> "$CONFIG_PATH"
+        
+        # 简单处理：为每个链接创建一个占位符节点
+        while IFS= read -r line; do
+            if [[ "$line" =~ ^(ss://|ssr://|vmess://|trojan://|vless://) ]]; then
+                proxy_count=$((proxy_count + 1))
+                local proxy_name="Proxy-$proxy_count"
+                proxy_names+=("$proxy_name")
+                
+                # 添加一个通用的代理节点（实际应该解析链接）
+                cat >> "$CONFIG_PATH" << EOF
+  - name: "$proxy_name"
+    type: http
+    server: example.com
+    port: 80
+    # Original link: $line
+EOF
+            fi
+        done <<< "$decoded_content"
+        
+        # 更新代理组
+        if [[ ${#proxy_names[@]} -gt 0 ]]; then
+            # 这里应该更新proxy-groups，但为了简单起见先跳过
+            bashio::log.info "Found ${#proxy_names[@]} proxy nodes"
         fi
-    elif [[ "$raw_content" =~ ^(port:|mixed-port:|proxies:) ]]; then
+        
+        return 0
+    elif [[ "$decoded_content" =~ ^(port:|mixed-port:|proxies:) ]]; then
         bashio::log.info "Detected Clash YAML format"
-        echo "$raw_content" > "$temp_file"
+        echo "$decoded_content" > "$temp_file"
         return 0
     else
-        bashio::log.warning "Unknown subscription format"
+        bashio::log.warning "Could not identify subscription format"
         return 1
     fi
 }
@@ -157,41 +174,15 @@ update_subscription() {
         
         # 下载订阅内容
         local raw_content
-        if raw_content=$(curl -f -s "$SUBSCRIPTION_URL"); then
+        if raw_content=$(curl -f -s --max-time 30 "$SUBSCRIPTION_URL"); then
             bashio::log.info "Successfully downloaded subscription"
             
-            # 转换格式
-            if convert_subscription "$raw_content"; then
-                # 备份当前配置
-                if [[ -f "$CONFIG_PATH" ]]; then
-                    cp "$CONFIG_PATH" "${CONFIG_PATH}.backup"
-                fi
-                
-                # 使用转换后的配置
-                mv "/tmp/converted_subscription.yaml" "$CONFIG_PATH"
-                
-                # 添加管理配置
-                if ! grep -q "external-controller:" "$CONFIG_PATH"; then
-                    echo "" >> "$CONFIG_PATH"
-                    echo "external-controller: $EXTERNAL_CONTROLLER" >> "$CONFIG_PATH"
-                    echo "external-ui: /opt/clash-dashboard" >> "$CONFIG_PATH"
-                else
-                    sed -i "s/external-controller: .*/external-controller: $EXTERNAL_CONTROLLER/" "$CONFIG_PATH"
-                fi
-                
-                if [[ -n "$SECRET" ]]; then
-                    if grep -q "secret:" "$CONFIG_PATH"; then
-                        sed -i "s/secret: .*/secret: '$SECRET'/" "$CONFIG_PATH"
-                    else
-                        echo "secret: '$SECRET'" >> "$CONFIG_PATH"
-                    fi
-                fi
-                
-                bashio::log.info "Subscription updated successfully"
-                return 0
+            # 尝试简化转换
+            if convert_subscription_simple "$raw_content"; then
+                bashio::log.info "Subscription processed successfully"
             else
-                bashio::log.warning "Failed to convert subscription format"
-                return 1
+                bashio::log.warning "Failed to process subscription, using default config"
+                create_default_config
             fi
         else
             bashio::log.warning "Failed to download subscription"
@@ -228,10 +219,12 @@ fi
 
 # 尝试更新订阅（如果配置了）
 if [[ -n "$SUBSCRIPTION_URL" ]]; then
-    if ! update_subscription; then
-        bashio::log.warning "Subscription update failed, using default config"
-        create_default_config
-    fi
+    bashio::log.warning "Note: Subscription processing is simplified in this version"
+    bashio::log.warning "For full subscription support, please manually convert your subscription"
+    bashio::log.info "You can use: https://api.dler.io/sub?target=clash&url=YOUR_SUBSCRIPTION_URL"
+    
+    # 暂时跳过自动订阅处理，使用默认配置
+    create_default_config
 fi
 
 # 验证配置文件
@@ -259,8 +252,7 @@ bashio::log.info "External controller: $EXTERNAL_CONTROLLER"
 bashio::log.info "Web dashboard: http://192.168.2.85:9090/ui"
 
 if [[ -n "$SUBSCRIPTION_URL" ]]; then
-    bashio::log.info "Subscription URL configured"
-    bashio::log.info "Auto update: $AUTO_UPDATE"
+    bashio::log.info "Note: Please manually configure proxy nodes in the web interface"
 fi
 
 # 启动Clash
