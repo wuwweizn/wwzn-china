@@ -1,0 +1,76 @@
+# 根据目标架构设置基础镜像
+ARG TARGETARCH
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:15.0.7
+
+FROM ${BUILD_FROM}
+
+# 设置环境变量
+ENV LANG=C.UTF-8
+ENV TZ=Asia/Shanghai
+
+# 安装依赖
+RUN apk add --no-cache \
+    ca-certificates \
+    wget \
+    curl \
+    jq \
+    unzip \
+    tzdata \
+    bash
+
+# 使用环境变量处理架构映射
+ARG TARGETARCH
+ENV TARGETARCH=${TARGETARCH}
+
+# 下载并安装Clash Premium
+RUN echo "Building for architecture: ${TARGETARCH}" \
+    && if [ "${TARGETARCH}" = "amd64" ]; then \
+         CLASH_ARCH="amd64"; \
+       elif [ "${TARGETARCH}" = "arm64" ]; then \
+         CLASH_ARCH="arm64"; \
+       elif [ "${TARGETARCH}" = "arm/v7" ] || [ "${TARGETARCH}" = "arm" ]; then \
+         CLASH_ARCH="armv7"; \
+       else \
+         echo "Unsupported architecture: ${TARGETARCH}"; \
+         exit 1; \
+       fi \
+    && echo "Using Clash architecture: ${CLASH_ARCH}" \
+    && CLASH_VERSION="2023.08.17" \
+    && echo "Downloading Clash Premium ${CLASH_VERSION} for ${CLASH_ARCH}" \
+    && wget -O /tmp/clash.gz "https://github.com/Dreamacro/clash/releases/download/premium/clash-linux-${CLASH_ARCH}-${CLASH_VERSION}.gz" \
+    && gunzip /tmp/clash.gz \
+    && mv /tmp/clash /usr/local/bin/clash \
+    && chmod +x /usr/local/bin/clash \
+    && clash -v
+
+# 下载Clash Dashboard
+RUN echo "Downloading Clash Dashboard..." \
+    && wget -O /tmp/dashboard.zip "https://github.com/Dreamacro/clash-dashboard/archive/gh-pages.zip" \
+    && unzip /tmp/dashboard.zip -d /tmp \
+    && mkdir -p /opt/clash-dashboard \
+    && mv /tmp/clash-dashboard-gh-pages/* /opt/clash-dashboard/ \
+    && rm -rf /tmp/dashboard.zip /tmp/clash-dashboard-gh-pages
+
+# 下载GeoIP和GeoSite数据库
+RUN echo "Downloading GeoIP and GeoSite databases..." \
+    && mkdir -p /opt/clash \
+    && wget -O /opt/clash/Country.mmdb "https://github.com/Dreamacro/maxmind-geoip/releases/latest/download/Country.mmdb" \
+    && wget -O /opt/clash/geosite.dat "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat" \
+    && wget -O /opt/clash/geoip.dat "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat"
+
+# 创建必要的目录
+RUN mkdir -p /data/config /data/logs
+
+# 复制启动脚本和配置文件
+COPY run.sh /
+COPY clash-config.yaml /opt/clash/default-config.yaml
+RUN chmod +x /run.sh
+
+# 设置工作目录
+WORKDIR /data
+
+# 暴露端口
+EXPOSE 7890 7891 9090
+
+# 启动命令
+CMD ["/run.sh"]

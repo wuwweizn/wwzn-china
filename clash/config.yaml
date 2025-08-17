@@ -1,0 +1,47 @@
+name: Clash Proxy
+version: 1.18.0
+slug: clash
+description: A rule-based tunnel with web dashboard for managing proxy subscriptions
+url: https://github.com/Dreamacro/clash
+arch:
+  - amd64
+  - aarch64
+  - armv7
+init: false
+startup: services
+stage: stable
+image: ghcr.io/wuwweizn/clash-{arch}
+ports:
+  "7890/tcp": 7890
+  "7891/tcp": 7891
+  "9090/tcp": 9090
+ports_description:
+  "7890/tcp": HTTP Proxy Port
+  "7891/tcp": SOCKS Proxy Port
+  "9090/tcp": Web Dashboard
+map:
+  - config:rw
+  - ssl:rw
+webui: http://[HOST]:[PORT:9090]/ui
+environment:
+  CLASH_CONFIG_PATH: /data/config/config.yaml
+options:
+  log_level: info
+  external_controller: 0.0.0.0:9090
+  secret: ""
+  subscription_url: ""
+  update_interval: 86400
+  auto_update: true
+schema:
+  log_level: list(debug|info|warning|error|silent)
+  external_controller: str
+  secret: str?
+  subscription_url: str?
+  update_interval: int(3600,604800)
+  auto_update: bool
+auth_api: false
+ingress: true
+homeassistant_api: false
+host_network: false
+full_access: false
+apparmor: false

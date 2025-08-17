@@ -1,0 +1,9 @@
+build_from:
+  amd64: "ghcr.io/hassio-addons/base/amd64:15.0.7"
+  aarch64: "ghcr.io/hassio-addons/base/aarch64:15.0.7"
+  armv7: "ghcr.io/hassio-addons/base/armv7:15.0.7"
+labels:
+  org.opencontainers.image.title: "Clash for Home Assistant"
+  org.opencontainers.image.description: "Rule-based tunnel with subscription support and web dashboard"
+  org.opencontainers.image.source: "https://github.com/wuwweizn/wwzn-china"
+  org.opencontainers.image.licenses: "GPL-3.0"
