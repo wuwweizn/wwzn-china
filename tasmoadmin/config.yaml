@@ -1,7 +1,7 @@
 name: TasmoAdmin
 version: 0.32.0
 slug: sonweb
-description: Centrally manage all your Sonoff-Tasmota devices
+description: 中央管理您的所有Sonoff-Tasmota设备
 url: https://github.com/hassio-addons/addon-tasmoadmin
 codenotary: codenotary@frenck.dev
 webui: '[PROTO:ssl]://[HOST]:[PORT:9541]'

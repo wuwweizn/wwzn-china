@@ -1,4 +1,4 @@
-# Home Assistant Community Add-on: TasmoAdmin
+＃家庭助理社区附加组件：tasmoadmin
 
 [![Release][release-shield]][release] ![Project Stage][project-stage-shield] ![Project Maintenance][maintenance-shield]
 
@@ -8,19 +8,22 @@
 
 [![Support Frenck on Patreon][patreon-shield]][patreon]
 
-Centrally manage all your Sonoff-Tasmota devices.
+集中管理你所有的 Sonoff-Tasmota 设备。
 
-## About
+＃关于
 
-TasmoAdmin (formerly known as SonWEB) is an administrative web interface to
-manage all your Sonoff-Tasmota flashed devices centrally.
-Some of its features:
+TasmoAdmin（前称 SonWEB）是一个管理界面，可以集中管理你所有刷了 Tasmota 的 Sonoff 设备。
+它的一些功能包括：
 
-- Scans your networks and adds your devices automatically
-- See the status off all your devices quick and easy
-- Configure all your devices from a single place
-- Send out firmware updates over the air to one or more your devices at once
-- Can automatically download the latest firmware for you
+扫描你的网络并自动添加设备
+
+快速、轻松地查看所有设备的状态
+
+从一个界面配置所有设备
+
+可同时对一个或多个设备进行 OTA（空中）固件升级
+
+可以自动为你下载最新固件
 
 ![TasmoAdmin screenshot][screenshot]
 
