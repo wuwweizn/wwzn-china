@@ -36,8 +36,6 @@ legacy: false
 panel_icon: "mdi:folder-multiple"
 panel_title: "AList"
 panel_admin: true
-ingress: true
-ingress_port: 5244
-ingress_entry: "/"
+ingress: false
 backup: "cold"
 webui: "http://[HOST]:[PORT:5244]/"
