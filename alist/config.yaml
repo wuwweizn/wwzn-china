@@ -1,7 +1,7 @@
 name: "AList"
 version: "3.41.0"
 slug: "alist"
-description: "A file list program that supports multiple storage, provides a web interface and supports WebDAV"
+description: "支持多个存储，提供Web界面并支持WebDav的文件列表程序"
 url: "https://github.com/AlistGo/alist"
 startup: "application"
 arch:
