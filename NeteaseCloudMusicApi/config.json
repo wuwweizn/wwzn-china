@@ -1,0 +1,10 @@
+{
+  "name": "NeteaseCloudMusicApi",
+  "version": "1.0",
+  "slug": "NeteaseCloudMusicApi",
+  "description": "NeteaseCloudMusicApi",
+  "url": "https://github.com/kylinfedora/ha.addon_NeteaseCloudMusicApi",
+  "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
+  "startup": "system",
+  "init": false,
+  }
