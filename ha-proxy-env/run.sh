@@ -1,18 +1,12 @@
-#!/usr/bin/with-contenv bashio
+#!/usr/bin/env bash
 set -e
 
-HTTP_PROXY=$(bashio::config 'http_proxy')
-HTTPS_PROXY=$(bashio::config 'https_proxy')
+echo "🔌 Setting proxy environment..."
+export HTTP_PROXY="${HTTP_PROXY:-}"
+export HTTPS_PROXY="${HTTPS_PROXY:-}"
 
-# 写入环境变量
-echo "export HTTP_PROXY=$HTTP_PROXY" > /etc/profile.d/proxy.sh
-echo "export HTTPS_PROXY=$HTTPS_PROXY" >> /etc/profile.d/proxy.sh
-echo "HTTP_PROXY=$HTTP_PROXY" >> /etc/environment
-echo "HTTPS_PROXY=$HTTPS_PROXY" >> /etc/environment
+echo "✅ HTTP_PROXY=$HTTP_PROXY"
+echo "✅ HTTPS_PROXY=$HTTPS_PROXY"
 
-bashio::log.info "已设置代理:"
-bashio::log.info "HTTP_PROXY=$HTTP_PROXY"
-bashio::log.info "HTTPS_PROXY=$HTTPS_PROXY"
-
-# 启动 Nginx，提供 WebUI
-nginx -g "daemon off;"
+# 保持容器运行，不让 HA 以为崩溃了
+tail -f /dev/null

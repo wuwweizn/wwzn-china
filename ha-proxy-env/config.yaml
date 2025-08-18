@@ -1,17 +1,18 @@
 name: "HA Proxy Env"
+version: "1.0.0"
 slug: "ha_proxy_env"
-description: "为 Home Assistant 设置 HTTP/HTTPS 代理环境变量"
-version: "1.1.0"
-startup: "services"
-init: false
+description: "为 Home Assistant 设置全局代理环境变量 (HTTP_PROXY/HTTPS_PROXY)"
+url: "https://github.com/wuwweizn/wwzn-china"
 arch:
   - amd64
   - aarch64
-ingress: true
-panel_icon: "mdi:proxy"
+  - armv7
+startup: services
+boot: auto
 options:
   http_proxy: "http://127.0.0.1:7890"
   https_proxy: "http://127.0.0.1:7890"
 schema:
   http_proxy: str
   https_proxy: str
+init: false

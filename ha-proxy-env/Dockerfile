@@ -1,14 +1,10 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:14.3.2
+ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base:latest
 FROM $BUILD_FROM
 
-# 安装 nginx
-RUN apk add --no-cache nginx
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# 拷贝前端页面
-COPY webui /usr/share/nginx/html
-
-# 拷贝启动脚本
+# 设置环境变量脚本
 COPY run.sh /run.sh
-RUN chmod a+x /run.sh
+RUN chmod +x /run.sh
 
 CMD [ "/run.sh" ]
