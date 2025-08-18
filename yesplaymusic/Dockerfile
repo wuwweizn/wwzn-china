@@ -244,25 +244,50 @@ RUN mkdir -p /usr/share/nginx/html && \
             const urlEl = document.getElementById('api-url');
             
             try {
+                // 首先读取配置文件
                 const configResponse = await fetch('/config.json');
                 if (configResponse.ok) {
                     const config = await configResponse.json();
-                    urlEl.textContent = config.apiUrl || '/api';
-                }
-                
-                const response = await fetch('/api/', { timeout: 5000 });
-                if (response.ok) {
-                    statusEl.textContent = '✅ 连接正常';
-                    statusEl.style.color = '#48bb78';
-                    document.querySelector('.song-title').textContent = '🎵 准备就绪';
-                    return true;
+                    const actualApiUrl = config.apiUrl || config.proxyApiUrl || '/api';
+                    urlEl.textContent = config.apiUrl;
+                    
+                    // 测试API连接 - 先测试代理端点
+                    const testResponse = await fetch('/netease-api-test', { 
+                        method: 'GET',
+                        timeout: 8000
+                    });
+                    
+                    if (testResponse.ok) {
+                        statusEl.textContent = '✅ 连接正常';
+                        statusEl.style.color = '#48bb78';
+                        document.querySelector('.song-title').textContent = '🎵 API服务正常';
+                        return true;
+                    } else {
+                        // 如果代理失败，尝试直接测试本地API端点
+                        const localResponse = await fetch('/api/', { 
+                            method: 'GET',
+                            timeout: 5000
+                        });
+                        
+                        if (localResponse.ok || localResponse.status === 404) {
+                            statusEl.textContent = '⚠️ 部分功能可用';
+                            statusEl.style.color = '#ed8936';
+                            document.querySelector('.song-title').textContent = '⚠️ API代理异常';
+                        } else {
+                            statusEl.textContent = '❌ 服务异常';
+                            statusEl.style.color = '#e53e3e';
+                        }
+                    }
                 } else {
-                    statusEl.textContent = '⚠️ 连接异常';
-                    statusEl.style.color = '#ed8936';
+                    statusEl.textContent = '❌ 配置读取失败';
+                    statusEl.style.color = '#e53e3e';
+                    urlEl.textContent = '配置异常';
                 }
             } catch (error) {
                 statusEl.textContent = '❌ 连接失败';
                 statusEl.style.color = '#e53e3e';
+                urlEl.textContent = '网络异常';
+                console.error('API检查失败:', error);
             }
             return false;
         }
