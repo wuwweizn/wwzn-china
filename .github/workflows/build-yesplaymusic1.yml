@@ -1,4 +1,4 @@
-name: Build and Push YesPlayMusic (Multi-Arch, Docker Hub + GHCR)
+name: Build and Push YesPlayMusic1 (Multi-Arch, Docker Hub + GHCR)
 
 on:
   workflow_dispatch:
