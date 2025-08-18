@@ -1,19 +1,20 @@
 FROM node:18-bullseye-slim AS build
 WORKDIR /app
 
-# 安装系统依赖
+# 安装构建依赖 + yarn
 RUN apt-get update && apt-get install -y \
   git \
   python3 \
   make \
   g++ \
+  && npm install -g yarn \
   && rm -rf /var/lib/apt/lists/*
 
 # 克隆源码
 RUN git clone https://github.com/qier222/YesPlayMusic.git .
 
 # 用 yarn 安装依赖
-RUN corepack enable && yarn install --frozen-lockfile
+RUN yarn install --network-timeout 600000
 
 # 构建前端
 RUN yarn build
@@ -22,10 +23,7 @@ RUN yarn build
 FROM nginx:alpine
 WORKDIR /app
 
-# 拷贝构建产物
 COPY --from=build /app/dist /usr/share/nginx/html
-
-# 拷贝模板和启动脚本
 COPY nginx.conf.template /etc/nginx/templates/nginx.conf.template
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
