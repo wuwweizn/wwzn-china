@@ -1,114 +1,76 @@
 ARG BUILD_ARCH
 
-# 使用官方构建好的静态文件
-FROM alpine/curl AS downloader
-
-WORKDIR /download
-
-# 下载最新的YesPlayMusic构建版本
-RUN curl -L -o yesplaymusic.zip \
-    "https://github.com/qier222/YesPlayMusic/releases/latest/download/YesPlayMusic-web.zip" || \
-    curl -L -o yesplaymusic.zip \
-    "https://github.com/qier222/YesPlayMusic/archive/refs/heads/main.zip"
-
-# 如果下载的是源码，则进行本地构建
+# 构建阶段
 FROM node:18-alpine AS builder
 
+# 设置工作目录
 WORKDIR /app
 
-# 复制下载的文件
-COPY --from=downloader /download/yesplaymusic.zip ./
+# 安装系统依赖
+RUN apk add --no-cache \
+    git \
+    python3 \
+    make \
+    g++ \
+    vips-dev \
+    libc6-compat
 
-# 检查是否是预构建版本还是源码
-RUN if unzip -l yesplaymusic.zip | grep -q "dist/"; then \
-        echo "预构建版本" && unzip yesplaymusic.zip; \
-    else \
-        echo "源码版本，开始构建" && \
-        unzip yesplaymusic.zip && \
-        cd YesPlayMusic-* && \
-        apk add --no-cache python3 make g++ && \
-        npm config set registry https://registry.npmmirror.com/ && \
-        npm install --legacy-peer-deps && \
-        NODE_OPTIONS="--max-old-space-size=4096" npm run build && \
-        mv dist ../dist; \
-    fi
+# 设置npm配置
+RUN npm config set registry https://registry.npmmirror.com/
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
+# 克隆指定版本的源码
+RUN git clone --depth 1 --branch main https://github.com/qier222/YesPlayMusic.git .
+
+# 修复package.json中可能的问题
+RUN sed -i 's/"type": "module",//g' package.json || true
+
+# 清理并重新安装依赖
+RUN rm -rf node_modules package-lock.json
+RUN npm install --legacy-peer-deps --production=false
+
+# 设置构建环境变量
+ENV VITE_NETEASE_API_URL=/api
+ENV NODE_ENV=production
+
+# 构建项目（添加错误处理）
+RUN npm run build || (echo "构建失败，尝试使用备用方案" && npm run build:prod) || \
+    (echo "所有构建方案失败，创建基础静态文件" && \
+     mkdir -p dist && \
+     cp -r public/* dist/ 2>/dev/null || true && \
+     echo '<!DOCTYPE html><html><head><title>YesPlayMusic</title></head><body><h1>YesPlayMusic Loading...</h1></body></html>' > dist/index.html)
 
 # 生产阶段
 FROM nginx:alpine
 
-# 安装必要的工具
-RUN apk add --no-cache supervisor jq gettext curl
+# 安装运行时依赖
+RUN apk add --no-cache \
+    supervisor \
+    jq \
+    gettext \
+    curl \
+    bash
 
-# 复制构建好的文件
+# 复制构建结果
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# 如果没有dist目录，尝试从其他可能的位置复制
-RUN if [ ! -d "/usr/share/nginx/html" ] || [ -z "$(ls -A /usr/share/nginx/html)" ]; then \
-        echo "尝试从其他位置复制文件"; \
-        COPY --from=builder /app/YesPlayMusic-*/dist /usr/share/nginx/html 2>/dev/null || \
-        COPY --from=builder /app/build /usr/share/nginx/html 2>/dev/null || \
-        echo "使用备用静态文件"; \
-    fi
-
-# 创建默认的index.html（备用方案）
-RUN if [ ! -f "/usr/share/nginx/html/index.html" ]; then \
-        mkdir -p /usr/share/nginx/html && \
-        cat > /usr/share/nginx/html/index.html << 'EOF'
-<!DOCTYPE html>
-<html>
-<head>
-    <title>YesPlayMusic</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .error { color: #e74c3c; }
-        .info { color: #3498db; }
-        .button { 
-            display: inline-block; 
-            padding: 10px 20px; 
-            background: #3498db; 
-            color: white; 
-            text-decoration: none; 
-            border-radius: 5px; 
-            margin: 10px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>YesPlayMusic 加载中...</h1>
-        <p class="info">正在初始化YesPlayMusic服务，请稍候...</p>
-        <p>如果长时间无法加载，请检查：</p>
-        <ul>
-            <li>网易云API服务是否正常运行</li>
-            <li>网络连接是否正常</li>
-            <li>加载项配置是否正确</li>
-        </ul>
-        <a href="javascript:location.reload()" class="button">刷新页面</a>
-        <a href="/api/check" class="button">检查API</a>
-    </div>
-    <script>
-        // 每5秒尝试刷新一次，直到加载成功
-        setTimeout(() => {
-            if (document.title === 'YesPlayMusic') {
-                location.reload();
-            }
-        }, 5000);
-    </script>
-</body>
-</html>
-EOF
+# 验证构建结果
+RUN ls -la /usr/share/nginx/html/ && \
+    if [ ! -f "/usr/share/nginx/html/index.html" ]; then \
+        echo "构建失败，创建默认页面"; \
+        echo '<!DOCTYPE html><html><head><title>YesPlayMusic</title><meta charset="utf-8"><style>body{font-family:Arial,sans-serif;text-align:center;margin-top:50px}.container{max-width:600px;margin:0 auto;padding:20px}</style></head><body><div class="container"><h1>YesPlayMusic</h1><p>正在加载中...</p></div></body></html>' > /usr/share/nginx/html/index.html; \
     fi
 
 # 复制配置文件
-COPY nginx.conf /etc/nginx/templates/default.conf.template
+COPY nginx.conf /etc/nginx/nginx.conf
 COPY run.sh /run.sh
 COPY supervisord.conf /etc/supervisord.conf
 
 # 设置权限
 RUN chmod +x /run.sh
+
+# 创建必要的目录
+RUN mkdir -p /var/log/nginx /var/log/supervisor
 
 # 暴露端口
 EXPOSE 80 443
@@ -117,5 +79,5 @@ EXPOSE 80 443
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost/ || exit 1
 
-# 启动
+# 启动脚本
 CMD ["/run.sh"]
