@@ -30,15 +30,19 @@ options:
   external_controller: 0.0.0.0:9090
   secret: ""
   subscription_url: ""
+  auto_update_subscription: true
   update_interval: 86400
-  auto_update: true
+  subscription_user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  custom_config: ""
 schema:
   log_level: list(debug|info|warning|error|silent)
   external_controller: str
   secret: str?
   subscription_url: str?
+  auto_update_subscription: bool
   update_interval: int(3600,604800)
-  auto_update: bool
+  subscription_user_agent: str?
+  custom_config: str?
 auth_api: false
 ingress: true
 homeassistant_api: false
