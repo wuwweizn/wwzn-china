@@ -1,7 +1,7 @@
 FROM node:18-bullseye-slim AS build
 WORKDIR /app
 
-# 安装构建依赖
+# 安装系统依赖
 RUN apt-get update && apt-get install -y \
   git \
   python3 \
@@ -11,13 +11,18 @@ RUN apt-get update && apt-get install -y \
 
 # 克隆源码
 RUN git clone https://github.com/qier222/YesPlayMusic.git .
-RUN npm install --legacy-peer-deps
-RUN npm run build
 
+# 用 yarn 安装依赖
+RUN corepack enable && yarn install --frozen-lockfile
+
+# 构建前端
+RUN yarn build
+
+# ---------------- runtime ----------------
 FROM nginx:alpine
 WORKDIR /app
 
-# 拷贝静态文件
+# 拷贝构建产物
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # 拷贝模板和启动脚本
