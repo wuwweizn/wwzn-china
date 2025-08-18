@@ -6,6 +6,8 @@
 
 Clash是一个基于规则的代理工具，支持订阅链接和可视化Web管理界面。
 
+注意：本加载项仅可在官方HA固件使用。部分加速版的ha无法使用
+
 ## 关于
 
 Clash是一个现代化的代理工具，支持多种协议（Shadowsocks、VMess、Trojan等），具有强大的规则分流功能和友好的Web界面。
@@ -58,16 +60,20 @@ Clash是一个现代化的代理工具，支持多种协议（Shadowsocks、VMes
 在加载项配置中填入你的机场订阅链接：
 
 ```yaml
-subscription_url: "https://your-airport.com/link/xxxxx"
+界面访问密码设置 secret：123456（可选）
+订阅连接配置 subscription_url: "https://your-airport.com/link/xxxxx"
 update_interval: 86400
 auto_update: true
 ```
 
 ### 2. 访问Web界面
 
-启动后访问：`http://homeassistant-ip:9090/ui`
-
+启动后浏览器访问：`http://homeassistant-ip:9090/ui` 如：http://192.168.2.33:9090/ui
 或在Home Assistant中点击"打开Web UI"
+
+API Base URL：homeassistant-ip:9090（ha地址+端口）
+Secret(optional)：123456（配置页中的密码）
+Add(添加)--并进入clash页面
 
 ### 3. 选择代理节点
 
@@ -97,12 +103,11 @@ auto_update: true
 ### 订阅转换
 
 如果机场不支持Clash订阅，可以使用订阅转换服务：
-- `https://api.dler.io/sub`
 - `https://sub.xeton.dev`
 
 示例：
 ```
-https://api.dler.io/sub?target=clash&url=你的原始订阅链接
+https://sub.xeton.dev?target=clash&url=你的原始订阅链接
 ```
 
 ## 代理规则
@@ -150,7 +155,7 @@ auto_update: true
 ### 多订阅合并
 如果有多个机场订阅，可以使用订阅转换服务合并：
 ```
-https://api.dler.io/sub?target=clash&url=订阅1|订阅2|订阅3
+https://sub.xeton.dev?target=clash&url=订阅1|订阅2|订阅3
 ```
 
 ## Web界面功能
