@@ -20,7 +20,7 @@ RUN npm config set registry https://registry.npmmirror.com/
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 # 克隆指定版本的源码
-RUN git clone --depth 1 --branch main https://github.com/qier222/YesPlayMusic.git .
+RUN git clone --depth 1 --branch master https://github.com/qier222/YesPlayMusic.git .
 
 # 修复package.json中可能的问题
 RUN sed -i 's/"type": "module",//g' package.json || true
