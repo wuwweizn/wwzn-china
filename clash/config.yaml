@@ -44,7 +44,7 @@ schema:
   subscription_user_agent: str?
   custom_config: str?
 auth_api: false
-ingress: true
+ingress: false
 homeassistant_api: false
 host_network: false
 full_access: false
