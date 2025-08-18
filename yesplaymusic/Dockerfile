@@ -1,6 +1,15 @@
-FROM node:18-alpine AS build
+FROM node:18-bullseye-slim AS build
 WORKDIR /app
-RUN apk add --no-cache git
+
+# 安装构建依赖
+RUN apt-get update && apt-get install -y \
+  git \
+  python3 \
+  make \
+  g++ \
+  && rm -rf /var/lib/apt/lists/*
+
+# 克隆源码
 RUN git clone https://github.com/qier222/YesPlayMusic.git .
 RUN npm install --legacy-peer-deps
 RUN npm run build
