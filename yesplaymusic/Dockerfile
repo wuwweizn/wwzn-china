@@ -3,14 +3,28 @@ ARG BUILD_ARCH
 FROM node:18-alpine AS builder
 
 # 安装构建依赖
-RUN apk add --no-cache git python3 make g++
+RUN apk add --no-cache git python3 make g++ vips-dev
+
+# 设置npm配置
+RUN npm config set registry https://registry.npmmirror.com/
+RUN npm config set legacy-peer-deps true
 
 # 克隆YesPlayMusic源码
 WORKDIR /app
-RUN git clone https://github.com/qier222/YesPlayMusic.git .
+RUN git clone --depth 1 https://github.com/qier222/YesPlayMusic.git .
 
-# 安装依赖并构建
-RUN npm install --legacy-peer-deps
+# 设置Node.js内存限制和环境变量
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+ENV NODE_ENV=production
+ENV VITE_NETEASE_API_URL=/api
+
+# 清理package-lock.json避免依赖冲突
+RUN rm -f package-lock.json
+
+# 安装依赖
+RUN npm install --legacy-peer-deps --no-audit --no-fund
+
+# 构建项目
 RUN npm run build
 
 # 生产阶段
