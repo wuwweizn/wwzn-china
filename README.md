@@ -7,22 +7,23 @@
 【引用的项目：adguard、ftp、node-red、plex、phpmyadmin、ssh、tailscale、zerotier、wireguard、tasmoadmin】
 
 ESPhome加载项：https://github.com/esphome/home-assistant-addon
+【引用的项目：ESPHome 、ESPHome  (beta)、ESPHome  (dev)】
 
 music-assistant加载项：https://github.com/music-assistant/home-assistant-addon
+【引用的项目：Music Assistant Server 、Music Assistant Server (beta)、Music Assistant Server (dev/nightly)、YT Music PO Token Generator】
 
 HACS原版加载项：https://github.com/hacs/addons
 
 HACS中国版加载项：https://github.com/hacs-china/addons
 
 alexbelgium加载项：https://github.com/alexbelgium/hassio-addons
-【引用的项目：Filebrowser、jellyfin、Navidrome、Plex NAS、Portainer、Xteve、Emby、Emby Beta】
+【引用的项目：Filebrowser、jellyfin、Navidrome、Plex NAS、Xteve、Emby、Emby Beta】
 
 jdeath加载项：https://github.com/jdeath/homeassistant-addons
 【引用的项目：moodist、MedAssist、tasmocompiler、MyIP】
 
 hass-panel加载项：https://github.com/mrtian2016/hass-panel
 【引用的项目：hass-panel、hass-panel-beta】
-
 
 
 FaserF加载项：https://github.com/FaserF/hassio-addons
@@ -60,3 +61,16 @@ ARC-MX加载项：https://github.com/ARC-MX/sgcc_electricity_new
 【引用的项目：sgcc_electricity_new】
 
 自学加载项：【alist、clash、ddnsto、istoreos、jdxb、libretv、lucky、musicn、NeteaseCloudMusicApi、passwall、v2rayn、xray、yesplaymusic】
+alist项目地址：https://github.com/AlistGo/alist
+clash项目地址：https://github.com/MetaCubeX/mihomo
+jdxb项目地址：https://www.iepose.com/
+musicn项目地址：https://github.com/zonemeen/musicn
+lucky项目地址：https://github.com/gdy666/lucky
+NeteaseCloudMusicApi项目地址：https://github.com/Binaryify/NeteaseCloudMusicApi
+yesplaymusic项目地址：https://github.com/qier222/YesPlayMusic
+passwall项目地址：https://github.com/xiaorouji/openwrt-passwall
+v2rayn项目地址：https://github.com/2dust/v2rayN
+xray项目地址：https://github.com/XTLS/Xray-core
+libretv项目地址：https://github.com/LibreSpark/LibreTV
+ddnsto项目地址：https://web.ddnsto.com/
+istoreos项目地址：https://github.com/istoreos/istoreos
