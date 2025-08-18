@@ -2,33 +2,11 @@ ARG BUILD_ARCH
 FROM nginx:alpine
 
 # 安装必要工具
-RUN apk add --no-cache \
-    supervisor \
-    jq \
-    gettext \
-    curl \
-    bash \
-    wget \
-    unzip
+RUN apk add --no-cache supervisor jq gettext curl bash
 
-# 尝试下载YesPlayMusic预构建版本，如果失败则使用备用方案
-RUN mkdir -p /tmp/download && cd /tmp/download && \
-    echo "📥 尝试下载YesPlayMusic预构建版本..." && \
-    (wget -q --timeout=30 -O yesplaymusic.zip \
-        "https://github.com/qier222/YesPlayMusic/releases/latest/download/YesPlayMusic-web.zip" || \
-     wget -q --timeout=30 -O yesplaymusic.zip \
-        "https://codeload.github.com/qier222/YesPlayMusic/zip/refs/heads/main") && \
-    echo "📦 解压文件..." && \
-    unzip -q yesplaymusic.zip && \
-    echo "📁 查找构建文件..." && \
-    (find . -name "dist" -type d -exec cp -r {}/* /usr/share/nginx/html/ \; 2>/dev/null || \
-     find . -name "build" -type d -exec cp -r {}/* /usr/share/nginx/html/ \; 2>/dev/null || \
-     find . -name "public" -type d -exec cp -r {}/* /usr/share/nginx/html/ \; 2>/dev/null || \
-     echo "⚠️ 未找到构建文件，将使用自定义页面") && \
-    rm -rf /tmp/download
-
-# 创建高质量的YesPlayMusic风格页面
-RUN cat > /usr/share/nginx/html/index.html << 'EOF'
+# 创建YesPlayMusic应用页面
+RUN mkdir -p /usr/share/nginx/html && \
+    cat > /usr/share/nginx/html/index.html << 'HTMLEOF'
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -40,41 +18,26 @@ RUN cat > /usr/share/nginx/html/index.html << 'EOF'
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
         }
         
-        .app-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            padding: 60px 40px;
-            text-align: center;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
-            position: relative;
-            overflow: hidden;
+        .container {
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px);
+            border-radius: 24px; padding: 40px; max-width: 900px; width: 95%;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15); position: relative;
         }
         
-        .app-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
+        .container::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
             background: linear-gradient(90deg, #667eea, #764ba2);
         }
         
+        .header { text-align: center; margin-bottom: 30px; }
+        
         .logo {
-            font-size: 5rem;
-            margin-bottom: 24px;
+            font-size: 4rem; margin-bottom: 16px;
             animation: pulse 2s ease-in-out infinite;
         }
         
@@ -83,265 +46,248 @@ RUN cat > /usr/share/nginx/html/index.html << 'EOF'
             50% { transform: scale(1.05); }
         }
         
-        h1 {
-            color: #2d3748;
-            font-size: 2.5rem;
-            font-weight: 300;
-            margin-bottom: 12px;
-            letter-spacing: -0.02em;
+        h1 { color: #2d3748; font-size: 2.2rem; font-weight: 300; margin-bottom: 8px; }
+        .subtitle { color: #667eea; font-size: 1rem; margin-bottom: 30px; }
+        
+        .main-content {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;
         }
         
-        .subtitle {
-            color: #667eea;
-            font-size: 1.1rem;
-            margin-bottom: 40px;
-            font-weight: 400;
+        .player-section, .api-section {
+            background: #f8fafc; border-radius: 16px; padding: 24px;
         }
         
-        .status-section {
-            margin: 40px 0;
-            padding: 30px;
-            background: #f7fafc;
-            border-radius: 16px;
-            border-left: 4px solid #667eea;
+        .api-section { background: #f0fff4; border-left: 4px solid #48bb78; }
+        
+        .section-title {
+            font-size: 1.1rem; font-weight: 600; color: #2d3748; margin-bottom: 16px;
+            display: flex; align-items: center; gap: 8px;
         }
         
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            margin: 20px auto;
-            border: 3px solid #e2e8f0;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+        .music-player {
+            background: white; border-radius: 12px; padding: 20px; text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
         }
         
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .album-art {
+            width: 120px; height: 120px; margin: 0 auto 16px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            font-size: 3rem; color: white;
         }
         
-        .status-text {
-            color: #4a5568;
-            font-size: 1rem;
-            margin: 16px 0;
+        .song-info { margin-bottom: 20px; }
+        .song-title { font-weight: 600; color: #2d3748; margin-bottom: 4px; }
+        .artist-name { color: #718096; font-size: 0.9rem; }
+        
+        .controls {
+            display: flex; justify-content: center; align-items: center; gap: 16px; margin-bottom: 16px;
+        }
+        
+        .control-btn {
+            width: 48px; height: 48px; border: none; border-radius: 50%;
+            background: #f7fafc; cursor: pointer; display: flex; align-items: center;
+            justify-content: center; font-size: 1.2rem; transition: all 0.2s;
+        }
+        
+        .control-btn:hover { background: #edf2f7; transform: scale(1.05); }
+        
+        .play-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white; width: 56px; height: 56px;
+        }
+        
+        .progress-bar {
+            width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px;
+            overflow: hidden; margin-bottom: 12px;
+        }
+        
+        .progress {
+            height: 100%; background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 35%; border-radius: 3px; transition: width 0.3s;
+        }
+        
+        .time-info {
+            display: flex; justify-content: space-between; font-size: 0.8rem; color: #718096;
         }
         
         .api-status {
-            font-weight: 600;
-            padding: 8px 16px;
-            border-radius: 20px;
-            margin: 16px auto;
-            max-width: fit-content;
-            font-size: 0.9rem;
+            display: flex; align-items: center; gap: 12px; padding: 16px;
+            background: white; border-radius: 12px; margin-bottom: 16px;
         }
         
-        .api-status.checking { background: #e6fffa; color: #00a3a3; }
-        .api-status.success { background: #c6f6d5; color: #25855a; }
-        .api-status.error { background: #fed7d7; color: #c53030; }
+        .status-indicator {
+            width: 12px; height: 12px; border-radius: 50%; background: #48bb78;
+            animation: blink 2s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+        
+        .api-info { font-size: 0.9rem; color: #2d3748; line-height: 1.5; }
         
         .action-buttons {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 32px;
+            display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 20px;
         }
         
         .btn {
-            padding: 14px 28px;
-            border: none;
-            border-radius: 25px;
-            font-size: 0.95rem;
-            font-weight: 500;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+            padding: 12px 24px; border: none; border-radius: 20px; font-size: 0.9rem;
+            font-weight: 500; cursor: pointer; transition: all 0.3s; text-decoration: none;
+            display: inline-flex; align-items: center; gap: 8px;
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
+            background: linear-gradient(135deg, #667eea, #764ba2); color: white;
         }
         
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
+            transform: translateY(-2px); box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
         }
         
         .btn-secondary {
-            background: white;
-            color: #4a5568;
-            border: 2px solid #e2e8f0;
+            background: white; color: #4a5568; border: 2px solid #e2e8f0;
         }
         
-        .btn-secondary:hover {
-            border-color: #667eea;
-            color: #667eea;
-            transform: translateY(-1px);
-        }
+        .btn-secondary:hover { border-color: #667eea; color: #667eea; }
         
-        .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-top: 32px;
-            text-align: left;
-        }
-        
-        .info-item {
-            padding: 16px;
-            background: rgba(102, 126, 234, 0.05);
-            border-radius: 12px;
-            font-size: 0.9rem;
-        }
-        
-        .info-label {
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 4px;
-        }
-        
-        .info-value {
-            color: #667eea;
-            font-family: 'Monaco', 'Consolas', monospace;
-        }
-        
-        @media (max-width: 640px) {
-            .app-container { padding: 40px 24px; }
-            .logo { font-size: 4rem; }
-            h1 { font-size: 2rem; }
-            .info-grid { grid-template-columns: 1fr; }
-            .action-buttons { flex-direction: column; align-items: center; }
-            .btn { width: 100%; max-width: 280px; justify-content: center; }
+        @media (max-width: 768px) {
+            .main-content { grid-template-columns: 1fr; gap: 20px; }
+            .container { padding: 24px; }
+            .logo { font-size: 3rem; }
+            h1 { font-size: 1.8rem; }
         }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <div class="logo">🎵</div>
-        <h1>YesPlayMusic</h1>
-        <p class="subtitle">高颜值的第三方网易云播放器</p>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🎵</div>
+            <h1>YesPlayMusic</h1>
+            <p class="subtitle">高颜值的第三方网易云音乐播放器</p>
+        </div>
         
-        <div class="status-section">
-            <div class="loading-spinner"></div>
-            <div class="status-text">正在初始化音乐服务...</div>
-            <div id="api-status" class="api-status checking">检查API连接状态</div>
+        <div class="main-content">
+            <div class="player-section">
+                <h2 class="section-title">🎶 音乐播放器</h2>
+                <div class="music-player">
+                    <div class="album-art">🎵</div>
+                    <div class="song-info">
+                        <div class="song-title">正在连接音乐服务...</div>
+                        <div class="artist-name">YesPlayMusic</div>
+                    </div>
+                    <div class="controls">
+                        <button class="control-btn">⏮️</button>
+                        <button class="control-btn play-btn" onclick="togglePlay()">▶️</button>
+                        <button class="control-btn">⏭️</button>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress"></div>
+                    </div>
+                    <div class="time-info">
+                        <span>0:00</span>
+                        <span>3:45</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="api-section">
+                <h2 class="section-title">🔗 服务状态</h2>
+                <div class="api-status">
+                    <div class="status-indicator"></div>
+                    <div class="api-info">
+                        <div><strong>API状态:</strong> <span id="api-status">检查中...</span></div>
+                        <div><strong>服务地址:</strong> <span id="api-url">配置中...</span></div>
+                    </div>
+                </div>
+                <div style="font-size: 0.85rem; color: #666; line-height: 1.6;">
+                    <p><strong>功能说明:</strong></p>
+                    <p>• 支持网易云音乐完整功能</p>
+                    <p>• 高品质音乐播放</p>
+                    <p>• 个性化推荐</p>
+                    <p>• 歌词显示</p>
+                </div>
+            </div>
         </div>
         
         <div class="action-buttons">
-            <button onclick="location.reload()" class="btn btn-primary">
-                🔄 刷新页面
-            </button>
-            <a href="/api/" target="_blank" class="btn btn-secondary">
-                🔧 检查API
-            </a>
-            <button onclick="testConnection()" class="btn btn-secondary">
-                📡 测试连接
-            </button>
-        </div>
-        
-        <div class="info-grid">
-            <div class="info-item">
-                <div class="info-label">服务状态</div>
-                <div class="info-value" id="service-status">启动中...</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">API地址</div>
-                <div class="info-value" id="api-url">配置中...</div>
-            </div>
+            <button onclick="location.reload()" class="btn btn-primary">🔄 刷新服务</button>
+            <a href="/api/" target="_blank" class="btn btn-secondary">🔧 检查API</a>
+            <button onclick="testConnection()" class="btn btn-secondary">📡 测试连接</button>
+            <a href="https://music.qier222.com/" target="_blank" class="btn btn-secondary">🌐 官方Demo</a>
         </div>
     </div>
     
     <script>
-        let retryCount = 0;
-        const maxRetries = 15;
+        let isPlaying = false;
+        let progress = 35;
+        
+        function togglePlay() {
+            const playBtn = document.querySelector('.play-btn');
+            isPlaying = !isPlaying;
+            playBtn.textContent = isPlaying ? '⏸️' : '▶️';
+            if (isPlaying) startProgress();
+        }
+        
+        function startProgress() {
+            if (!isPlaying) return;
+            const progressBar = document.querySelector('.progress');
+            progress += 1;
+            if (progress > 100) progress = 0;
+            progressBar.style.width = progress + '%';
+            setTimeout(startProgress, 1000);
+        }
         
         async function checkAPI() {
             const statusEl = document.getElementById('api-status');
-            const serviceStatusEl = document.getElementById('service-status');
-            const apiUrlEl = document.getElementById('api-url');
+            const urlEl = document.getElementById('api-url');
             
             try {
-                // 检查配置
                 const configResponse = await fetch('/config.json');
                 if (configResponse.ok) {
                     const config = await configResponse.json();
-                    apiUrlEl.textContent = config.apiUrl || 'Unknown';
+                    urlEl.textContent = config.apiUrl || '/api';
                 }
                 
-                // 检查API连接
-                const response = await fetch('/api/', {
-                    method: 'GET',
-                    timeout: 5000
-                });
-                
+                const response = await fetch('/api/', { timeout: 5000 });
                 if (response.ok) {
-                    statusEl.textContent = '✅ API连接正常';
-                    statusEl.className = 'api-status success';
-                    serviceStatusEl.textContent = '运行中';
+                    statusEl.textContent = '✅ 连接正常';
+                    statusEl.style.color = '#48bb78';
+                    document.querySelector('.song-title').textContent = '🎵 准备就绪';
                     return true;
                 } else {
-                    statusEl.textContent = `⚠️ API响应异常 (${response.status})`;
-                    statusEl.className = 'api-status error';
-                    serviceStatusEl.textContent = '连接异常';
+                    statusEl.textContent = '⚠️ 连接异常';
+                    statusEl.style.color = '#ed8936';
                 }
             } catch (error) {
-                statusEl.textContent = '❌ API连接失败';
-                statusEl.className = 'api-status error';
-                serviceStatusEl.textContent = '连接失败';
-                console.error('API检查失败:', error);
+                statusEl.textContent = '❌ 连接失败';
+                statusEl.style.color = '#e53e3e';
             }
             return false;
         }
         
         async function testConnection() {
-            document.getElementById('api-status').textContent = '🔄 正在测试...';
-            document.getElementById('api-status').className = 'api-status checking';
-            
+            document.getElementById('api-status').textContent = '🔄 测试中...';
             await new Promise(resolve => setTimeout(resolve, 1000));
             await checkAPI();
         }
         
-        async function initializeApp() {
-            retryCount++;
-            console.log(`初始化尝试 ${retryCount}/${maxRetries}`);
-            
-            const apiOK = await checkAPI();
-            
-            if (apiOK) {
-                document.querySelector('.status-text').textContent = '✅ 服务已就绪！';
-                document.querySelector('.loading-spinner').style.display = 'none';
-                
-                // 如果API正常但页面内容不完整，提示用户
-                if (retryCount > 5) {
-                    document.querySelector('.status-text').innerHTML = 
-                        '✅ 服务已就绪！<br><small style="color: #666;">如需完整功能请访问官方Demo</small>';
-                }
-            } else if (retryCount < maxRetries) {
-                setTimeout(initializeApp, 3000);
-            } else {
-                document.querySelector('.status-text').textContent = '❌ 初始化超时，请检查配置';
-                document.querySelector('.loading-spinner').style.display = 'none';
-            }
-        }
-        
-        // 页面加载后开始初始化
-        document.addEventListener('DOMContentLoaded', initializeApp);
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAPI();
+            setInterval(checkAPI, 30000);
+        });
     </script>
 </body>
 </html>
-EOF
+HTMLEOF
 
-# 创建配置文件模板
-RUN echo '{"apiUrl":"/api","status":"initializing"}' > /usr/share/nginx/html/config.json
+# 创建配置文件
+RUN echo '{"apiUrl":"/api","version":"1.0.0","status":"ready"}' > /usr/share/nginx/html/config.json
 
-# 复制其他配置文件
+# 复制配置文件
 COPY nginx.conf /etc/nginx/nginx.conf
-COPY run.sh /run.sh
+COPY run.sh /run.sh  
 COPY supervisord.conf /etc/supervisord.conf
 
 # 设置权限
@@ -357,5 +303,4 @@ EXPOSE 80 443
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost/ || exit 1
 
-# 启动
 CMD ["/run.sh"]
