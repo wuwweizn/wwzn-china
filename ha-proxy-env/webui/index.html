@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>HA Proxy Env 配置</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    label { display: block; margin-top: 10px; }
+    input { width: 300px; padding: 5px; }
+    button { margin-top: 15px; padding: 8px 16px; }
+  </style>
+</head>
+<body>
+  <h2>HA Proxy Env 配置</h2>
+  <label>HTTP Proxy: <input id="http" value="http://127.0.0.1:7890"></label>
+  <label>HTTPS Proxy: <input id="https" value="http://127.0.0.1:7890"></label>
+  <button onclick="save()">保存</button>
+
+  <script>
+    function save() {
+      alert("这里只是演示界面，真正保存需要在 HA 插件配置里修改。");
+    }
+  </script>
+</body>
+</html>
