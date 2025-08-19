@@ -1,15 +1,22 @@
 # 构建阶段：使用 Node 构建 YesPlayMusic
 FROM node:16 AS builder
 
-# 设置可靠的 Debian 软件源
-RUN echo "deb http://deb.debian.org/debian buster main" > /etc/apt/sources.list && \
-    echo "deb http://deb.debian.org/debian-security buster/updates main" >> /etc/apt/sources.list
+# 设置可靠的 DNS（避免域名解析失败）
+RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
+    echo "nameserver 8.8.4.4" >> /etc/resolv.conf
+
+# 设置中国的阿里云 Debian 软件源（加速国内网络）
+RUN echo "deb http://mirrors.aliyun.com/debian buster main" > /etc/apt/sources.list && \
+    echo "deb http://mirrors.aliyun.com/debian-security buster/updates main" >> /etc/apt/sources.list
+
+# 调试：检查软件源配置
+RUN cat /etc/apt/sources.list
 
 # 更新包索引并安装常见构建工具
 RUN apt-get update || { echo "apt-get update 失败，请检查网络或软件源"; exit 1; } && \
     apt-get install -y --no-install-recommends git python3 make g++ && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* || { echo "apt-get install 或清理失败"; exit 1; }
 
 # 调试：检查安装的工具版本
 RUN git --version && python3 --version && make --version && g++ --version
