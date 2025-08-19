@@ -31,11 +31,13 @@ RUN echo "Node.js 版本:" && node --version && \
     echo "npm 版本:" && npm --version && \
     echo "当前目录内容:" && ls -la
 
-# 调试：检查 package.json 是否存在
-RUN if [ ! -f "package.json" ]; then echo "package.json 未找到！"; exit 1; fi
+# 调试：检查 package.json 和 package-lock.json 是否存在
+RUN echo "检查 package.json:" && [ -f "package.json" ] && cat package.json || echo "package.json 未找到！" && \
+    echo "检查 package-lock.json:" && [ -f "package-lock.json" ] && echo "package-lock.json 存在" || echo "package-lock.json 不存在"
 
-# 设置 npm 镜像（加速国内网络）
-RUN npm config set registry https://registry.npmmirror.com
+# 设置 npm 镜像（尝试多个镜像）
+RUN npm config set registry https://registry.npmmirror.com && \
+    npm config set strict-ssl false || echo "设置 npm 镜像失败"
 
 # 调试：检查 npm 配置
 RUN npm config list
@@ -43,9 +45,9 @@ RUN npm config list
 # 清理 npm 缓存并优先使用 npm ci
 RUN npm cache clean --force && \
     if [ -f "package-lock.json" ]; then \
-      npm ci --verbose --network-timeout 600000 --legacy-peer-deps || { echo "npm ci 失败，请检查日志"; exit 1; }; \
+      npm ci --verbose --network-timeout 600000 --legacy-peer-deps --no-audit || { echo "npm ci 失败，请检查日志"; exit 1; }; \
     else \
-      npm install --verbose --network-timeout 600000 --legacy-peer-deps || { echo "npm install 失败，请检查日志"; exit 1; }; \
+      npm install --verbose --network-timeout 600000 --legacy-peer-deps --no-audit || { echo "npm install 失败，请检查日志"; exit 1; }; \
     fi
 
 # 设置环境变量，使 API URL 为 /api（用于代理）
