@@ -1,16 +1,18 @@
 # 构建阶段：使用 Node 构建 YesPlayMusic
-FROM node:18 AS builder
+FROM node:16 AS builder
 
-# 安装 git 和其他必要工具
-RUN apt-get update && apt-get install -y git && apt-get clean
+# 安装 git 和常见构建工具
+RUN apt-get update && apt-get install -y git python3 make g++ && apt-get clean
 
 # 克隆 YesPlayMusic 仓库
 RUN git clone https://github.com/stark81/my_yesplaymusic.git /app || { echo "无法克隆仓库，请检查 URL 或网络"; exit 1; }
 
 WORKDIR /app
 
-# 调试：打印 Node.js 和 npm 版本
-RUN echo "Node.js 版本:" && node --version && echo "npm 版本:" && npm --version
+# 调试：打印 Node.js、npm 版本及目录内容
+RUN echo "Node.js 版本:" && node --version && \
+    echo "npm 版本:" && npm --version && \
+    echo "当前目录内容:" && ls -la
 
 # 调试：检查 package.json 是否存在
 RUN if [ ! -f "package.json" ]; then echo "package.json 未找到！"; exit 1; fi
@@ -18,8 +20,13 @@ RUN if [ ! -f "package.json" ]; then echo "package.json 未找到！"; exit 1; f
 # 设置 npm 镜像（加速国内网络）
 RUN npm config set registry https://registry.npmmirror.com
 
-# 清理 npm 缓存并安装依赖
-RUN npm cache clean --force && npm install --verbose --network-timeout 600000 || { echo "npm install 失败，请检查日志"; exit 1; }
+# 清理 npm 缓存并优先使用 npm ci（更可靠）
+RUN npm cache clean --force && \
+    if [ -f "package-lock.json" ]; then \
+      npm ci --verbose --network-timeout 600000 || { echo "npm ci 失败，请检查日志"; exit 1; }; \
+    else \
+      npm install --verbose --network-timeout 600000 || { echo "npm install 失败，请检查日志"; exit 1; }; \
+    fi
 
 # 设置环境变量，使 API URL 为 /api（用于代理）
 ENV VUE_APP_NETEASE_API_URL=/api

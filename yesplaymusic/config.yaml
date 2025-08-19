@@ -1,5 +1,5 @@
 name: YesPlayMusic
-version: 1.0.0  # 更新为实际版本，例如基于 YesPlayMusic 的版本号
+version: 1.0.0
 description: 高颜值的第三方网易云播放器，作为 Home Assistant 加载项运行，支持手动配置网易云 API 地址
 url: https://github.com/stark81/my_yesplaymusic
 slug: yesplaymusic
@@ -11,7 +11,7 @@ startup: application
 boot: auto
 webui: http://[HOST]:[PORT:80]/
 ports:
-  80/tcp: 8099  # HA 外部暴露端口，可在 HA 配置中调整
+  80/tcp: 8099
 ports_description:
   80/tcp: Web interface port
 map:
