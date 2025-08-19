@@ -1,12 +1,18 @@
 # 构建阶段：使用 Node 构建 YesPlayMusic
 FROM node:16 AS builder
 
-# 设置中国的阿里云 Debian 软件源（加速国内网络）
+# 设置多个 Debian 软件源（包括阿里云和清华镜像）
 RUN echo "deb http://mirrors.aliyun.com/debian buster main" > /etc/apt/sources.list && \
-    echo "deb http://mirrors.aliyun.com/debian-security buster/updates main" >> /etc/apt/sources.list
+    echo "deb http://mirrors.aliyun.com/debian-security buster/updates main" >> /etc/apt/sources.list && \
+    echo "deb http://mirrors.tuna.tsinghua.edu.cn/debian buster main" >> /etc/apt/sources.list && \
+    echo "deb http://mirrors.tuna.tsinghua.edu.cn/debian-security buster/updates main" >> /etc/apt/sources.list
 
 # 调试：检查软件源配置
 RUN cat /etc/apt/sources.list
+
+# 调试：测试网络连接
+RUN ping -c 3 mirrors.aliyun.com || echo "无法 ping mirrors.aliyun.com" && \
+    ping -c 3 mirrors.tuna.tsinghua.edu.cn || echo "无法 ping mirrors.tuna.tsinghua.edu.cn"
 
 # 更新包索引并安装常见构建工具
 RUN apt-get update || { echo "apt-get update 失败，请检查网络或软件源"; exit 1; } && \
@@ -32,8 +38,6 @@ RUN if [ ! -f "package.json" ]; then echo "package.json 未找到！"; exit 1; f
 
 # 设置 npm 镜像（加速国内网络）
 RUN npm config set registry https://registry.npmmirror.com
-
-# 清理 npm 缓存ВП
 
 # 清理 npm 缓存并优先使用 npm ci
 RUN npm cache clean --force && \
