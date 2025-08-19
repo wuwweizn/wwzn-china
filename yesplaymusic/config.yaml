@@ -1,24 +1,39 @@
 name: YesPlayMusic
-version: 1.0.0
-description: 高颜值的第三方网易云播放器，作为 Home Assistant 加载项运行，支持手动配置网易云 API 地址
-url: https://github.com/stark81/my_yesplaymusic
+version: "1.0.0"
 slug: yesplaymusic
+description: "高颜值的第三方网易云音乐播放器"
+url: "https://github.com/qier222/YesPlayMusic"
 arch:
   - amd64
   - aarch64
   - armv7
-startup: application
-boot: auto
-webui: http://[HOST]:[PORT:80]/
-ports:
-  80/tcp: 8099
-ports_description:
-  80/tcp: Web interface port
-map:
-  - config:rw
-options:
-  netease_api_url: http://47.121.211.116:3001
-schema:
-  netease_api_url: str
-image: ghcr.io/wuwweizn/yesplaymusic-{arch}
+startup: services
 init: false
+map:
+  - "ssl:rw"
+options:
+  netease_api_url: "http://47.121.211.116:3001"
+  port: 80
+  ssl: false
+  certfile: fullchain.pem
+  keyfile: privkey.pem
+schema:
+  netease_api_url: "url"
+  port: "int(1,65535)"
+  ssl: "bool"
+  certfile: "str?"
+  keyfile: "str?"
+ports:
+  80/tcp: null
+  443/tcp: null
+ports_description:
+  80/tcp: "YesPlayMusic HTTP端口"
+  443/tcp: "YesPlayMusic HTTPS端口"
+image: "ghcr.io/wuwweizn/yesplaymusic-{arch}"
+services:
+  - "mqtt:want"
+ingress: true
+ingress_port: 80
+panel_icon: "mdi:music-circle"
+panel_title: "YesPlayMusic"
+webui: "http://[HOST]:[PORT:80]"
