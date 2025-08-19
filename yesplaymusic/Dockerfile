@@ -37,12 +37,15 @@ RUN if [ ! -f "package.json" ]; then echo "package.json 未找到！"; exit 1; f
 # 设置 npm 镜像（加速国内网络）
 RUN npm config set registry https://registry.npmmirror.com
 
+# 调试：检查 npm 配置
+RUN npm config list
+
 # 清理 npm 缓存并优先使用 npm ci
 RUN npm cache clean --force && \
     if [ -f "package-lock.json" ]; then \
-      npm ci --verbose --network-timeout 600000 || { echo "npm ci 失败，请检查日志"; exit 1; }; \
+      npm ci --verbose --network-timeout 600000 --legacy-peer-deps || { echo "npm ci 失败，请检查日志"; exit 1; }; \
     else \
-      npm install --verbose --network-timeout 600000 || { echo "npm install 失败，请检查日志"; exit 1; }; \
+      npm install --verbose --network-timeout 600000 --legacy-peer-deps || { echo "npm install 失败，请检查日志"; exit 1; }; \
     fi
 
 # 设置环境变量，使 API URL 为 /api（用于代理）
