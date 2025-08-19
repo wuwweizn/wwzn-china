@@ -1,21 +1,19 @@
 # 构建阶段：使用 Node 构建 YesPlayMusic
 FROM node:16 AS builder
 
-# 设置多个 Debian 软件源（包括阿里云和清华镜像）
-RUN echo "deb http://mirrors.aliyun.com/debian buster main" > /etc/apt/sources.list && \
-    echo "deb http://mirrors.aliyun.com/debian-security buster/updates main" >> /etc/apt/sources.list && \
-    echo "deb http://mirrors.tuna.tsinghua.edu.cn/debian buster main" >> /etc/apt/sources.list && \
-    echo "deb http://mirrors.tuna.tsinghua.edu.cn/debian-security buster/updates main" >> /etc/apt/sources.list
+# 设置 Debian 归档镜像（因为 Buster 已停止标准支持）
+RUN echo "deb http://archive.debian.org/debian buster main" > /etc/apt/sources.list && \
+    echo "deb http://archive.debian.org/debian-security buster/updates main" >> /etc/apt/sources.list
 
 # 调试：检查软件源配置
 RUN cat /etc/apt/sources.list
 
 # 调试：测试网络连接
-RUN ping -c 3 mirrors.aliyun.com || echo "无法 ping mirrors.aliyun.com" && \
-    ping -c 3 mirrors.tuna.tsinghua.edu.cn || echo "无法 ping mirrors.tuna.tsinghua.edu.cn"
+RUN ping -c 3 archive.debian.org || echo "无法 ping archive.debian.org" && \
+    ping -c 3 8.8.8.8 || echo "无法 ping 8.8.8.8"
 
 # 更新包索引并安装常见构建工具
-RUN apt-get update || { echo "apt-get update 失败，请检查网络或软件源"; exit 1; } && \
+RUN apt-get update --allow-insecure-repositories || { echo "apt-get update 失败，请检查网络或软件源"; exit 1; } && \
     apt-get install -y --no-install-recommends git python3 make g++ && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* || { echo "apt-get install 或清理失败"; exit 1; }
