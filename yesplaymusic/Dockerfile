@@ -1,10 +1,6 @@
 # 构建阶段：使用 Node 构建 YesPlayMusic
 FROM node:16 AS builder
 
-# 设置可靠的 DNS（避免域名解析失败）
-RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
-    echo "nameserver 8.8.4.4" >> /etc/resolv.conf
-
 # 设置中国的阿里云 Debian 软件源（加速国内网络）
 RUN echo "deb http://mirrors.aliyun.com/debian buster main" > /etc/apt/sources.list && \
     echo "deb http://mirrors.aliyun.com/debian-security buster/updates main" >> /etc/apt/sources.list
@@ -36,6 +32,8 @@ RUN if [ ! -f "package.json" ]; then echo "package.json 未找到！"; exit 1; f
 
 # 设置 npm 镜像（加速国内网络）
 RUN npm config set registry https://registry.npmmirror.com
+
+# 清理 npm 缓存ВП
 
 # 清理 npm 缓存并优先使用 npm ci
 RUN npm cache clean --force && \
