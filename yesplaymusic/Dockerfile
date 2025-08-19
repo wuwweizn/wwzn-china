@@ -5,27 +5,27 @@ FROM node:18 AS builder
 RUN apt-get update && apt-get install -y git && apt-get clean
 
 # 克隆 YesPlayMusic 仓库
-RUN git clone https://github.com/stark81/my_yesplaymusic.git /app || { echo "Failed to clone repository"; exit 1; }
+RUN git clone https://github.com/stark81/my_yesplaymusic.git /app || { echo "无法克隆仓库，请检查 URL 或网络"; exit 1; }
 
 WORKDIR /app
 
-# 调试：检查 Node.js 和 npm 版本
-RUN node --version && npm --version
+# 调试：打印 Node.js 和 npm 版本
+RUN echo "Node.js 版本:" && node --version && echo "npm 版本:" && npm --version
 
 # 调试：检查 package.json 是否存在
-RUN if [ ! -f "package.json" ]; then echo "package.json not found!"; exit 1; fi
+RUN if [ ! -f "package.json" ]; then echo "package.json 未找到！"; exit 1; fi
 
-# 设置 npm 镜像（加速国内网络，可选）
+# 设置 npm 镜像（加速国内网络）
 RUN npm config set registry https://registry.npmmirror.com
 
-# 安装依赖
-RUN npm install --verbose || { echo "npm install failed"; exit 1; }
+# 清理 npm 缓存并安装依赖
+RUN npm cache clean --force && npm install --verbose --network-timeout 600000 || { echo "npm install 失败，请检查日志"; exit 1; }
 
 # 设置环境变量，使 API URL 为 /api（用于代理）
 ENV VUE_APP_NETEASE_API_URL=/api
 
 # 构建应用
-RUN npm run build || { echo "npm run build failed"; exit 1; }
+RUN npm run build || { echo "npm run build 失败，请检查日志"; exit 1; }
 
 # 运行阶段：使用 Nginx 服务构建产物
 FROM nginx:alpine
