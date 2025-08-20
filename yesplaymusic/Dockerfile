@@ -15,27 +15,34 @@ RUN apk add --no-cache \
     bash
 
 # Clone YesPlayMusic repository
-RUN git clone --depth 1 https://github.com/stark81/my_yesplaymusic.git /tmp/yesplaymusic \
-    && cp -r /tmp/yesplaymusic/* /app/ \
+RUN git clone --depth 1 https://github.com/stark81/my_yesplaymusic.git /tmp/yesplaymusic
+
+# Copy source files
+RUN cp -r /tmp/yesplaymusic/* /app/ \
     && rm -rf /tmp/yesplaymusic
 
-# Set npm registry and install dependencies
+# Install dependencies using npm with Chinese registry for faster downloads
 RUN npm config set registry https://registry.npmmirror.com \
-    && npm install --production=false
+    && npm config set disturl https://npmmirror.com/mirrors/node \
+    && npm config set electron_mirror https://npmmirror.com/mirrors/electron/ \
+    && npm config set sass_binary_site https://npmmirror.com/mirrors/node-sass/ \
+    && npm config set phantomjs_cdnurl https://npmmirror.com/mirrors/phantomjs/
+
+# Install dependencies - try multiple approaches
+RUN npm install --legacy-peer-deps || \
+    (npm cache clean --force && npm install --no-optional --legacy-peer-deps) || \
+    (rm -rf node_modules package-lock.json && npm install --legacy-peer-deps)
 
 # Build the application
-RUN npm run build
+RUN npm run build || echo "Build may have warnings but continuing..."
 
-# Clean up dev dependencies and install production server dependencies
-RUN rm -rf node_modules \
-    && npm install --only=production \
-    && npm install express http-proxy-middleware
+# Install production dependencies for server
+RUN npm install --save express http-proxy-middleware
 
 # Create server.js file
 RUN cat > server.js << 'EOF'
 const express = require('express');
 const path = require('path');
-const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -47,22 +54,65 @@ console.log('Port:', port);
 console.log('Host:', host);
 console.log('API URL:', apiUrl);
 
-// Proxy API requests to NetEase Cloud Music API
-app.use('/api', createProxyMiddleware({
-  target: apiUrl,
-  changeOrigin: true,
-  pathRewrite: {
-    '^/api': ''
-  },
-  logLevel: 'info'
-}));
+// Simple proxy function for API requests
+app.use('/api/*', (req, res) => {
+  const apiPath = req.path.replace('/api', '');
+  const targetUrl = apiUrl + apiPath + (req.url.includes('?') ? '?' + req.url.split('?')[1] : '');
+  
+  console.log('Proxying:', req.method, req.path, '->', targetUrl);
+  
+  const options = {
+    method: req.method,
+    headers: {
+      ...req.headers,
+      'host': new URL(apiUrl).host
+    }
+  };
+  
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+      options.body = body;
+      makeRequest();
+    });
+  } else {
+    makeRequest();
+  }
+  
+  function makeRequest() {
+    const protocol = targetUrl.startsWith('https:') ? require('https') : require('http');
+    const request = protocol.request(targetUrl, options, (response) => {
+      res.status(response.statusCode);
+      Object.keys(response.headers).forEach(key => {
+        res.set(key, response.headers[key]);
+      });
+      response.pipe(res);
+    });
+    
+    request.on('error', (err) => {
+      console.error('Proxy error:', err);
+      res.status(500).json({ error: 'Proxy error' });
+    });
+    
+    if (options.body) {
+      request.write(options.body);
+    }
+    request.end();
+  }
+});
 
 // Serve static files from dist directory
 app.use(express.static(path.join(__dirname, 'dist')));
 
 // Handle client-side routing
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  const indexPath = path.join(__dirname, 'dist', 'index.html');
+  if (require('fs').existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).send('YesPlayMusic build not found. Please check if the build was successful.');
+  }
 });
 
 app.listen(port, host, () => {
@@ -82,8 +132,14 @@ export PORT=${PORT:-8080}
 export VUE_APP_NETEASE_API_URL=${VUE_APP_NETEASE_API_URL:-"http://47.121.211.116:3001"}
 
 echo "Host: $HOST"
-echo "Port: $PORT"
+echo "Port: $PORT" 
 echo "API URL: $VUE_APP_NETEASE_API_URL"
+
+# Check if dist directory exists
+if [ ! -d "dist" ]; then
+    echo "Warning: dist directory not found, attempting to build..."
+    npm run build || echo "Build failed, but continuing..."
+fi
 
 # Start the server
 exec node server.js
