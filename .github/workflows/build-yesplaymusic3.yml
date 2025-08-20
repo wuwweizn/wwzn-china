@@ -85,8 +85,6 @@ jobs:
           file: yesplaymusic/Dockerfile
           platforms: ${{ matrix.platform }}
           push: true
-          build-args: |
-            BUILD_ARCH=${{ matrix.build_arch }}
           tags: |
             ghcr.io/${{ env.REPO_OWNER_LC }}/yesplaymusic-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
             ${{ secrets.DOCKER_USERNAME }}/yesplaymusic-${{ env.BUILD_ARCH }}:${{ env.VERSION }}

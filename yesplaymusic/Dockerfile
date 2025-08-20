@@ -1,80 +1,98 @@
-ARG BUILD_FROM
-FROM $BUILD_FROM
+# Use Node.js Alpine image as base
+FROM node:18-alpine
 
-# Set shell
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+# Set working directory
+WORKDIR /app
 
-# Build arguments
-ARG BUILD_ARCH
-ARG BUILD_DATE
-ARG BUILD_DESCRIPTION
-ARG BUILD_NAME
-ARG BUILD_REF
-ARG BUILD_REPOSITORY
-ARG BUILD_VERSION
-
-# Labels
-LABEL \
-    io.hass.name="${BUILD_NAME}" \
-    io.hass.description="${BUILD_DESCRIPTION}" \
-    io.hass.arch="${BUILD_ARCH}" \
-    io.hass.type="addon" \
-    io.hass.version=${BUILD_VERSION} \
-    maintainer="wuwweizn" \
-    org.opencontainers.image.title="${BUILD_NAME}" \
-    org.opencontainers.image.description="${BUILD_DESCRIPTION}" \
-    org.opencontainers.image.vendor="Home Assistant Community Add-ons" \
-    org.opencontainers.image.authors="wuwweizn" \
-    org.opencontainers.image.licenses="MIT" \
-    org.opencontainers.image.url="https://github.com/wuwweizn/wwzn-china" \
-    org.opencontainers.image.source="https://github.com/stark81/my_yesplaymusic" \
-    org.opencontainers.image.documentation="https://github.com/wuwweizn/wwzn-china/blob/main/yesplaymusic/README.md" \
-    org.opencontainers.image.created=${BUILD_DATE} \
-    org.opencontainers.image.revision=${BUILD_REF} \
-    org.opencontainers.image.version=${BUILD_VERSION}
-
-# Environment variables
-ENV LANG=C.UTF-8 \
-    DEBIAN_FRONTEND=noninteractive \
-    NODE_ENV=production
-
-# Install additional dependencies needed for YesPlayMusic
-RUN apk update && apk add --no-cache \
+# Install system dependencies
+RUN apk add --no-cache \
     git \
     python3 \
     py3-pip \
     make \
     g++ \
     curl \
-    && rm -rf /var/cache/apk/*
+    bash
 
-# Set working directory
-WORKDIR /app
-
-# Clone YesPlayMusic repository and install dependencies
-RUN \
-    git clone --depth 1 https://github.com/stark81/my_yesplaymusic.git /tmp/yesplaymusic \
+# Clone YesPlayMusic repository
+RUN git clone --depth 1 https://github.com/stark81/my_yesplaymusic.git /tmp/yesplaymusic \
     && cp -r /tmp/yesplaymusic/* /app/ \
-    && rm -rf /tmp/yesplaymusic \
-    && npm install -g pnpm \
+    && rm -rf /tmp/yesplaymusic
+
+# Install pnpm and dependencies
+RUN npm install -g pnpm \
     && pnpm config set registry https://registry.npmmirror.com \
-    && pnpm install --frozen-lockfile \
-    && pnpm run build \
-    && rm -rf node_modules \
-    && npm install express http-proxy-middleware \
-    && npm cache clean --force
+    && pnpm install --frozen-lockfile
 
-# Copy server script
-COPY rootfs/app/server.js /app/server.js
+# Build the application
+RUN pnpm run build
 
-# Copy root filesystem
-COPY rootfs /
+# Clean up dev dependencies and install production server dependencies
+RUN rm -rf node_modules \
+    && npm install --only=production express http-proxy-middleware
 
-# Create necessary directories and set permissions
-RUN \
-    mkdir -p /data/settings \
-    && mkdir -p /app/dist \
-    && chmod +x /etc/s6-overlay/s6-rc.d/yesplaymusic/run
+# Create server.js file
+RUN cat > server.js << 'EOF'
+const express = require('express');
+const path = require('path');
+const { createProxyMiddleware } = require('http-proxy-middleware');
+
+const app = express();
+const port = process.env.PORT || 8080;
+const host = process.env.HOST || '0.0.0.0';
+const apiUrl = process.env.VUE_APP_NETEASE_API_URL || 'http://47.121.211.116:3001';
+
+console.log('Starting YesPlayMusic server...');
+console.log('Port:', port);
+console.log('Host:', host);
+console.log('API URL:', apiUrl);
+
+// Proxy API requests to NetEase Cloud Music API
+app.use('/api', createProxyMiddleware({
+  target: apiUrl,
+  changeOrigin: true,
+  pathRewrite: {
+    '^/api': ''
+  },
+  logLevel: 'info'
+}));
+
+// Serve static files from dist directory
+app.use(express.static(path.join(__dirname, 'dist')));
+
+// Handle client-side routing
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+
+app.listen(port, host, () => {
+  console.log(`YesPlayMusic is running on http://${host}:${port}`);
+  console.log(`API proxy: ${apiUrl}`);
+});
+EOF
+
+# Create startup script
+RUN cat > start.sh << 'EOF'
+#!/bin/bash
+echo "Starting YesPlayMusic..."
+
+# Set default values
+export HOST=${HOST:-"0.0.0.0"}
+export PORT=${PORT:-8080}
+export VUE_APP_NETEASE_API_URL=${VUE_APP_NETEASE_API_URL:-"http://47.121.211.116:3001"}
+
+echo "Host: $HOST"
+echo "Port: $PORT"
+echo "API URL: $VUE_APP_NETEASE_API_URL"
+
+# Start the server
+exec node server.js
+EOF
+
+RUN chmod +x start.sh
+
+# Create data directory for settings
+RUN mkdir -p /data
 
 # Expose port
 EXPOSE 8080
@@ -82,3 +100,6 @@ EXPOSE 8080
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8080/ || exit 1
+
+# Start the application
+CMD ["./start.sh"]

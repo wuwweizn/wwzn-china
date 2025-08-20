@@ -1,49 +1,29 @@
-#!/command/with-contenv bashio
+#!/usr/bin/with-contenv bashio
 # shellcheck shell=bash
 # ==============================================================================
 # Home Assistant Community Add-on: YesPlayMusic
-# Runs YesPlayMusic
+# Simple startup script for Home Assistant integration
 # ==============================================================================
 
 declare netease_api_url
 declare port
 
-# Get configuration
+# Get configuration from Home Assistant
 netease_api_url=$(bashio::config 'netease_api_url')
 port=$(bashio::config 'port')
 
 bashio::log.info "Starting YesPlayMusic..."
 bashio::log.info "NetEase API URL: ${netease_api_url}"
-bashio::log.info "YesPlayMusic will be available on port: ${port}"
+bashio::log.info "Port: ${port}"
 
-# Set environment variables
+# Export environment variables
 export VUE_APP_NETEASE_API_URL="${netease_api_url}"
 export PORT="${port}"
 export HOST="0.0.0.0"
 
-# Create settings directory
-mkdir -p /data/settings
+# Create data directory if it doesn't exist
+mkdir -p /data
 
-# Create basic settings file with API URL
-cat > /data/settings/settings.json << EOF
-{
-  "lang": "zh-CN",
-  "appearance": "auto",
-  "neteaseApiUrl": "${netease_api_url}"
-}
-EOF
-
-bashio::log.info "Configuration file created at /data/settings/settings.json"
-
-# Change to app directory
+# Change to app directory and start
 cd /app || exit 1
-
-# Check if dist directory exists
-if [ ! -d "dist" ]; then
-    bashio::log.error "Build directory not found, running build..."
-    npm run build || bashio::log.error "Build failed"
-fi
-
-# Start YesPlayMusic web server
-bashio::log.info "Starting YesPlayMusic web server on ${HOST}:${port}..."
 exec node server.js
