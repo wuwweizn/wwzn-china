@@ -19,17 +19,17 @@ RUN git clone --depth 1 https://github.com/stark81/my_yesplaymusic.git /tmp/yesp
     && cp -r /tmp/yesplaymusic/* /app/ \
     && rm -rf /tmp/yesplaymusic
 
-# Install pnpm and dependencies
-RUN npm install -g pnpm \
-    && pnpm config set registry https://registry.npmmirror.com \
-    && pnpm install --frozen-lockfile
+# Set npm registry and install dependencies
+RUN npm config set registry https://registry.npmmirror.com \
+    && npm install --production=false
 
 # Build the application
-RUN pnpm run build
+RUN npm run build
 
 # Clean up dev dependencies and install production server dependencies
 RUN rm -rf node_modules \
-    && npm install --only=production express http-proxy-middleware
+    && npm install --only=production \
+    && npm install express http-proxy-middleware
 
 # Create server.js file
 RUN cat > server.js << 'EOF'
