@@ -263,11 +263,20 @@ echo "API URL: $VUE_APP_NETEASE_API_URL"
 
 # Check if dist directory exists
 if [ ! -d "dist" ]; then
-    echo "Warning: dist directory not found, attempting to build..."
-    npm run build || echo "Build failed, but continuing..."
+    echo "Warning: dist directory not found"
+    echo "This usually means the build failed or is incomplete"
+    echo "The server will start with a placeholder page"
+    echo "Container logs may contain build error details"
+fi
+
+# Check if node_modules exists
+if [ ! -d "node_modules" ]; then
+    echo "Warning: node_modules not found, installing basic dependencies..."
+    npm install express || echo "Failed to install express"
 fi
 
 # Start the server
+echo "Starting Node.js server..."
 exec node server.js
 EOF
 
