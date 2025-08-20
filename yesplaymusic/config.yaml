@@ -1,39 +1,96 @@
 name: YesPlayMusic
 version: "1.0.0"
 slug: yesplaymusic
-description: "高颜值的第三方网易云音乐播放器"
-url: "https://github.com/qier222/YesPlayMusic"
+description: "高颜值的第三方网易云音乐播放器 - A beautiful third-party NetEase Cloud Music player"
+url: "https://github.com/stark81/my_yesplaymusic"
 arch:
-  - amd64
-  - aarch64
+  - armhf
   - armv7
-startup: services
+  - aarch64
+  - amd64
+  - i386
+startup: application
+boot: manual
+ports:
+  "8080/tcp": 8080
+ports_description:
+  "8080/tcp": "Web interface"
+webui: "http://[HOST]:[PORT:8080]"
+hassio_api: false
+hassio_role: default
+homeassistant_api: false
+privileged:
+  - NET_ADMIN
+full_access: false
+devices:
+  - "/dev/snd"
+audio: true
+video: false
+stdin: false
+legacy: false
+stage: stable
 init: false
-map:
-  - "ssl:rw"
+image: "ghcr.io/wuwweizn/yesplaymusic-{arch}"
 options:
   netease_api_url: "http://47.121.211.116:3001"
-  port: 80
-  ssl: false
-  certfile: fullchain.pem
-  keyfile: privkey.pem
+  port: 8080
+  music_quality: "standard"
+  enable_lastfm: false
+  enable_discord_rpc: false
+  close_app_option: "minimize"
+  auto_check_music: true
+  enable_unblock_netease_music: false
+  unblock_netease_music_server: ""
+  language: "zh-CN"
+  appearance: "auto"
+  accent_color: "#335eea"
+  lyrics_background: true
+  show_lyrics_translation: true
+  music_cache_size: "2GB"
 schema:
-  netease_api_url: "url"
-  port: "int(1,65535)"
-  ssl: "bool"
-  certfile: "str?"
-  keyfile: "str?"
-ports:
-  80/tcp: null
-  443/tcp: null
-ports_description:
-  80/tcp: "YesPlayMusic HTTP端口"
-  443/tcp: "YesPlayMusic HTTPS端口"
-image: "ghcr.io/wuwweizn/yesplaymusic-{arch}"
-services:
-  - "mqtt:want"
-ingress: true
-ingress_port: 80
-panel_icon: "mdi:music-circle"
-panel_title: "YesPlayMusic"
-webui: "http://[HOST]:[PORT:80]"
+  netease_api_url:
+    str?
+  port:
+    port?
+  music_quality:
+    list(standard|higher|exhigh|lossless)?
+  enable_lastfm:
+    bool?
+  enable_discord_rpc:
+    bool?
+  close_app_option:
+    list(ask|close|minimize)?
+  auto_check_music:
+    bool?
+  enable_unblock_netease_music:
+    bool?
+  unblock_netease_music_server:
+    str?
+  language:
+    list(zh-CN|zh-TW|en|tr)?
+  appearance:
+    list(auto|light|dark)?
+  accent_color:
+    str?
+  lyrics_background:
+    bool?
+  show_lyrics_translation:
+    bool?
+  music_cache_size:
+    list(1GB|2GB|4GB|8GB|unlimited)?
+environment:
+  VUE_APP_NETEASE_API_URL: "netease_api_url"
+  PORT: "port"
+  MUSIC_QUALITY: "music_quality"
+  ENABLE_LASTFM: "enable_lastfm"
+  ENABLE_DISCORD_RPC: "enable_discord_rpc"
+  CLOSE_APP_OPTION: "close_app_option"
+  AUTO_CHECK_MUSIC: "auto_check_music"
+  ENABLE_UNBLOCK_NETEASE_MUSIC: "enable_unblock_netease_music"
+  UNBLOCK_NETEASE_MUSIC_SERVER: "unblock_netease_music_server"
+  LANGUAGE: "language"
+  APPEARANCE: "appearance"
+  ACCENT_COLOR: "accent_color"
+  LYRICS_BACKGROUND: "lyrics_background"
+  SHOW_LYRICS_TRANSLATION: "show_lyrics_translation"
+  MUSIC_CACHE_SIZE: "music_cache_size"
