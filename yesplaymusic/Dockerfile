@@ -1,6 +1,5 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:16.0.1
-# hadolint ignore=DL3006
-FROM ${BUILD_FROM}
+ARG BUILD_FROM
+FROM $BUILD_FROM
 
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -39,65 +38,43 @@ ENV LANG=C.UTF-8 \
     DEBIAN_FRONTEND=noninteractive \
     NODE_ENV=production
 
-# Install Node.js and dependencies
-RUN \
-    set -x \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends \
-        curl \
-        ca-certificates \
-        gnupg \
-        build-essential \
-        python3 \
-        python3-dev \
-        python3-pip \
-        git \
-        libasound2-dev \
-        libgconf-2-4 \
-        libxss1 \
-        libgtk-3-0 \
-        libxrandr2 \
-        libasound2 \
-        libpangocairo-1.0-0 \
-        libatk1.0-0 \
-        libcairo-gobject2 \
-        libgtk-3-0 \
-        libgdk-pixbuf2.0-0 \
-    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get install -y nodejs \
-    && npm install -g pnpm \
-    && apt-get purge -y --auto-remove \
-        curl \
-        gnupg \
-        build-essential \
-        python3-dev \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# Install additional dependencies needed for YesPlayMusic
+RUN apk update && apk add --no-cache \
+    git \
+    python3 \
+    py3-pip \
+    make \
+    g++ \
+    curl \
+    && rm -rf /var/cache/apk/*
 
 # Set working directory
 WORKDIR /app
 
-# Clone YesPlayMusic repository
+# Clone YesPlayMusic repository and install dependencies
 RUN \
-    git clone https://github.com/stark81/my_yesplaymusic.git /tmp/yesplaymusic \
+    git clone --depth 1 https://github.com/stark81/my_yesplaymusic.git /tmp/yesplaymusic \
     && cp -r /tmp/yesplaymusic/* /app/ \
-    && rm -rf /tmp/yesplaymusic
-
-# Install dependencies and build
-RUN \
-    pnpm install --frozen-lockfile \
+    && rm -rf /tmp/yesplaymusic \
+    && npm install -g pnpm \
+    && pnpm config set registry https://registry.npmmirror.com \
+    && pnpm install --frozen-lockfile \
     && pnpm run build \
     && rm -rf node_modules \
-    && pnpm install --prod --frozen-lockfile
+    && npm install express http-proxy-middleware \
+    && npm cache clean --force
+
+# Copy server script
+COPY rootfs/app/server.js /app/server.js
 
 # Copy root filesystem
 COPY rootfs /
 
-# Create app user
+# Create necessary directories and set permissions
 RUN \
-    groupadd -r yesplaymusic \
-    && useradd -r -g yesplaymusic -s /bin/bash -c "YesPlayMusic user" yesplaymusic \
-    && chown -R yesplaymusic:yesplaymusic /app
+    mkdir -p /data/settings \
+    && mkdir -p /app/dist \
+    && chmod +x /etc/s6-overlay/s6-rc.d/yesplaymusic/run
 
 # Expose port
 EXPOSE 8080
@@ -105,6 +82,3 @@ EXPOSE 8080
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8080/ || exit 1
-
-# Set entrypoint
-ENTRYPOINT ["/init"]

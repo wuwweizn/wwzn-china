@@ -7,87 +7,43 @@
 
 declare netease_api_url
 declare port
-declare music_quality
-declare enable_lastfm
-declare enable_discord_rpc
-declare close_app_option
-declare auto_check_music
-declare enable_unblock_netease_music
-declare unblock_netease_music_server
-declare language
-declare appearance
-declare accent_color
-declare lyrics_background
-declare show_lyrics_translation
-declare music_cache_size
 
 # Get configuration
 netease_api_url=$(bashio::config 'netease_api_url')
 port=$(bashio::config 'port')
-music_quality=$(bashio::config 'music_quality')
-enable_lastfm=$(bashio::config 'enable_lastfm')
-enable_discord_rpc=$(bashio::config 'enable_discord_rpc')
-close_app_option=$(bashio::config 'close_app_option')
-auto_check_music=$(bashio::config 'auto_check_music')
-enable_unblock_netease_music=$(bashio::config 'enable_unblock_netease_music')
-unblock_netease_music_server=$(bashio::config 'unblock_netease_music_server')
-language=$(bashio::config 'language')
-appearance=$(bashio::config 'appearance')
-accent_color=$(bashio::config 'accent_color')
-lyrics_background=$(bashio::config 'lyrics_background')
-show_lyrics_translation=$(bashio::config 'show_lyrics_translation')
-music_cache_size=$(bashio::config 'music_cache_size')
 
 bashio::log.info "Starting YesPlayMusic..."
+bashio::log.info "NetEase API URL: ${netease_api_url}"
+bashio::log.info "YesPlayMusic will be available on port: ${port}"
 
 # Set environment variables
 export VUE_APP_NETEASE_API_URL="${netease_api_url}"
 export PORT="${port}"
-export MUSIC_QUALITY="${music_quality}"
-export ENABLE_LASTFM="${enable_lastfm}"
-export ENABLE_DISCORD_RPC="${enable_discord_rpc}"
-export CLOSE_APP_OPTION="${close_app_option}"
-export AUTO_CHECK_MUSIC="${auto_check_music}"
-export ENABLE_UNBLOCK_NETEASE_MUSIC="${enable_unblock_netease_music}"
-export UNBLOCK_NETEASE_MUSIC_SERVER="${unblock_netease_music_server}"
-export LANGUAGE="${language}"
-export APPEARANCE="${appearance}"
-export ACCENT_COLOR="${accent_color}"
-export LYRICS_BACKGROUND="${lyrics_background}"
-export SHOW_LYRICS_TRANSLATION="${show_lyrics_translation}"
-export MUSIC_CACHE_SIZE="${music_cache_size}"
+export HOST="0.0.0.0"
 
 # Create settings directory
 mkdir -p /data/settings
 
-# Create settings file
+# Create basic settings file with API URL
 cat > /data/settings/settings.json << EOF
 {
-  "lang": "${language}",
-  "appearance": "${appearance}",
-  "accentColor": "${accent_color}",
-  "showLyricsTranslation": ${show_lyrics_translation},
-  "lyricsBackground": ${lyrics_background},
-  "musicQuality": "${music_quality}",
-  "enableLastfm": ${enable_lastfm},
-  "enableDiscordRichPresence": ${enable_discord_rpc},
-  "closeAppOption": "${close_app_option}",
-  "autoCheckMusic": ${auto_check_music},
-  "enableUnblockNeteaseMusic": ${enable_unblock_netease_music},
-  "unblockNeteaseMusic": {
-    "server": "${unblock_netease_music_server}"
-  },
-  "musicCacheSize": "${music_cache_size}",
+  "lang": "zh-CN",
+  "appearance": "auto",
   "neteaseApiUrl": "${netease_api_url}"
 }
 EOF
 
 bashio::log.info "Configuration file created at /data/settings/settings.json"
-bashio::log.info "NetEase API URL: ${netease_api_url}"
-bashio::log.info "YesPlayMusic will be available on port: ${port}"
 
 # Change to app directory
 cd /app || exit 1
 
-# Start YesPlayMusic in web mode
-exec s6-setuidgid yesplaymusic npm run start:web
+# Check if dist directory exists
+if [ ! -d "dist" ]; then
+    bashio::log.error "Build directory not found, running build..."
+    npm run build || bashio::log.error "Build failed"
+fi
+
+# Start YesPlayMusic web server
+bashio::log.info "Starting YesPlayMusic web server on ${HOST}:${port}..."
+exec node server.js
