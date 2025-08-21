@@ -1,18 +1,15 @@
-FROM node:18-alpine
+FROM nginx:alpine
 
-# 设置工作目录
-WORKDIR /app
+# 复制网页文件
+COPY ./web /usr/share/nginx/html
 
-# 拷贝源码
-COPY . /app
-
-# 安装依赖
-RUN npm install --production
-
-# 确保运行脚本有权限
-RUN chmod +x /app/run.sh
-
-# 暴露端口
-EXPOSE 3000
-
-CMD [ "/app/run.sh" ]
+# 修改 nginx 配置，支持 history 模式路由
+RUN echo 'server { \
+    listen 80; \
+    server_name localhost; \
+    root /usr/share/nginx/html; \
+    index index.html; \
+    location / { \
+        try_files $uri /index.html; \
+    } \
+}' > /etc/nginx/conf.d/default.conf

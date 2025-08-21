@@ -1,2 +1,0 @@
-echo "运行类型检查..."
-npm run typecheck 
