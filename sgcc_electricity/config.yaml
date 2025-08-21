@@ -1,0 +1,14 @@
+name: "SGCC Electricity"
+version: "1.0.0"
+slug: "sgcc_electricity"
+description: "State Grid China Electricity query integration for Home Assistant"
+url: "https://github.com/wuwweizn/wwzn-china"
+arch:
+  - amd64
+  - aarch64
+  - armv7
+startup: services
+boot: auto
+ports:
+  8080/tcp: 8080
+image: "ghcr.io/wuwweizn/sgcc_electricity-{arch}:1.0.0"
