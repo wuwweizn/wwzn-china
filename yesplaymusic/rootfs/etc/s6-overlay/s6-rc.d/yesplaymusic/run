@@ -4,25 +4,45 @@
 # Home Assistant Community Add-on: YesPlayMusic
 # ==============================================================================
 
-bashio::log.info "Starting YesPlayMusic Home Assistant Addon..."
+bashio::log.info "🎵 Starting YesPlayMusic Home Assistant Addon..."
 
 # Get configuration from Home Assistant
 NETEASE_API_URL=$(bashio::config 'netease_api_url')
 WEB_PORT=$(bashio::config 'port')
 
-# Set environment variables
+# Validate configuration
+if bashio::var.is_empty "${NETEASE_API_URL}"; then
+    bashio::log.error "NetEase API URL is not configured!"
+    bashio::exit.nok "Please configure netease_api_url in addon options"
+fi
+
+if bashio::var.is_empty "${WEB_PORT}"; then
+    bashio::log.error "Port is not configured!"
+    bashio::exit.nok "Please configure port in addon options"
+fi
+
+# Export environment variables for the container
 export VUE_APP_NETEASE_API_URL="${NETEASE_API_URL}"
 export PORT="${WEB_PORT}"
 export HOST="0.0.0.0"
 
-bashio::log.info "Configuration:"
-bashio::log.info "  API URL: ${NETEASE_API_URL}"
-bashio::log.info "  Port: ${WEB_PORT}"
-bashio::log.info "  Host: ${HOST}"
+bashio::log.info "Configuration loaded:"
+bashio::log.info "  📡 API URL: ${NETEASE_API_URL}"
+bashio::log.info "  🌐 Port: ${WEB_PORT}"
+bashio::log.info "  🖥️  Host: ${HOST}"
 
 # Change to app directory
 cd /app || bashio::exit.nok "Could not change to /app directory"
 
-# Start the application
-bashio::log.info "Starting YesPlayMusic server..."
-exec ./start.sh
+# Check if YesPlayMusic is already built
+if [[ ! -d "dist" ]]; then
+    bashio::log.info "🏗️ YesPlayMusic not built yet, starting build process..."
+    ./build-yesplaymusic.sh &
+    bashio::log.info "📝 Build started in background, server will start immediately"
+else
+    bashio::log.info "✅ YesPlayMusic already built, starting server"
+fi
+
+# Start the server
+bashio::log.info "🚀 Starting YesPlayMusic server..."
+exec node server.js

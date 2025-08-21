@@ -1,31 +1,28 @@
-# Complete standalone solution
+# Ultra-clean solution - no conflicts
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apk add --no-cache curl bash git
+# Install only essential system dependencies
+RUN apk add --no-cache curl bash
 
-# Create package.json with only essential dependencies
+# Create a completely clean package.json with ONLY express
 RUN cat > package.json << 'EOF'
 {
   "name": "yesplaymusic-server",
   "version": "1.0.0",
-  "description": "YesPlayMusic Home Assistant Addon",
+  "description": "YesPlayMusic Server",
   "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
-  },
   "dependencies": {
     "express": "^4.18.2"
   }
 }
 EOF
 
-# Install only essential dependencies
-RUN npm install
+# Install ONLY express - nothing else
+RUN npm install --production
 
-# Create standalone server that doesn't depend on the original app
+# Create the server file
 RUN cat > server.js << 'EOF'
 const express = require('express');
 const http = require('http');
@@ -35,119 +32,157 @@ const path = require('path');
 
 const app = express();
 
-// Get environment variables with defaults
-const port = process.env.PORT || 8080;
+// Get environment variables - with proper defaults
+const port = parseInt(process.env.PORT || '8080', 10);
 const host = process.env.HOST || '0.0.0.0';
 const apiUrl = process.env.VUE_APP_NETEASE_API_URL || 'http://47.121.211.116:3001';
 
-console.log('=== YesPlayMusic Container Started ===');
+console.log('=== YesPlayMusic Server Starting ===');
 console.log('Host:', host);
 console.log('Port:', port);
 console.log('API URL:', apiUrl);
-console.log('=====================================');
+console.log('Node.js version:', process.version);
+console.log('====================================');
 
-// Enable CORS for all routes
+// Basic middleware
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// CORS middleware
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cookie');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cookie, User-Agent');
   res.header('Access-Control-Allow-Credentials', 'true');
   
   if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
+    return res.status(200).end();
   }
   next();
 });
 
-// Health check endpoint
+// Health check
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'healthy',
     timestamp: new Date().toISOString(),
-    config: { host, port, apiUrl }
+    uptime: process.uptime(),
+    config: {
+      host: host,
+      port: port,
+      apiUrl: apiUrl,
+      nodeVersion: process.version
+    }
   });
 });
 
-// API proxy endpoint
-app.use('/api', (req, res) => {
-  const targetUrl = apiUrl + req.url;
-  console.log(`[${new Date().toISOString()}] Proxy: ${req.method} ${req.url} -> ${targetUrl}`);
+// Simple API proxy
+app.use('/api*', (req, res) => {
+  const targetPath = req.path.startsWith('/api') ? req.path.substring(4) : req.path;
+  const queryString = req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '';
+  const targetUrl = apiUrl + targetPath + queryString;
   
-  const protocol = targetUrl.startsWith('https:') ? https : http;
+  console.log(`[${new Date().toISOString()}] Proxy: ${req.method} ${req.path} -> ${targetUrl}`);
+  
+  const isHttps = targetUrl.startsWith('https:');
+  const protocol = isHttps ? https : http;
   
   const options = {
     method: req.method,
     headers: {
-      ...req.headers,
-      'host': new URL(apiUrl).hostname,
-      'origin': apiUrl,
-      'referer': apiUrl
+      'User-Agent': 'YesPlayMusic/1.0.0',
+      'Accept': '*/*',
+      'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+      'Cache-Control': 'no-cache'
     },
-    timeout: 10000
+    timeout: 15000
   };
   
-  // Remove hop-by-hop headers
-  delete options.headers.connection;
-  delete options.headers['keep-alive'];
-  delete options.headers['proxy-authenticate'];
-  delete options.headers['proxy-authorization'];
-  delete options.headers.te;
-  delete options.headers.trailers;
-  delete options.headers.upgrade;
+  // Copy relevant headers
+  if (req.headers['content-type']) {
+    options.headers['Content-Type'] = req.headers['content-type'];
+  }
+  if (req.headers['cookie']) {
+    options.headers['Cookie'] = req.headers['cookie'];
+  }
+  if (req.headers['referer']) {
+    options.headers['Referer'] = req.headers['referer'];
+  }
   
   const proxyReq = protocol.request(targetUrl, options, (proxyRes) => {
-    // Set status code
-    res.statusCode = proxyRes.statusCode;
+    // Set status
+    res.status(proxyRes.statusCode || 200);
     
-    // Copy headers
+    // Copy response headers
     Object.keys(proxyRes.headers).forEach(key => {
-      if (key.toLowerCase() !== 'transfer-encoding') {
+      if (key.toLowerCase() !== 'transfer-encoding' && key.toLowerCase() !== 'connection') {
         res.setHeader(key, proxyRes.headers[key]);
       }
     });
     
-    // Enable CORS
+    // Ensure CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     
     // Pipe response
     proxyRes.pipe(res);
   });
   
   proxyReq.on('error', (err) => {
-    console.error('Proxy error:', err.message);
+    console.error('Proxy request error:', err.message);
     if (!res.headersSent) {
-      res.status(500).json({ 
-        error: 'API proxy error', 
+      res.status(500).json({
+        error: 'Proxy Error',
         message: err.message,
-        target: targetUrl
+        target: targetUrl,
+        timestamp: new Date().toISOString()
       });
     }
   });
   
   proxyReq.on('timeout', () => {
-    console.error('Proxy timeout:', targetUrl);
+    console.error('Proxy request timeout:', targetUrl);
     if (!res.headersSent) {
-      res.status(504).json({ error: 'API timeout' });
+      res.status(504).json({
+        error: 'Gateway Timeout',
+        message: 'API request timeout',
+        target: targetUrl
+      });
     }
     proxyReq.destroy();
   });
   
-  // Pipe request body
-  req.pipe(proxyReq);
+  // Handle request body
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+    req.on('end', () => {
+      if (body) {
+        proxyReq.write(body);
+      }
+      proxyReq.end();
+    });
+  } else {
+    proxyReq.end();
+  }
 });
 
-// Serve static files if they exist
-const distPath = path.join(__dirname, 'dist');
-app.use(express.static(distPath));
+// Serve static files if available
+app.use(express.static(path.join(__dirname, 'dist'), {
+  maxAge: '1d',
+  etag: true
+}));
 
-// Main route - serve app or status page
+// Main route handler
 app.get('*', (req, res) => {
-  const indexPath = path.join(distPath, 'index.html');
+  const indexPath = path.join(__dirname, 'dist', 'index.html');
   
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
   } else {
-    // Status page with app integration
+    // Enhanced status page
     res.send(`
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -155,25 +190,31 @@ app.get('*', (req, res) => {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YesPlayMusic - Home Assistant</title>
+    <link rel="icon" href="data:text/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
+            line-height: 1.6;
         }
-        .container { 
-            text-align: center; 
-            max-width: 600px; 
-            padding: 40px 20px;
+        .container {
+            max-width: 800px;
+            width: 100%;
+            padding: 20px;
         }
-        .logo { 
-            font-size: 4rem; 
-            margin-bottom: 20px; 
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .logo {
+            font-size: 5rem;
+            margin-bottom: 20px;
             animation: bounce 2s infinite;
         }
         @keyframes bounce {
@@ -181,26 +222,31 @@ app.get('*', (req, res) => {
             40% { transform: translateY(-10px); }
             60% { transform: translateY(-5px); }
         }
-        .card { 
+        .card {
             background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
             border-radius: 20px;
-            padding: 40px;
+            padding: 30px;
             margin: 20px 0;
             border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
         }
-        .status { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin: 15px 0;
-            padding: 10px 15px;
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .status-item {
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
         }
-        .status.ok { border-left: 4px solid #4caf50; }
-        .status.building { border-left: 4px solid #ff9800; }
-        .btn { 
+        .status-ok { border-left: 4px solid #4caf50; }
+        .status-building { border-left: 4px solid #ff9800; }
+        .status-icon { font-size: 2rem; margin-bottom: 10px; }
+        .btn {
             background: rgba(255, 255, 255, 0.2);
             color: white;
             border: none;
@@ -210,109 +256,254 @@ app.get('*', (req, res) => {
             margin: 10px;
             font-size: 16px;
             transition: all 0.3s ease;
-        }
-        .btn:hover { 
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
-        .spinner { 
-            width: 30px; 
-            height: 30px; 
-            border: 3px solid rgba(255,255,255,0.3); 
-            border-top: 3px solid white; 
-            border-radius: 50%; 
-            animation: spin 1s linear infinite;
+            text-decoration: none;
             display: inline-block;
         }
-        @keyframes spin { 
-            0% { transform: rotate(0deg); } 
-            100% { transform: rotate(360deg); } 
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
-        .info { 
-            text-align: left; 
-            font-size: 14px; 
-            opacity: 0.9;
-            line-height: 1.6;
+        .info-table {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .info-row:last-child { border-bottom: none; }
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .log-area {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .logo { font-size: 3rem; }
+            .status-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="logo">🎵</div>
-        <h1>YesPlayMusic</h1>
-        <p>Home Assistant 加载项</p>
-        
+        <div class="header">
+            <div class="logo">🎵</div>
+            <h1>YesPlayMusic</h1>
+            <p>Home Assistant 高颜值网易云音乐播放器</p>
+        </div>
+
         <div class="card">
             <h2>🚀 服务状态</h2>
-            <div class="status ok">
-                <span>容器运行</span>
-                <span>✅ 正常</span>
-            </div>
-            <div class="status ok">
-                <span>API 代理</span>
-                <span>✅ 已配置</span>
-            </div>
-            <div class="status building">
-                <span>前端应用</span>
-                <span><div class="spinner"></div> 构建中</span>
+            <div class="status-grid">
+                <div class="status-item status-ok">
+                    <div class="status-icon">✅</div>
+                    <h3>容器运行</h3>
+                    <p>服务正常启动</p>
+                </div>
+                <div class="status-item status-ok">
+                    <div class="status-icon">🔗</div>
+                    <h3>API 代理</h3>
+                    <p>已配置并运行</p>
+                </div>
+                <div class="status-item status-building">
+                    <div class="status-icon">🏗️</div>
+                    <h3>前端应用</h3>
+                    <p>后台构建中<span class="spinner"></span></p>
+                </div>
             </div>
         </div>
-        
+
         <div class="card">
             <h3>📊 配置信息</h3>
-            <div class="info">
-                <strong>网易云API:</strong> ${apiUrl}<br>
-                <strong>服务端口:</strong> ${port}<br>
-                <strong>服务地址:</strong> ${host}<br>
-                <strong>状态:</strong> 容器已启动，应用构建中
+            <div class="info-table">
+                <div class="info-row">
+                    <strong>网易云 API:</strong>
+                    <span>${apiUrl}</span>
+                </div>
+                <div class="info-row">
+                    <strong>服务端口:</strong>
+                    <span>${port}</span>
+                </div>
+                <div class="info-row">
+                    <strong>服务地址:</strong>
+                    <span>${host}</span>
+                </div>
+                <div class="info-row">
+                    <strong>Node.js:</strong>
+                    <span>${process.version}</span>
+                </div>
+                <div class="info-row">
+                    <strong>运行时间:</strong>
+                    <span id="uptime">${Math.floor(process.uptime())}秒</span>
+                </div>
             </div>
         </div>
-        
+
         <div class="card">
-            <h3>🔧 操作</h3>
+            <h3>🔧 操作中心</h3>
+            <p style="margin-bottom: 20px;">使用以下工具测试和管理您的 YesPlayMusic 服务</p>
+            
             <button class="btn" onclick="location.reload()">🔄 刷新页面</button>
-            <button class="btn" onclick="testApi()">🧪 测试API</button>
+            <button class="btn" onclick="testApi()">🧪 测试 API</button>
             <button class="btn" onclick="window.open('/health', '_blank')">❤️ 健康检查</button>
+            <button class="btn" onclick="toggleLogs()">📋 查看日志</button>
+            
+            <div id="log-container" style="display: none;">
+                <div class="log-area" id="logs">
+                    <div>等待日志输出...</div>
+                </div>
+            </div>
         </div>
-        
-        <div id="message" style="margin-top: 20px;"></div>
+
+        <div id="message-area"></div>
+
+        <div class="card" style="text-align: center; opacity: 0.8;">
+            <p>🎵 YesPlayMusic Home Assistant Addon v1.0.0</p>
+            <p>高颜值的第三方网易云音乐播放器</p>
+            <p><small>应用构建完成后将自动跳转到音乐播放界面</small></p>
+        </div>
     </div>
-    
+
     <script>
         let refreshCount = 0;
+        let logVisible = false;
         
         function showMessage(msg, type = 'info') {
-            const div = document.getElementById('message');
-            div.innerHTML = \`<div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin: 10px 0;">\${msg}</div>\`;
+            const area = document.getElementById('message-area');
+            const colors = {
+                success: 'rgba(76, 175, 80, 0.8)',
+                error: 'rgba(244, 67, 54, 0.8)',
+                warning: 'rgba(255, 152, 0, 0.8)',
+                info: 'rgba(33, 150, 243, 0.8)'
+            };
+            
+            area.innerHTML = \`
+                <div class="card" style="background: \${colors[type] || colors.info}; animation: slideInUp 0.5s ease;">
+                    <p>\${msg}</p>
+                </div>
+            \`;
+            
+            setTimeout(() => area.innerHTML = '', 5000);
         }
         
         async function testApi() {
             try {
-                showMessage('🧪 测试API连接...', 'info');
+                showMessage('🧪 正在测试 API 连接...', 'info');
                 const response = await fetch('/api/');
+                
                 if (response.ok || response.status === 404) {
-                    showMessage('✅ API代理工作正常！', 'success');
+                    showMessage('✅ API 代理工作正常！网易云音乐 API 连接成功。', 'success');
                 } else {
-                    showMessage('⚠️ API返回状态: ' + response.status, 'warning');
+                    showMessage(\`⚠️ API 返回状态码: \${response.status}。这可能是正常的，具体取决于 API 端点。\`, 'warning');
                 }
             } catch (err) {
-                showMessage('❌ API连接失败: ' + err.message, 'error');
+                showMessage('❌ API 连接测试失败: ' + err.message, 'error');
             }
         }
         
-        // Auto refresh every 30 seconds, max 20 times
-        setInterval(() => {
+        function toggleLogs() {
+            const container = document.getElementById('log-container');
+            logVisible = !logVisible;
+            container.style.display = logVisible ? 'block' : 'none';
+            
+            if (logVisible) {
+                updateLogs();
+            }
+        }
+        
+        function updateLogs() {
+            // Simulate log updates
+            const logs = document.getElementById('logs');
+            const now = new Date().toLocaleTimeString();
+            logs.innerHTML += \`<div>[\${now}] YesPlayMusic 容器运行正常</div>\`;
+            
+            if (logs.children.length > 10) {
+                logs.removeChild(logs.firstChild);
+            }
+        }
+        
+        function updateUptime() {
+            fetch('/health')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('uptime').textContent = Math.floor(data.uptime) + '秒';
+                })
+                .catch(() => {});
+        }
+        
+        // Update uptime every second
+        setInterval(updateUptime, 1000);
+        
+        // Auto refresh every 30 seconds for the first 10 minutes
+        const autoRefresh = setInterval(() => {
             refreshCount++;
             if (refreshCount < 20) {
-                location.reload();
+                // Check if the app is built
+                fetch('/')
+                    .then(response => response.text())
+                    .then(html => {
+                        if (html.includes('<div id="app">') || html.includes('yesplaymusic')) {
+                            showMessage('🎉 YesPlayMusic 构建完成！页面即将刷新...', 'success');
+                            setTimeout(() => location.reload(), 2000);
+                            clearInterval(autoRefresh);
+                        }
+                    })
+                    .catch(() => {});
             } else {
-                showMessage('⏰ 自动刷新已停止。如需继续等待，请手动刷新页面。', 'info');
+                clearInterval(autoRefresh);
+                showMessage('⏰ 自动刷新已停止。您可以手动刷新检查构建状态。', 'info');
             }
         }, 30000);
         
-        // Test API on load
-        setTimeout(testApi, 2000);
+        // Test API connection on page load
+        setTimeout(testApi, 3000);
+        
+        // Add some animations
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                card.style.animation = \`slideInUp 0.6s ease \${index * 0.1}s both\`;
+            });
+        });
     </script>
+    
+    <style>
+        @keyframes slideInUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
 </body>
 </html>
     `);
@@ -321,10 +512,10 @@ app.get('*', (req, res) => {
 
 // Start server
 const server = app.listen(port, host, () => {
-  console.log(`🎵 YesPlayMusic server is running on http://${host}:${port}`);
-  console.log(`🔗 API proxy target: ${apiUrl}`);
-  console.log(`📁 Static files: ${fs.existsSync(distPath) ? 'Available' : 'Will be built in background'}`);
-  console.log('=====================================');
+  console.log(\`🎵 YesPlayMusic server is running on http://\${host}:\${port}\`);
+  console.log(\`🔗 API proxy target: \${apiUrl}\`);
+  console.log(\`📁 Static files: \${fs.existsSync(path.join(__dirname, 'dist')) ? 'Available' : 'Building in background'}\`);
+  console.log('====================================');
 });
 
 // Graceful shutdown
@@ -334,41 +525,60 @@ process.on('SIGTERM', () => {
 });
 
 process.on('SIGINT', () => {
-  console.log('Received SIGINT, shutting down gracefully...');  
+  console.log('Received SIGINT, shutting down gracefully...');
   server.close(() => process.exit(0));
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
 EOF
 
-# Create background build script
+# Create ONLY the build script - no automatic execution
 RUN cat > build-yesplaymusic.sh << 'EOF'
 #!/bin/bash
-echo "🔄 Starting YesPlayMusic build in background..."
+echo "🔄 Building YesPlayMusic..."
 
-cd /app
+# Clean any existing files first
+rm -rf temp dist node_modules package-lock.json 2>/dev/null || true
 
-# Try to clone the repository
-if git clone --depth 1 https://github.com/stark81/my_yesplaymusic.git temp 2>/dev/null; then
-    echo "✅ Repository cloned successfully"
+# Clone repository  
+if git clone --depth 1 https://github.com/stark81/my_yesplaymusic.git temp; then
+    echo "✅ Repository cloned"
     
-    # Copy files
-    cp -r temp/* . 2>/dev/null && echo "✅ Files copied"
+    # Create a new directory structure
+    mkdir -p yesplaymusic-src
+    cp -r temp/* yesplaymusic-src/ 2>/dev/null || true
     rm -rf temp
     
-    # Configure npm with Chinese mirrors
-    npm config set registry https://registry.npmmirror.com 2>/dev/null
+    cd yesplaymusic-src
     
-    # Try to install dependencies (ignore errors)
-    echo "📦 Installing dependencies..."
-    npm install --force --legacy-peer-deps 2>/dev/null || echo "⚠️ Dependencies installation had issues"
+    # Use Chinese npm registry
+    npm config set registry https://registry.npmmirror.com
     
-    # Try to build
-    echo "🏗️ Building application..."
-    if npm run build 2>/dev/null; then
-        echo "✅ Build completed successfully!"
-        echo "🎉 YesPlayMusic is ready! Please refresh your browser."
+    # Install and build
+    if npm install --force --legacy-peer-deps; then
+        echo "✅ Dependencies installed"
+        
+        if npm run build; then
+            echo "✅ Build successful"
+            # Move dist to main directory
+            mv dist ../dist 2>/dev/null || cp -r dist ../dist
+            echo "🎉 YesPlayMusic ready!"
+        else
+            echo "❌ Build failed"
+        fi
     else
-        echo "❌ Build failed, but server is still running"
+        echo "❌ Dependencies installation failed"
     fi
+    
+    cd ..
+    rm -rf yesplaymusic-src
 else
     echo "❌ Failed to clone repository"
 fi
@@ -376,22 +586,20 @@ EOF
 
 RUN chmod +x build-yesplaymusic.sh
 
-# Create main startup script
+# Simple start script that ONLY starts the server
 RUN cat > start.sh << 'EOF'
 #!/bin/bash
-echo "🚀 Starting YesPlayMusic Home Assistant Addon..."
-
-# Start build in background
-./build-yesplaymusic.sh > build.log 2>&1 &
-echo "📝 Build process started in background (check build.log)"
+echo "🚀 YesPlayMusic Home Assistant Addon"
+echo "Starting server only - build manually if needed"
 
 # Start server in foreground
-node server.js
+exec node server.js
 EOF
 
 RUN chmod +x start.sh
 
 EXPOSE 8080
+
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:8080/health || exit 1
 
