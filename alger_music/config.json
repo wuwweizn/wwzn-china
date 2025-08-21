@@ -1,0 +1,15 @@
+{
+  "name": "Alger Music Player",
+  "version": "1.0.0",
+  "slug": "alger_music",
+  "description": "Self-hosted music player with web interface.",
+  "arch": ["amd64", "arm64", "armv7"],
+  "startup": "services",
+  "boot": "auto",
+  "ports": {
+    "3000/tcp": 3000
+  },
+  "map": ["config:rw", "media:rw"],
+  "options": {},
+  "schema": {}
+}
