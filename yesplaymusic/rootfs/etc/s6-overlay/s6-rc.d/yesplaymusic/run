@@ -2,28 +2,27 @@
 # shellcheck shell=bash
 # ==============================================================================
 # Home Assistant Community Add-on: YesPlayMusic
-# Simple startup script for Home Assistant integration
 # ==============================================================================
 
-declare netease_api_url
-declare port
+bashio::log.info "Starting YesPlayMusic Home Assistant Addon..."
 
 # Get configuration from Home Assistant
-netease_api_url=$(bashio::config 'netease_api_url')
-port=$(bashio::config 'port')
+NETEASE_API_URL=$(bashio::config 'netease_api_url')
+WEB_PORT=$(bashio::config 'port')
 
-bashio::log.info "Starting YesPlayMusic..."
-bashio::log.info "NetEase API URL: ${netease_api_url}"
-bashio::log.info "Port: ${port}"
-
-# Export environment variables
-export VUE_APP_NETEASE_API_URL="${netease_api_url}"
-export PORT="${port}"
+# Set environment variables
+export VUE_APP_NETEASE_API_URL="${NETEASE_API_URL}"
+export PORT="${WEB_PORT}"
 export HOST="0.0.0.0"
 
-# Create data directory if it doesn't exist
-mkdir -p /data
+bashio::log.info "Configuration:"
+bashio::log.info "  API URL: ${NETEASE_API_URL}"
+bashio::log.info "  Port: ${WEB_PORT}"
+bashio::log.info "  Host: ${HOST}"
 
-# Change to app directory and start
-cd /app || exit 1
-exec node server.js
+# Change to app directory
+cd /app || bashio::exit.nok "Could not change to /app directory"
+
+# Start the application
+bashio::log.info "Starting YesPlayMusic server..."
+exec ./start.sh

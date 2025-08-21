@@ -1,149 +1,398 @@
-# Minimal working version - use this to test first
+# Complete standalone solution
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Install basic system dependencies
+# Install system dependencies
 RUN apk add --no-cache curl bash git
 
-# Create a minimal server that works
-RUN npm init -y && npm install express
+# Create package.json with only essential dependencies
+RUN cat > package.json << 'EOF'
+{
+  "name": "yesplaymusic-server",
+  "version": "1.0.0",
+  "description": "YesPlayMusic Home Assistant Addon",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
+EOF
 
-# Create server.js
+# Install only essential dependencies
+RUN npm install
+
+# Create standalone server that doesn't depend on the original app
 RUN cat > server.js << 'EOF'
 const express = require('express');
-const path = require('path');
+const http = require('http');
+const https = require('https');
 const fs = require('fs');
+const path = require('path');
 
 const app = express();
+
+// Get environment variables with defaults
 const port = process.env.PORT || 8080;
 const host = process.env.HOST || '0.0.0.0';
 const apiUrl = process.env.VUE_APP_NETEASE_API_URL || 'http://47.121.211.116:3001';
 
-console.log('YesPlayMusic Container Started');
-console.log('Host:', host, 'Port:', port, 'API:', apiUrl);
+console.log('=== YesPlayMusic Container Started ===');
+console.log('Host:', host);
+console.log('Port:', port);
+console.log('API URL:', apiUrl);
+console.log('=====================================');
 
-// CORS headers
+// Enable CORS for all routes
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cookie');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
   if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-  } else {
-    next();
+    return res.sendStatus(200);
   }
+  next();
 });
 
-// Simple API proxy
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    config: { host, port, apiUrl }
+  });
+});
+
+// API proxy endpoint
 app.use('/api', (req, res) => {
   const targetUrl = apiUrl + req.url;
-  console.log('Proxy:', req.method, req.url, '->', targetUrl);
+  console.log(`[${new Date().toISOString()}] Proxy: ${req.method} ${req.url} -> ${targetUrl}`);
   
-  const protocol = targetUrl.startsWith('https:') ? require('https') : require('http');
+  const protocol = targetUrl.startsWith('https:') ? https : http;
+  
   const options = {
     method: req.method,
-    headers: { ...req.headers, 'host': new URL(apiUrl).host }
+    headers: {
+      ...req.headers,
+      'host': new URL(apiUrl).hostname,
+      'origin': apiUrl,
+      'referer': apiUrl
+    },
+    timeout: 10000
   };
   
+  // Remove hop-by-hop headers
+  delete options.headers.connection;
+  delete options.headers['keep-alive'];
+  delete options.headers['proxy-authenticate'];
+  delete options.headers['proxy-authorization'];
+  delete options.headers.te;
+  delete options.headers.trailers;
+  delete options.headers.upgrade;
+  
   const proxyReq = protocol.request(targetUrl, options, (proxyRes) => {
+    // Set status code
     res.statusCode = proxyRes.statusCode;
+    
+    // Copy headers
     Object.keys(proxyRes.headers).forEach(key => {
-      res.setHeader(key, proxyRes.headers[key]);
+      if (key.toLowerCase() !== 'transfer-encoding') {
+        res.setHeader(key, proxyRes.headers[key]);
+      }
     });
+    
+    // Enable CORS
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    
+    // Pipe response
     proxyRes.pipe(res);
   });
   
   proxyReq.on('error', (err) => {
     console.error('Proxy error:', err.message);
-    res.status(500).json({ error: 'Proxy error' });
+    if (!res.headersSent) {
+      res.status(500).json({ 
+        error: 'API proxy error', 
+        message: err.message,
+        target: targetUrl
+      });
+    }
   });
   
+  proxyReq.on('timeout', () => {
+    console.error('Proxy timeout:', targetUrl);
+    if (!res.headersSent) {
+      res.status(504).json({ error: 'API timeout' });
+    }
+    proxyReq.destroy();
+  });
+  
+  // Pipe request body
   req.pipe(proxyReq);
 });
 
-// Try to serve built files, fallback to status page
-app.use(express.static('dist'));
+// Serve static files if they exist
+const distPath = path.join(__dirname, 'dist');
+app.use(express.static(distPath));
 
+// Main route - serve app or status page
 app.get('*', (req, res) => {
-  const indexPath = path.join(__dirname, 'dist', 'index.html');
+  const indexPath = path.join(distPath, 'index.html');
+  
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
   } else {
+    // Status page with app integration
     res.send(`
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <title>YesPlayMusic - 正在构建</title>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YesPlayMusic - Home Assistant</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f0f2f5; }
-        .container { max-width: 600px; margin: 50px auto; text-align: center; }
-        .card { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #1890ff; border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .info { background: #e6f7ff; border: 1px solid #91d5ff; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: left; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .container { 
+            text-align: center; 
+            max-width: 600px; 
+            padding: 40px 20px;
+        }
+        .logo { 
+            font-size: 4rem; 
+            margin-bottom: 20px; 
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+        .card { 
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .status { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin: 15px 0;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .status.ok { border-left: 4px solid #4caf50; }
+        .status.building { border-left: 4px solid #ff9800; }
+        .btn { 
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .btn:hover { 
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        .spinner { 
+            width: 30px; 
+            height: 30px; 
+            border: 3px solid rgba(255,255,255,0.3); 
+            border-top: 3px solid white; 
+            border-radius: 50%; 
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
+        .info { 
+            text-align: left; 
+            font-size: 14px; 
+            opacity: 0.9;
+            line-height: 1.6;
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="logo">🎵</div>
+        <h1>YesPlayMusic</h1>
+        <p>Home Assistant 加载项</p>
+        
         <div class="card">
-            <h1>🎵 YesPlayMusic</h1>
-            <div class="spinner"></div>
-            <h2>容器运行中</h2>
-            <p>YesPlayMusic Docker 容器已成功启动！</p>
-            
-            <div class="info">
-                <strong>当前状态:</strong><br>
-                • 容器状态: ✅ 运行中<br>
-                • API代理: ✅ 已配置 (${apiUrl})<br>
-                • 端口: ${port}<br>
-                • 前端构建: 🔄 构建中或未完成
+            <h2>🚀 服务状态</h2>
+            <div class="status ok">
+                <span>容器运行</span>
+                <span>✅ 正常</span>
             </div>
-            
-            <p>如果长时间看到此页面，可能需要重新构建应用。</p>
-            <button onclick="location.reload()" style="background:#1890ff; color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer;">刷新页面</button>
+            <div class="status ok">
+                <span>API 代理</span>
+                <span>✅ 已配置</span>
+            </div>
+            <div class="status building">
+                <span>前端应用</span>
+                <span><div class="spinner"></div> 构建中</span>
+            </div>
         </div>
+        
+        <div class="card">
+            <h3>📊 配置信息</h3>
+            <div class="info">
+                <strong>网易云API:</strong> ${apiUrl}<br>
+                <strong>服务端口:</strong> ${port}<br>
+                <strong>服务地址:</strong> ${host}<br>
+                <strong>状态:</strong> 容器已启动，应用构建中
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>🔧 操作</h3>
+            <button class="btn" onclick="location.reload()">🔄 刷新页面</button>
+            <button class="btn" onclick="testApi()">🧪 测试API</button>
+            <button class="btn" onclick="window.open('/health', '_blank')">❤️ 健康检查</button>
+        </div>
+        
+        <div id="message" style="margin-top: 20px;"></div>
     </div>
-    <script>setTimeout(() => location.reload(), 30000);</script>
+    
+    <script>
+        let refreshCount = 0;
+        
+        function showMessage(msg, type = 'info') {
+            const div = document.getElementById('message');
+            div.innerHTML = \`<div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin: 10px 0;">\${msg}</div>\`;
+        }
+        
+        async function testApi() {
+            try {
+                showMessage('🧪 测试API连接...', 'info');
+                const response = await fetch('/api/');
+                if (response.ok || response.status === 404) {
+                    showMessage('✅ API代理工作正常！', 'success');
+                } else {
+                    showMessage('⚠️ API返回状态: ' + response.status, 'warning');
+                }
+            } catch (err) {
+                showMessage('❌ API连接失败: ' + err.message, 'error');
+            }
+        }
+        
+        // Auto refresh every 30 seconds, max 20 times
+        setInterval(() => {
+            refreshCount++;
+            if (refreshCount < 20) {
+                location.reload();
+            } else {
+                showMessage('⏰ 自动刷新已停止。如需继续等待，请手动刷新页面。', 'info');
+            }
+        }, 30000);
+        
+        // Test API on load
+        setTimeout(testApi, 2000);
+    </script>
 </body>
 </html>
     `);
   }
 });
 
-app.listen(port, host, () => {
-  console.log(`Server running on http://${host}:${port}`);
-  console.log(`API proxy: ${apiUrl}`);
+// Start server
+const server = app.listen(port, host, () => {
+  console.log(`🎵 YesPlayMusic server is running on http://${host}:${port}`);
+  console.log(`🔗 API proxy target: ${apiUrl}`);
+  console.log(`📁 Static files: ${fs.existsSync(distPath) ? 'Available' : 'Will be built in background'}`);
+  console.log('=====================================');
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('Received SIGTERM, shutting down gracefully...');
+  server.close(() => process.exit(0));
+});
+
+process.on('SIGINT', () => {
+  console.log('Received SIGINT, shutting down gracefully...');  
+  server.close(() => process.exit(0));
 });
 EOF
 
-# Try to clone and build YesPlayMusic (in background, allow failure)
-RUN echo '#!/bin/bash' > build-app.sh && \
-    echo 'cd /app' >> build-app.sh && \
-    echo 'git clone --depth 1 https://github.com/stark81/my_yesplaymusic.git temp || exit 1' >> build-app.sh && \
-    echo 'cp -r temp/* . 2>/dev/null || true' >> build-app.sh && \
-    echo 'rm -rf temp' >> build-app.sh && \
-    echo 'npm config set registry https://registry.npmmirror.com' >> build-app.sh && \
-    echo 'npm install --force 2>/dev/null || echo "Install failed"' >> build-app.sh && \
-    echo 'npm run build 2>/dev/null || echo "Build failed"' >> build-app.sh && \
-    echo 'echo "Build process completed (may have failed)"' >> build-app.sh && \
-    chmod +x build-app.sh
+# Create background build script
+RUN cat > build-yesplaymusic.sh << 'EOF'
+#!/bin/bash
+echo "🔄 Starting YesPlayMusic build in background..."
 
-# Create startup script that builds in background
+cd /app
+
+# Try to clone the repository
+if git clone --depth 1 https://github.com/stark81/my_yesplaymusic.git temp 2>/dev/null; then
+    echo "✅ Repository cloned successfully"
+    
+    # Copy files
+    cp -r temp/* . 2>/dev/null && echo "✅ Files copied"
+    rm -rf temp
+    
+    # Configure npm with Chinese mirrors
+    npm config set registry https://registry.npmmirror.com 2>/dev/null
+    
+    # Try to install dependencies (ignore errors)
+    echo "📦 Installing dependencies..."
+    npm install --force --legacy-peer-deps 2>/dev/null || echo "⚠️ Dependencies installation had issues"
+    
+    # Try to build
+    echo "🏗️ Building application..."
+    if npm run build 2>/dev/null; then
+        echo "✅ Build completed successfully!"
+        echo "🎉 YesPlayMusic is ready! Please refresh your browser."
+    else
+        echo "❌ Build failed, but server is still running"
+    fi
+else
+    echo "❌ Failed to clone repository"
+fi
+EOF
+
+RUN chmod +x build-yesplaymusic.sh
+
+# Create main startup script
 RUN cat > start.sh << 'EOF'
 #!/bin/bash
-echo "Starting YesPlayMusic container..."
+echo "🚀 Starting YesPlayMusic Home Assistant Addon..."
 
 # Start build in background
-./build-app.sh &
-BUILD_PID=$!
+./build-yesplaymusic.sh > build.log 2>&1 &
+echo "📝 Build process started in background (check build.log)"
 
-# Start server immediately
+# Start server in foreground
 node server.js
 EOF
 
 RUN chmod +x start.sh
 
 EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
 CMD ["./start.sh"]
