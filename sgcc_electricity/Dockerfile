@@ -57,16 +57,15 @@ WORKDIR /app
 RUN git clone https://github.com/ARC-MX/sgcc_electricity_new.git . \
     && rm -rf .git
 
-# 安装 Python 依赖
-COPY requirements.txt /app/requirements.txt
-RUN pip3 install --no-cache-dir -r requirements.txt
-
-# 复制启动脚本
+# 复制启动脚本和依赖文件
 COPY run.sh /app/run.sh
+COPY requirements.txt /app/requirements.txt
+
+# 设置权限
 RUN chmod a+x /app/run.sh
 
-# 复制配置文件模板
-COPY config.json /app/config.json
+# 安装 Python 依赖
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 # 设置健康检查
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
