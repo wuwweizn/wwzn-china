@@ -20,36 +20,38 @@ ENV PYTHONUNBUFFERED=1
 ENV DISPLAY=:99
 ENV MOZ_HEADLESS=1
 
-# 安装基本系统包和浏览器依赖
+# 安装基本系统包
 RUN apk add --no-cache \
     bash \
     curl \
     git \
     tzdata \
     jq \
-    firefox \
-    firefox-esr \
-    xvfb \
-    dbus \
-    fontconfig \
-    ttf-dejavu \
     gcc \
     musl-dev \
+    linux-headers \
+    libffi-dev \
+    openssl-dev \
     jpeg-dev \
     zlib-dev \
-    freetype-dev \
-    lcms2-dev \
-    openjpeg-dev \
-    tiff-dev \
-    tk-dev \
-    tcl-dev
+    freetype-dev
 
 # 创建工作目录
 WORKDIR /app
 
-# 复制依赖文件并安装 Python 包
+# 复制依赖文件并分步安装 Python 包
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+
+# 升级 pip 和基础包
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+
+# 安装基础依赖
+RUN pip install --no-cache-dir requests beautifulsoup4 lxml flask schedule
+
+# 安装其他依赖
+RUN pip install --no-cache-dir -r requirements.txt || \
+    (echo "Some packages failed, installing remaining..." && \
+     pip install --no-cache-dir selenium Pillow python-dateutil pytz cryptography urllib3 certifi || true)
 
 # 从源仓库获取代码
 RUN git clone https://github.com/ARC-MX/sgcc_electricity_new.git /tmp/source && \
