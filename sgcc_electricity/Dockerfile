@@ -1,12 +1,12 @@
-# 使用正确的基础镜像
+# 使用 Python 官方 Alpine 镜像作为基础
 ARG BUILD_ARCH
-FROM ghcr.io/hassio-addons/base:15.0.7
+FROM python:3.11-alpine
 
 # 设置构建参数
 ARG BUILD_ARCH
 ARG BUILD_DATE
-ARG BUILD_DESCRIPTION
-ARG BUILD_NAME
+ARG BUILD_DESCRIPTION="SGCC Electricity HomeAssistant Addon"
+ARG BUILD_NAME="SGCC Electricity"
 ARG BUILD_REF
 ARG BUILD_REPOSITORY
 ARG BUILD_VERSION
@@ -31,26 +31,23 @@ LABEL \
     org.opencontainers.image.revision=${BUILD_REF} \
     org.opencontainers.image.version=${BUILD_VERSION}
 
-# 安装 Python 和其他系统包
+# 安装 bashio 和其他必要的系统包
 RUN \
     apk update && \
     apk add --no-cache \
-        python3 \
-        py3-pip \
-        python3-dev \
-        git \
+        bash \
         curl \
         wget \
+        git \
+        jq \
+        tzdata \
         gcc \
-        g++ \
         musl-dev \
+        linux-headers \
         libffi-dev \
         openssl-dev \
-        linux-headers \
-        build-base \
     && rm -rf /var/cache/apk/* \
-    && python3 -m ensurepip --upgrade \
-    && pip3 install --upgrade pip setuptools wheel
+    && pip install --no-cache-dir bashio
 
 # 设置时区
 ENV TZ=Asia/Shanghai
@@ -58,28 +55,26 @@ ENV TZ=Asia/Shanghai
 # 创建工作目录
 WORKDIR /app
 
-# 先复制依赖文件
-COPY requirements.txt /tmp/requirements.txt
-
-# 升级 pip 并安装 Python 依赖
-RUN \
-    pip3 install --upgrade pip setuptools wheel && \
-    pip3 install --no-cache-dir -r /tmp/requirements.txt && \
-    rm -f /tmp/requirements.txt
+# 先复制依赖文件并安装
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # 从源仓库克隆最新代码
 RUN \
-    git clone https://github.com/ARC-MX/sgcc_electricity_new.git /app/sgcc_src && \
-    cp -r /app/sgcc_src/* /app/ && \
-    rm -rf /app/sgcc_src /app/.git
+    git clone https://github.com/ARC-MX/sgcc_electricity_new.git /tmp/sgcc_src && \
+    cp -r /tmp/sgcc_src/* /app/ && \
+    rm -rf /tmp/sgcc_src
 
 # 复制启动脚本
 COPY run.sh /app/run.sh
-RUN chmod a+x /app/run.sh
+RUN chmod +x /app/run.sh
+
+# 创建数据目录
+RUN mkdir -p /data /share
 
 # 设置健康检查
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8123/health || exit 1
+    CMD pgrep -f python3 || exit 1
 
 # 暴露端口
 EXPOSE 8123
