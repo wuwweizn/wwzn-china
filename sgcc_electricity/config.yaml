@@ -1,14 +1,57 @@
-name: "SGCC Electricity"
+---
+name: SGCC Electricity
 version: "1.0.0"
-slug: "sgcc_electricity"
-description: "State Grid China Electricity query integration for Home Assistant"
+slug: sgcc_electricity
+description: "HomeAssistant 国家电网电费查询 - 获取国网电费、用电量数据并接入Home Assistant"
 url: "https://github.com/wuwweizn/wwzn-china"
 arch:
-  - amd64
-  - aarch64
+  - armhf
   - armv7
-startup: services
+  - aarch64
+  - amd64
+  - i386
+startup: application
 boot: auto
+init: false
+map:
+  - "share:rw"
+  - "ssl"
+options:
+  phone: ""
+  password: ""
+  login_type: "1"
+  user_id: ""
+  captcha_type: "1"
+  interval: 3600
+  ha_url: "http://supervisor/core"
+  ha_token: ""
+  db_enable: true
+  db_host: "localhost"
+  db_port: 3306
+  db_username: "root"
+  db_password: ""
+  db_database: "sgcc"
+schema:
+  phone: str
+  password: password
+  login_type: "int(1,3)"
+  user_id: str?
+  captcha_type: "int(1,2)"
+  interval: "int(300,86400)"
+  ha_url: url
+  ha_token: password
+  db_enable: bool
+  db_host: str?
+  db_port: "int(1,65535)?"
+  db_username: str?
+  db_password: password?
+  db_database: str?
+image: "ghcr.io/wuwweizn/sgcc-electricity-{arch}"
 ports:
-  8080/tcp: 8080
-image: "ghcr.io/wuwweizn/sgcc_electricity-{arch}:1.0.0"
+  "8123/tcp": null
+ports_description:
+  "8123/tcp": "Web interface (Not required for Home Assistant integration)"
+webui: "http://[HOST]:[PORT:8123]"
+panel_icon: mdi:flash
+panel_title: SGCC Electricity
+panel_admin: false
