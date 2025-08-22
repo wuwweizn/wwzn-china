@@ -1,6 +1,6 @@
-# 使用更稳定的基础镜像
+# 使用正确的基础镜像
 ARG BUILD_ARCH
-FROM ghcr.io/hassio-addons/base-python:15.0.7
+FROM ghcr.io/hassio-addons/base:15.0.7
 
 # 设置构建参数
 ARG BUILD_ARCH
@@ -31,10 +31,13 @@ LABEL \
     org.opencontainers.image.revision=${BUILD_REF} \
     org.opencontainers.image.version=${BUILD_VERSION}
 
-# 安装额外的系统包（如果需要）
+# 安装 Python 和其他系统包
 RUN \
     apk update && \
     apk add --no-cache \
+        python3 \
+        py3-pip \
+        python3-dev \
         git \
         curl \
         wget \
@@ -44,7 +47,10 @@ RUN \
         libffi-dev \
         openssl-dev \
         linux-headers \
-    && rm -rf /var/cache/apk/*
+        build-base \
+    && rm -rf /var/cache/apk/* \
+    && python3 -m ensurepip --upgrade \
+    && pip3 install --upgrade pip setuptools wheel
 
 # 设置时区
 ENV TZ=Asia/Shanghai
