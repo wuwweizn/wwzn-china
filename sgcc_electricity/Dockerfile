@@ -1,6 +1,6 @@
-# 多阶段构建 Dockerfile for SGCC Electricity
+# 使用更稳定的基础镜像
 ARG BUILD_ARCH
-FROM ghcr.io/hassio-addons/base:15.0.7
+FROM ghcr.io/hassio-addons/base-python:15.0.7
 
 # 设置构建参数
 ARG BUILD_ARCH
@@ -31,28 +31,20 @@ LABEL \
     org.opencontainers.image.revision=${BUILD_REF} \
     org.opencontainers.image.version=${BUILD_VERSION}
 
-# 更新包索引并安装必要的系统包
+# 安装额外的系统包（如果需要）
 RUN \
     apk update && \
-    apk upgrade && \
     apk add --no-cache \
-        python3 \
-        py3-pip \
-        python3-dev \
+        git \
+        curl \
+        wget \
         gcc \
         g++ \
         musl-dev \
         libffi-dev \
         openssl-dev \
-        git \
-        curl \
-        wget \
-        tzdata \
         linux-headers \
-        build-base \
-    && rm -rf /var/cache/apk/* \
-    && python3 -m ensurepip --upgrade \
-    && pip3 install --upgrade pip setuptools wheel
+    && rm -rf /var/cache/apk/*
 
 # 设置时区
 ENV TZ=Asia/Shanghai
@@ -60,19 +52,24 @@ ENV TZ=Asia/Shanghai
 # 创建工作目录
 WORKDIR /app
 
-# 从源仓库克隆最新代码（你可能需要调整这个）
-RUN git clone https://github.com/ARC-MX/sgcc_electricity_new.git . \
-    && rm -rf .git
+# 先复制依赖文件
+COPY requirements.txt /tmp/requirements.txt
 
-# 复制启动脚本和依赖文件
+# 升级 pip 并安装 Python 依赖
+RUN \
+    pip3 install --upgrade pip setuptools wheel && \
+    pip3 install --no-cache-dir -r /tmp/requirements.txt && \
+    rm -f /tmp/requirements.txt
+
+# 从源仓库克隆最新代码
+RUN \
+    git clone https://github.com/ARC-MX/sgcc_electricity_new.git /app/sgcc_src && \
+    cp -r /app/sgcc_src/* /app/ && \
+    rm -rf /app/sgcc_src /app/.git
+
+# 复制启动脚本
 COPY run.sh /app/run.sh
-COPY requirements.txt /app/requirements.txt
-
-# 设置权限
 RUN chmod a+x /app/run.sh
-
-# 安装 Python 依赖
-RUN pip3 install --no-cache-dir -r requirements.txt
 
 # 设置健康检查
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
