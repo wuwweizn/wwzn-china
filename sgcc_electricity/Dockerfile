@@ -31,13 +31,16 @@ LABEL \
     org.opencontainers.image.revision=${BUILD_REF} \
     org.opencontainers.image.version=${BUILD_VERSION}
 
-# 安装必要的系统包
+# 更新包索引并安装必要的系统包
 RUN \
+    apk update && \
+    apk upgrade && \
     apk add --no-cache \
         python3 \
         py3-pip \
         python3-dev \
         gcc \
+        g++ \
         musl-dev \
         libffi-dev \
         openssl-dev \
@@ -45,7 +48,11 @@ RUN \
         curl \
         wget \
         tzdata \
-    && rm -rf /var/cache/apk/*
+        linux-headers \
+        build-base \
+    && rm -rf /var/cache/apk/* \
+    && python3 -m ensurepip --upgrade \
+    && pip3 install --upgrade pip setuptools wheel
 
 # 设置时区
 ENV TZ=Asia/Shanghai
