@@ -17,14 +17,32 @@ LABEL \
 # 设置环境变量
 ENV TZ=Asia/Shanghai
 ENV PYTHONUNBUFFERED=1
+ENV DISPLAY=:99
+ENV MOZ_HEADLESS=1
 
-# 安装基本系统包
+# 安装基本系统包和浏览器依赖
 RUN apk add --no-cache \
     bash \
     curl \
     git \
     tzdata \
-    jq
+    jq \
+    firefox \
+    firefox-esr \
+    xvfb \
+    dbus \
+    fontconfig \
+    ttf-dejavu \
+    gcc \
+    musl-dev \
+    jpeg-dev \
+    zlib-dev \
+    freetype-dev \
+    lcms2-dev \
+    openjpeg-dev \
+    tiff-dev \
+    tk-dev \
+    tcl-dev
 
 # 创建工作目录
 WORKDIR /app

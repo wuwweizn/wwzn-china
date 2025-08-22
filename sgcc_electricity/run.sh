@@ -79,7 +79,11 @@ mkdir -p /share/sgcc_electricity
 echo "Starting SGCC Electricity service..."
 
 # 查找并执行主程序
-if [ -f "main.py" ]; then
+if [ -f "scripts/main.py" ]; then
+    echo "Running scripts/main.py..."
+    cd /app/scripts
+    exec python3 main.py
+elif [ -f "main.py" ]; then
     echo "Running main.py..."
     exec python3 main.py
 elif [ -f "app.py" ]; then
@@ -91,6 +95,10 @@ elif [ -f "run.py" ]; then
 elif [ -f "sgcc.py" ]; then
     echo "Running sgcc.py..."
     exec python3 sgcc.py
+elif [ -f "scripts/app.py" ]; then
+    echo "Running scripts/app.py..."
+    cd /app/scripts
+    exec python3 app.py
 else
     echo "Looking for Python files..."
     PYTHON_FILES=$(find . -name "*.py" -type f | head -5)
