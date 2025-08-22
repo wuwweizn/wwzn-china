@@ -53,6 +53,10 @@ echo "  Interval: ${INTERVAL}s"
 echo "  HA URL: $HA_URL"
 echo "  Database: $DB_ENABLE"
 
+# 检查已安装的包
+echo "Checking installed packages..."
+pip list | grep -E "(schedule|selenium|webdriver-manager|PIL|opencv)" || echo "Some packages may be missing"
+
 # 创建配置文件
 cat > /app/config.json << EOF
 {
@@ -76,6 +80,14 @@ EOF
 # 确保数据目录存在
 mkdir -p /share/sgcc_electricity
 
+# 显示应用结构
+echo "Application structure:"
+ls -la /app/
+if [ -d "scripts" ]; then
+    echo "Scripts directory:"
+    ls -la /app/scripts/
+fi
+
 echo "Starting SGCC Electricity service..."
 
 # 查找并执行主程序
@@ -86,33 +98,9 @@ if [ -f "scripts/main.py" ]; then
 elif [ -f "main.py" ]; then
     echo "Running main.py..."
     exec python3 main.py
-elif [ -f "app.py" ]; then
-    echo "Running app.py..."
-    exec python3 app.py
-elif [ -f "run.py" ]; then
-    echo "Running run.py..."
-    exec python3 run.py
-elif [ -f "sgcc.py" ]; then
-    echo "Running sgcc.py..."
-    exec python3 sgcc.py
-elif [ -f "scripts/app.py" ]; then
-    echo "Running scripts/app.py..."
-    cd /app/scripts
-    exec python3 app.py
 else
-    echo "Looking for Python files..."
-    PYTHON_FILES=$(find . -name "*.py" -type f | head -5)
-    echo "Found Python files:"
-    echo "$PYTHON_FILES"
-    
-    # 尝试找到主入口文件
-    MAIN_FILE=$(find . -name "*.py" -type f | grep -E "(main|app|run|sgcc|start)" | head -1)
-    if [ -n "$MAIN_FILE" ]; then
-        echo "Attempting to run: $MAIN_FILE"
-        exec python3 "$MAIN_FILE"
-    else
-        echo "ERROR: No main application file found!"
-        echo "Please check the source repository structure."
-        exit 1
-    fi
+    echo "ERROR: No main application file found!"
+    echo "Available Python files:"
+    find /app -name "*.py" -type f | head -10
+    exit 1
 fi

@@ -17,10 +17,8 @@ LABEL \
 # 设置环境变量
 ENV TZ=Asia/Shanghai
 ENV PYTHONUNBUFFERED=1
-ENV DISPLAY=:99
-ENV MOZ_HEADLESS=1
 
-# 安装基本系统包
+# 安装系统包和编译依赖
 RUN apk add --no-cache \
     bash \
     curl \
@@ -28,35 +26,44 @@ RUN apk add --no-cache \
     tzdata \
     jq \
     gcc \
+    g++ \
     musl-dev \
     linux-headers \
     libffi-dev \
     openssl-dev \
     jpeg-dev \
     zlib-dev \
-    freetype-dev
+    freetype-dev \
+    lapack-dev \
+    gfortran \
+    pkgconfig \
+    && rm -rf /var/cache/apk/*
 
 # 创建工作目录
 WORKDIR /app
 
-# 复制依赖文件并分步安装 Python 包
-COPY requirements.txt .
+# 升级 pip 和安装构建工具
+RUN pip install --upgrade pip setuptools wheel
 
-# 升级 pip 和基础包
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel
-
-# 安装基础依赖
-RUN pip install --no-cache-dir requests beautifulsoup4 lxml flask schedule
-
-# 安装其他依赖
-RUN pip install --no-cache-dir -r requirements.txt || \
-    (echo "Some packages failed, installing remaining..." && \
-     pip install --no-cache-dir selenium Pillow python-dateutil pytz cryptography urllib3 certifi || true)
+# 分批安装 Python 依赖（避免内存问题）
+RUN pip install --no-cache-dir requests beautifulsoup4 lxml flask
+RUN pip install --no-cache-dir schedule python-dateutil pytz
+RUN pip install --no-cache-dir selenium webdriver-manager
+RUN pip install --no-cache-dir Pillow
+RUN pip install --no-cache-dir pymysql || echo "pymysql failed, continuing..."
+RUN pip install --no-cache-dir mysql-connector-python || echo "mysql-connector failed, continuing..."
+RUN pip install --no-cache-dir paho-mqtt cryptography urllib3 certifi
+RUN pip install --no-cache-dir numpy || echo "numpy failed, continuing..."
+RUN pip install --no-cache-dir opencv-python-headless || echo "opencv failed, continuing..."
+RUN pip install --no-cache-dir onnxruntime || echo "onnxruntime failed, continuing..."
 
 # 从源仓库获取代码
 RUN git clone https://github.com/ARC-MX/sgcc_electricity_new.git /tmp/source && \
     cp -r /tmp/source/* . && \
-    rm -rf /tmp/source
+    rm -rf /tmp/source && \
+    ls -la /app/ && \
+    echo "Source code structure:" && \
+    find /app -name "*.py" | head -10
 
 # 复制启动脚本
 COPY run.sh .
