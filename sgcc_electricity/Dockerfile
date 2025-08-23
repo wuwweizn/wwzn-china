@@ -58,9 +58,13 @@ RUN pip install --no-cache-dir paho-mqtt cryptography urllib3 certifi
 RUN pip install --no-cache-dir pymysql || echo "pymysql failed, continuing..."
 RUN pip install --no-cache-dir mysql-connector-python || echo "mysql-connector failed, continuing..."
 
-# 安装图像和机器学习相关包（可选）
+# 安装图像和机器学习相关包（调整安装策略）
 RUN pip install --no-cache-dir opencv-python-headless || echo "opencv failed, continuing..."
-RUN pip install --no-cache-dir onnxruntime || echo "onnxruntime failed, continuing..."
+
+# 单独安装 onnxruntime（重要依赖）
+RUN pip install --no-cache-dir onnxruntime-cpu || \
+    pip install --no-cache-dir onnxruntime || \
+    echo "onnxruntime installation failed - application may not work properly"
 
 # 从源仓库获取代码
 RUN git clone https://github.com/ARC-MX/sgcc_electricity_new.git /tmp/source && \
@@ -83,7 +87,9 @@ RUN chmod +x run.sh
 RUN mkdir -p /data /share
 
 # 验证关键包是否安装成功
-RUN python3 -c "import schedule, selenium, webdriver_manager, sympy; print('Core packages imported successfully')"
+RUN python3 -c "import schedule, selenium, webdriver_manager, sympy; print('Core packages imported successfully')" && \
+    python3 -c "import onnxruntime; print('ONNX Runtime imported successfully')" || \
+    echo "WARNING: ONNX Runtime not available - captcha processing may fail"
 
 # 设置健康检查
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \

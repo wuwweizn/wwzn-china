@@ -53,9 +53,26 @@ echo "  Interval: ${INTERVAL}s"
 echo "  HA URL: $HA_URL"
 echo "  Database: $DB_ENABLE"
 
-# 检查已安装的包
+# 检查已安装的包并补充缺失的包
 echo "Checking installed packages..."
-pip list | grep -E "(schedule|selenium|webdriver-manager|PIL|opencv)" || echo "Some packages may be missing"
+pip list | grep -E "(schedule|selenium|webdriver-manager|PIL|opencv|onnx)" || echo "Some packages may be missing"
+
+# 运行时检查并安装关键缺失包
+echo "Checking for missing critical packages..."
+python3 -c "import onnxruntime" 2>/dev/null || {
+    echo "ONNX Runtime missing, attempting to install..."
+    pip install --no-cache-dir onnxruntime-cpu || pip install --no-cache-dir onnxruntime || echo "Failed to install onnxruntime"
+}
+
+python3 -c "import sympy" 2>/dev/null || {
+    echo "SymPy missing, attempting to install..."
+    pip install --no-cache-dir sympy || echo "Failed to install sympy"
+}
+
+python3 -c "import numpy" 2>/dev/null || {
+    echo "NumPy missing, attempting to install..."
+    pip install --no-cache-dir numpy || echo "Failed to install numpy"
+}
 
 # 创建配置文件
 cat > /app/config.json << EOF
