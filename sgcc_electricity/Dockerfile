@@ -50,6 +50,7 @@ RUN pip install --no-cache-dir requests beautifulsoup4 lxml flask
 RUN pip install --no-cache-dir schedule python-dateutil pytz
 RUN pip install --no-cache-dir selenium webdriver-manager
 RUN pip install --no-cache-dir Pillow
+RUN pip install --no-cache-dir sympy
 RUN pip install --no-cache-dir pymysql || echo "pymysql failed, continuing..."
 RUN pip install --no-cache-dir mysql-connector-python || echo "mysql-connector failed, continuing..."
 RUN pip install --no-cache-dir paho-mqtt cryptography urllib3 certifi

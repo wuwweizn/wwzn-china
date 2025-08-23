@@ -93,10 +93,13 @@ echo "Starting SGCC Electricity service..."
 # 查找并执行主程序
 if [ -f "scripts/main.py" ]; then
     echo "Running scripts/main.py..."
+    # 设置 Python 路径，确保可以导入 scripts 目录中的模块
+    export PYTHONPATH="/app/scripts:/app:$PYTHONPATH"
     cd /app/scripts
     exec python3 main.py
 elif [ -f "main.py" ]; then
     echo "Running main.py..."
+    export PYTHONPATH="/app:$PYTHONPATH"
     exec python3 main.py
 else
     echo "ERROR: No main application file found!"
