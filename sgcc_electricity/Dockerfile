@@ -1,9 +1,9 @@
-﻿FROM python:3.9-alpine
+﻿FROM python:3.11-slim
 
 WORKDIR /app
 
-# 安装编译依赖
-RUN apk add --no-cache build-base musl-dev libffi-dev python3-dev
+# 安装系统依赖
+RUN apt-get update && apt-get install -y build-essential libffi-dev
 
 COPY build/sgcc_electricity_new /app
 
