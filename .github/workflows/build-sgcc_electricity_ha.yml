@@ -1,4 +1,4 @@
-﻿name: Build and Push sgcc_electricity2 (Multi-Arch, Docker Hub + GHCR)
+﻿name: Build and Push sgcc_electricity (Multi-Arch, Docker Hub + GHCR)
 
 on:
   workflow_dispatch:
@@ -57,7 +57,7 @@ jobs:
           CONFIG_PATH="${ADDON_DIR}/config.json"
           
           if [[ -f "$CONFIG_PATH" ]]; then
-            VERSION=$(yq e ".version" "$CONFIG_PATH")
+            VERSION=$(yq e -r ".version" "$CONFIG_PATH")   # <- 去掉双引号
           else
             echo "❌ ERROR: $CONFIG_PATH not found!"
             exit 1
@@ -75,7 +75,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build and push sgcc_electricity for ${{ matrix.arch }}
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: sgcc_electricity
           file: sgcc_electricity/Dockerfile
