@@ -58,14 +58,15 @@ jobs:
         run: |
           ADDON_DIR="netease_music_api"
           CONFIG_PATH="${ADDON_DIR}/config.json"
-          
+
           if [[ -f "$CONFIG_PATH" ]]; then
-            VERSION=$(yq e ".version" "$CONFIG_PATH")
+            # 去掉引号，避免 "1.0.0" 这种格式
+            VERSION=$(yq e -r '.version' "$CONFIG_PATH")
           else
             echo "❌ ERROR: $CONFIG_PATH not found!"
             exit 1
           fi
-          
+
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "BUILD_ARCH=${{ matrix.build_arch }}" >> $GITHUB_ENV
           echo "💡 VERSION=$VERSION"
