@@ -1,10 +1,10 @@
 {
   "version": "1.1.1",
-  "name": "节点小宝",
+  "name": "鑺傜偣灏忓疂",
   "url": "https://github.com/wuwweizn/wwzn-china/",
   "slug": "jdxb",
   "codenotary": "djhhui@gmail.com",
-  "description": "A Home Assistant add-on for jdxb service. 这是一个节点小宝客户端",
+  "description": "A Home Assistant add-on for jdxb service. 杩欐槸涓�涓妭鐐瑰皬瀹濆鎴风",
   "arch": ["amd64", "aarch64"],
   "startup": "services",
   "ingress": true,
