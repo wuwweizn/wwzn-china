@@ -1,0 +1,17 @@
+{
+  "name": "SGCC Electricity",
+  "version": "1.0.0",
+  "slug": "sgcc_electricity",
+  "description": "SGCC 电力查询服务接口，供 Home Assistant 使用",
+  "startup": "services",
+  "boot": "auto",
+  "init": false,
+  "host_network": true,
+  "ports": {
+    "8080/tcp": 8080
+  },
+  "webui": "http://[HOST]:[PORT:8080]",
+  "arch": ["amd64", "aarch64"],
+  "options": {},
+  "schema": {}
+}
