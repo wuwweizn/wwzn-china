@@ -16,4 +16,4 @@ ports:
 webui: http://[HOST]:[PORT:8899]
 boot: manual
 environment:
-  PASSWORD: "1234"
+  PASSWORD: "8888"
