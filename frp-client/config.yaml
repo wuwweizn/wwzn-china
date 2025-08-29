@@ -1,6 +1,6 @@
 ﻿name: "FRP Client"
 description: "您可以使用此工具通过端口转发实现对本地HA的远程访问"
-version: "1.0.1"
+version: "1.2.1"
 slug: "frp_client"
 host_network: true
 startup: application
