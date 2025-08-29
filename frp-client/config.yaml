@@ -1,4 +1,4 @@
-name: "FRP Client"
+﻿name: "FRP Client"
 description: "您可以使用此工具通过端口转发实现对本地HA的远程访问"
 version: "1.0.1"
 slug: "frp_client"
@@ -18,6 +18,15 @@ arch:
   - armhf
   - armv7
   - i386
+
+# 🔑 补上这个
+build_from:
+  amd64: ghcr.io/home-assistant/amd64-base:3.21
+  aarch64: ghcr.io/home-assistant/aarch64-base:3.21
+  armhf: ghcr.io/home-assistant/armhf-base:3.21
+  armv7: ghcr.io/home-assistant/armv7-base:3.21
+  i386: ghcr.io/home-assistant/i386-base:3.21
+
 options:
   serverAddr: "example.com"
   serverPort: 7000
@@ -27,6 +36,7 @@ options:
   webServerPassword: "123456789"
   customDomain: "example.com"
   proxyName: "homeassistant"
+
 schema:
   serverAddr: str
   serverPort: int
