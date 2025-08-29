@@ -60,7 +60,8 @@ jobs:
           CONFIG_PATH="${ADDON_DIR}/config.json"
           
           if [[ -f "$CONFIG_PATH" ]]; then
-            VERSION=$(yq e ".version" "$CONFIG_PATH")
+            # ✅ 使用 -r 去掉双引号
+            VERSION=$(yq e -r ".version" "$CONFIG_PATH")
           else
             echo "❌ ERROR: $CONFIG_PATH not found!"
             exit 1
