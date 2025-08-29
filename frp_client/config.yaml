@@ -18,7 +18,7 @@ arch:
   - armv7
 
 # 🔑 使用你自己仓库的多架构镜像
-image: "ghcr.io/wuwweizn/frp-client-{arch}:1.2.1"
+image: "ghcr.io/wuwweizn/frp-client-{arch}"
 
 options:
   serverAddr: "example.com"
