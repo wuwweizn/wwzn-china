@@ -1,5 +1,5 @@
-ARG BUILD_FROM
-FROM $BUILD_FROM
+# ¿ÉÒÔÐ´ËÀ»ù´¡¾µÏñ
+FROM ghcr.io/home-assistant/amd64-base:3.21
 
 ARG BUILD_ARCH
 ARG FRP_VERSION
