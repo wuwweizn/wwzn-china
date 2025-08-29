@@ -7,6 +7,6 @@
       "i386": "ghcr.io/home-assistant/i386-base:3.31"
     },
     "args": {
-        "FRP_VERSION": "0.61.0"
+        "FRP_VERSION": "0.61.1"
     }
 }
