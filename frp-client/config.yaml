@@ -15,18 +15,11 @@ devices:
 arch:
   - aarch64
   - amd64
-  - armhf
   - armv7
-  - i386
-
-# 🔑 补上这个
 build_from:
   amd64: ghcr.io/home-assistant/amd64-base:3.21
   aarch64: ghcr.io/home-assistant/aarch64-base:3.21
-  armhf: ghcr.io/home-assistant/armhf-base:3.21
-  armv7: ghcr.io/home-assistant/armv7-base:3.21
-  i386: ghcr.io/home-assistant/i386-base:3.21
-
+  armv7: ghcr.io/home-assistant/armv7-base:3.31
 options:
   serverAddr: "example.com"
   serverPort: 7000
