@@ -3,12 +3,12 @@
     "version": "1.4.3",
     "slug": "ewelink_smart_home",
     "description": "将 eWeLink 与家庭助理连接",
-    "arch": ["aarch64", "amd64"],
+    "arch": ["aarch64", "amd64", "armv7"],
     "init": false,
     "startup": "application",
     "boot": "auto",
     "url": "https://www.facebook.com/ewelink.support",
-    "image":"r.hassbus.com/wghaos/ewelink",
+    "image": "ghcr.io/wuwweizn/ewelink_smart_home-{arch}",
     "host_network": false,
     "ports": {
         "3000/tcp": 3000
