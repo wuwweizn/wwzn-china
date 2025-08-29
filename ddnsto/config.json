@@ -1,6 +1,6 @@
-{
+﻿{
   "name": "ddnsto",
-  "version": "3.0.0",
+  "version": "3.5.0",
   "slug": "ddnsto",
   "description": "DDNSTO 动态域名解析服务集成，支持自动更新公网 IP 到 DDNSTO 平台。",
   "url": "https://github.com/wuwweizn/wwzn-china",
