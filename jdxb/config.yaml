@@ -14,9 +14,9 @@ ports:
   "9118/tcp": 9118
 devices:
   - /dev/net/tun
-map:
-  - "config:rw"
 restart: always
 ingress: true
 ingress_port: 9118
 panel_icon: mdi:server-network
+map:
+  - "config:rw"
