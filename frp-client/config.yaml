@@ -1,5 +1,5 @@
 ﻿name: "FRP Client"
-description: "您可以使用此工具通过端口转发实现对本地HA的远程访问"
+description: "You can use this tool to achieve remote access to local Home Assistant OS by port forwarding"
 version: "1.0.1"
 slug: "frp_client"
 host_network: true
@@ -13,13 +13,12 @@ privileged:
 devices:
   - /dev/net/tun
 arch:
-  - aarch64
   - amd64
-  - armv7
-build_from:
-  amd64: ghcr.io/home-assistant/amd64-base:3.21
-  aarch64: ghcr.io/home-assistant/aarch64-base:3.21
-  armv7: ghcr.io/home-assistant/armv7-base:3.31
+  - aarch64
+
+# 🔑 直接指定你仓库里的镜像
+image: "ghcr.io/fatedier/frpc-{arch}"
+
 options:
   serverAddr: "example.com"
   serverPort: 7000
