@@ -1,17 +1,17 @@
-# Ê¹ÓÃ Node.js 18 Alpine ×÷Îª»ù´¡¾µÏñ
+# ä½¿ç”¨ Node.js 18 Alpine ä½œä¸ºåŸºç¡€é•œåƒ
 FROM node:18-alpine
 
-# ÉèÖÃ¹¤×÷Ä¿Â¼
+# è®¾ç½®å·¥ä½œç›®å½•
 WORKDIR /app
 
-# ¿½±´Ô´Âëµ½ÈÝÆ÷
+# æ‹·è´æºç åˆ°å®¹å™¨
 COPY . /app
 
-# °²×°ÒÀÀµ
+# å®‰è£…ä¾èµ–
 RUN npm install --production
 
-# ±©Â¶¶Ë¿Ú
+# æš´éœ²ç«¯å£
 EXPOSE 3000
 
-# Æô¶¯ÃüÁî
+# å¯åŠ¨å‘½ä»¤
 CMD ["npm", "start"]
