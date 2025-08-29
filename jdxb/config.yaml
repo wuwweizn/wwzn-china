@@ -1,7 +1,7 @@
 name: "节点小宝"
 slug: "jdxb"
 version: "3.0.5"
-description: "A Home Assistant add-on for jdxb service. 这是一个节点小宝客户端"
+description: "节点小宝客户端"
 arch:
   - amd64
   - aarch64
