@@ -1,4 +1,4 @@
-﻿name: Build and Push sgcc_electricity (Multi-Arch, Docker Hub + GHCR)
+﻿name: Build and Push sgcc_electricity2 (Multi-Arch, Docker Hub + GHCR)
 
 on:
   workflow_dispatch:
