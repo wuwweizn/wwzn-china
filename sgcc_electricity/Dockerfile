@@ -15,7 +15,8 @@ RUN apk add --no-cache \
 COPY build/sgcc_electricity_new /app
 
 # 安装 Python 依赖，使用国内镜像加速
-RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple --verbose
+
 
 # 复制启动脚本
 COPY run.sh /run.sh
