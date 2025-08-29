@@ -1,0 +1,27 @@
+﻿{
+    "name": "eWeLink Smart Home",
+    "version": "1.4.3",
+    "slug": "ewelink_smart_home",
+    "description": "将 eWeLink 与家庭助理连接",
+    "arch": ["aarch64", "amd64"],
+    "init": false,
+    "startup": "application",
+    "boot": "auto",
+    "url": "https://www.facebook.com/ewelink.support",
+    "image":"r.hassbus.com/wghaos/ewelink",
+    "host_network": false,
+    "ports": {
+        "3000/tcp": 3000
+    },
+    "ports_description": {
+        "3000/tcp": "Web interface"
+    },
+    "panel_icon": "mdi:earth",
+    "panel_title": "eWeLink Smart Home",
+    "hassio_api": true,
+    "webui": "[PROTO:http]://[HOST]:[PORT:3000]",
+    "homeassistant_api": true,
+    "ingress": true,
+    "ingress_port": 3000,
+    "ingress_entry": ""
+}
