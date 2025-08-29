@@ -1,0 +1,85 @@
+﻿name: Build and Push moontv Home Assistant Addon
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'moontv/**'
+      - '.github/workflows/build-moontv.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get lowercase repo owner
+        run: echo "REPO_OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+
+      - name: Extract addon metadata
+        id: extract_meta
+        run: |
+          ADDON_DIR="moontv"
+          CONFIG_PATH="${ADDON_DIR}/config.json"
+          
+          if [[ -f "$CONFIG_PATH" ]]; then
+            VERSION=$(jq -r .version "$CONFIG_PATH")
+            ADDON_NAME=$(jq -r .name "$CONFIG_PATH")
+          else
+            echo "❌ ERROR: $CONFIG_PATH not found!"
+            exit 1
+          fi
+          
+          echo "ADDON_NAME=$ADDON_NAME" >> $GITHUB_ENV
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "💡 ADDON_NAME=$ADDON_NAME"
+          echo "💡 VERSION=$VERSION"
+
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push moontv Home Assistant Addon
+        uses: docker/build-push-action@v5
+        with:
+          context: moontv
+          file: moontv/Dockerfile
+          platforms: |
+            linux/amd64
+            linux/arm64
+            linux/arm/v7
+          push: true
+          tags: |
+            ghcr.io/${{ env.REPO_OWNER_LC }}/moontv-hassio:${{ env.VERSION }}
+            ghcr.io/${{ env.REPO_OWNER_LC }}/moontv-hassio:latest
+            ${{ secrets.DOCKER_USERNAME }}/moontv-hassio:${{ env.VERSION }}
+            ${{ secrets.DOCKER_USERNAME }}/moontv-hassio:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
