@@ -1,9 +1,0 @@
-{
-  "build_from": {
-    "aarch64": "node:lts-alpine",
-    "amd64": "node:lts-alpine",
-    "armhf": "node:lts-alpine",
-    "armv7": "node:lts-alpine",
-    "i386": "node:lts-alpine"
-  }
-}
