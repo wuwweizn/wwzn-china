@@ -1,5 +1,5 @@
 name: File Transfer Go
-version: "1.0.1"
+version: "1.0.0"
 slug: file-transfer-go
 description: "基于 WebRTC 的端到端文件传输服务，支持文件传输、文字传输和桌面共享"
 url: "https://github.com/MatrixSeven/file-transfer-go"
