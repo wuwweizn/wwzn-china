@@ -16,11 +16,11 @@ RUN go mod verify
 # 复制其余的源代码到容器中
 COPY build/file-transfer-go/ .
 
-# 调试：列出工作目录中的文件
-RUN ls -al /app
+# 调试：列出工作目录中的文件，确保文件复制正确
+RUN echo "Working directory contents:" && ls -al /app
 
 # 构建应用
-RUN go build -o file-transfer-go .
+RUN echo "Building application..." && go build -o file-transfer-go .
 
 # 使用更小的镜像来运行应用
 FROM debian:bullseye-slim
