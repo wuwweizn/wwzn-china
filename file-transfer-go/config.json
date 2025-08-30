@@ -3,7 +3,7 @@
   "version": "1.0.6",
   "slug": "file-transfer-go",
   "description": "安全、快速、简单的点对点文件传输解决方案 - 无需注册，即传即用",
-  "url": "https://gitee.com/wuwzn/ha-addons-cn",
+  "url": "https://github.com/MatrixSeven/file-transfer-go",
   "init": false,
   "arch": ["aarch64", "amd64"],
   "panel_icon": "mdi:application-variable",
