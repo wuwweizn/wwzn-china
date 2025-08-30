@@ -38,11 +38,11 @@ ENV GOARCH=amd64
 
 WORKDIR /app
 
-# 克隆 GitHub 仓库并进入后端目录
+# 从 GitHub 克隆仓库并进入后端目录
 RUN git clone https://github.com/MatrixSeven/file-transfer-go.git /app
 WORKDIR /app/file-transfer-go
 
-# 复制 Go 相关文件
+# 复制 go.mod 和 go.sum 文件，确保依赖能够下载
 COPY go.mod go.sum ./
 RUN go mod download
 
