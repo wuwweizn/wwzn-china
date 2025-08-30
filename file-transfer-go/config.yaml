@@ -24,4 +24,8 @@ ports:
   "8080/tcp": 8080
 ports_description:
   "8080/tcp": "Web 界面端口"
+webui: "http://[HOST]:[PORT:8080]"
+panel_icon: "mdi:file-transfer"
+panel_title: "File Transfer Go"
+panel_admin: true
 image: "ghcr.io/wuwweizn/file-transfer-go-{arch}"
