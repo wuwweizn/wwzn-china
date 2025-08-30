@@ -1,11 +1,10 @@
-# 使用官方 Go 镜像作为构建镜像
-FROM golang:1.19-buster AS builder
+# 使用官方 Go 1.21 镜像作为构建镜像
+FROM golang:1.21-buster AS builder
 
 # 设置工作目录
 WORKDIR /app
 
 # 复制 go.mod 和 go.sum 文件
-# 这里需要调整路径，确保 go.mod 被正确复制
 COPY build/file-transfer-go/go.mod build/file-transfer-go/go.sum ./
 
 # 下载 Go 依赖
