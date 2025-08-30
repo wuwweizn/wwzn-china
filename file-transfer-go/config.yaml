@@ -24,4 +24,4 @@ ports:
   "8080/tcp": 8080
 ports_description:
   "8080/tcp": "Web 界面端口"
-image: "ghcr.io/{arch}"
+image: "ghcr.io/wuwweizn/file-transfer-go-{arch}"
