@@ -1,5 +1,5 @@
 # 使用官方 Go 1.21 镜像作为构建镜像
-FROM golang:1.21-buster AS builder
+FROM golang:1.21 AS builder
 
 # 设置工作目录
 WORKDIR /app
