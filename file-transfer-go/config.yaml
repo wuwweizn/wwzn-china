@@ -16,18 +16,28 @@ options:
   port: 8080
   node_env: "production"
   log_level: "info"
+  ssl: false
+  certfile: "fullchain.pem"
+  keyfile: "privkey.pem"
 schema:
   port: "int(1,65535)"
   node_env: "list(production|development)"
   log_level: "list(trace|debug|info|warn|error|fatal|panic)?"
-ports:
-  "8080/tcp": 8080
-ports_description:
-  "8080/tcp": "Web 界面端口"
-webui: "http://[HOST]:[PORT:8080]"
-panel_icon: "mdi:file-transfer"
-panel_title: "File Transfer Go"
-panel_admin: true
-image: "ghcr.io/wuwweizn/file-transfer-go-{arch}"
+  ssl: "bool?"
+  certfile: "str?"
+  keyfile: "str?"
+# 启用 Ingress，通过 HA 代理访问
 ingress: true
 ingress_port: 8080
+ingress_entry: "/"
+# 同时保持传统端口访问
+ports:
+  "8080/tcp": null
+ports_description:
+  "8080/tcp": "Web 界面端口（内部访问）"
+# 移除直接 webui，使用 Ingress
+# webui: "http://[HOST]:[PORT:8080]"
+panel_icon: "mdi:file-transfer"
+panel_title: "File Transfer Go"
+panel_admin: false
+image: "ghcr.io/wuwweizn/file-transfer-go-{arch}"
