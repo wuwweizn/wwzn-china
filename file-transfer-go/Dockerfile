@@ -7,13 +7,16 @@ WORKDIR /app
 RUN apk add --no-cache bash git build-base
 
 # 克隆代码库
-RUN git clone https://github.com/MatrixSeven/file-transfer-go.git /app
+RUN git clone https://github.com/MatrixSeven/file-transfer-go.git /app/file-transfer-go
 
-# 确保构建脚本可执行
-RUN chmod +x /app/file-transfer-go/build-fullstack.sh
+# 确认文件是否存在
+RUN ls -l /app/file-transfer-go
 
-# 切换到项目目录并构建
+# 切换到项目目录并确保构建脚本可执行
 WORKDIR /app/file-transfer-go
+RUN chmod +x build-fullstack.sh
+
+# 构建
 RUN ./build-fullstack.sh
 
 # 使用轻量的 Alpine 镜像
