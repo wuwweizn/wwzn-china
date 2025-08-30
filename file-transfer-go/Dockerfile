@@ -10,8 +10,14 @@ COPY build/file-transfer-go/go.mod build/file-transfer-go/go.sum ./
 # 下载 Go 依赖
 RUN go mod tidy
 
+# 确认依赖是否正确下载
+RUN go mod verify
+
 # 复制其余的源代码到容器中
 COPY build/file-transfer-go/ .
+
+# 调试：列出工作目录中的文件
+RUN ls -al /app
 
 # 构建应用
 RUN go build -o file-transfer-go .
