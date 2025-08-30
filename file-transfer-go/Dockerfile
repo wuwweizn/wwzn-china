@@ -1,43 +1,69 @@
-# 使用官方 Go 1.21 镜像作为构建镜像
-FROM golang:1.21 AS builder
+# ==============================================
+# AMD64 Dockerfile - 基于 build-fullstack.sh 流程
+# ==============================================
 
-# 设置工作目录
+# 前端构建阶段
+FROM node:20-alpine AS frontend-builder
+
+# 安装 yarn
+RUN apk add --no-cache yarn
+
+WORKDIR /app/build/file-transfer-go/chuan-next
+
+# 复制所有源代码（确保获取最新代码）
+COPY build/file-transfer-go/chuan-next/ ./
+
+# 清理构建文件（模拟 build-fullstack.sh 的 clean_all 函数）
+RUN rm -rf .next out
+
+# 前端依赖和构建
+COPY build/file-transfer-go/chuan-next/package.json chuan-next/yarn.lock ./
+RUN yarn install --frozen-lockfile --network-timeout 300000
+
+# 临时移除 API 目录进行 SSG 构建（模拟 build-fullstack.sh 的 build_frontend 函数）
+RUN if [ -d "src/app/api" ]; then mv src/app/api /tmp/api-backup; fi && \
+    NEXT_EXPORT=true NODE_ENV=production NEXT_PUBLIC_BACKEND_URL= NEXT_PUBLIC_WS_URL= NEXT_PUBLIC_API_BASE_URL= yarn build && \
+    if [ -d "/tmp/api-backup" ]; then mv /tmp/api-backup src/app/api; fi
+
+# ==============================================
+
+# Go 构建阶段
+FROM golang:1.21-alpine AS go-builder
+
+# 安装构建依赖
+RUN apk add --no-cache git ca-certificates tzdata
+
+ENV GOPROXY=https://proxy.golang.org,direct
+ENV CGO_ENABLED=0
+ENV GOOS=linux
+ENV GOARCH=amd64
+
 WORKDIR /app
 
-# 复制 go.mod 和 go.sum 文件
-COPY build/file-transfer-go/go.mod build/file-transfer-go/go.sum ./
+# 先复制所有源代码（确保获取最新代码）
+COPY build/file-transfer-go
 
-# 下载 Go 依赖
-RUN go mod tidy
+# Go 依赖
+COPY build/file-transfer-go/go.mod go.sum ./
+RUN go mod download
 
-# 确认依赖是否正确下载
-RUN go mod verify
+# 拷贝前端构建结果
+COPY --from=frontend-builder /app/build/file-transfer-go/chuan-next/out ./internal/web/frontend/
 
-# 复制其余的源代码到容器中
-COPY build/file-transfer-go/ .
+# 构建 Go 应用 - AMD64 架构（模拟 build-fullstack.sh 的 build_backend 函数）
+RUN go build -ldflags='-s -w -extldflags '-static'' -o server ./cmd
 
-# 调试：列出工作目录中的文件，确保文件复制正确
-RUN echo "Working directory contents:" && ls -al /app
+# ==============================================
 
-# 构建应用
-RUN echo "Building application..." && go build -o file-transfer-go .
+# 最终镜像
+FROM alpine:3.18
 
-# 使用更小的镜像来运行应用
-FROM debian:bullseye-slim
+RUN apk add --no-cache ca-certificates tzdata && \
+    adduser -D -s /bin/sh appuser
 
-# 安装必要的依赖
-RUN apt-get update && apt-get install -y \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
-# 设置工作目录
 WORKDIR /app
+COPY --from=go-builder --chown=appuser:appuser /app/server ./
+USER appuser
 
-# 从构建镜像中复制构建好的二进制文件
-COPY --from=builder /app/file-transfer-go /app/file-transfer-go
-
-# 开放 8080 端口
 EXPOSE 8080
-
-# 设置容器启动时执行的命令
-CMD ["/app/file-transfer-go"]
+CMD ["./server"]
