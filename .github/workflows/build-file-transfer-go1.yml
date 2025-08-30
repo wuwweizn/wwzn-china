@@ -130,13 +130,12 @@ jobs:
           docker buildx imagetools create \
             --tag ghcr.io/${{ env.REPO_OWNER_LC }}/file-transfer-go:${{ env.VERSION }} \
             ghcr.io/${{ env.REPO_OWNER_LC }}/file-transfer-go-amd64:${{ env.VERSION }} \
-            ghcr.io/${{ env.REPO_OWNER_LC }}/file-transfer-go-aarch64:${{ env.VERSION }} \
-            ghcr.io/${{ env.REPO_OWNER_LC }}/file-transfer-go-armv7:${{ env.VERSION }}
+            ghcr.io/${{ env.REPO_OWNER_LC }}/file-transfer-go-aarch64:${{ env.VERSION }} 
+
 
       - name: Create and push multi-arch manifest for Docker Hub
         run: |
           docker buildx imagetools create \
             --tag ${{ secrets.DOCKER_USERNAME }}/file-transfer-go:${{ env.VERSION }} \
             ${{ secrets.DOCKER_USERNAME }}/file-transfer-go-amd64:${{ env.VERSION }} \
-            ${{ secrets.DOCKER_USERNAME }}/file-transfer-go-aarch64:${{ env.VERSION }} \
-            ${{ secrets.DOCKER_USERNAME }}/file-transfer-go-armv7:${{ env.VERSION }}
+            ${{ secrets.DOCKER_USERNAME }}/file-transfer-go-aarch64:${{ env.VERSION }} 
