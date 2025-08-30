@@ -8,7 +8,7 @@ FROM node:20-alpine AS frontend-builder
 # 安装 yarn
 RUN apk add --no-cache yarn
 
-WORKDIR /app/build/file-transfer-go/chuan-next
+WORKDIR /app/chuan-next
 
 # 复制所有源代码（确保获取最新代码）
 COPY build/file-transfer-go/chuan-next/ ./
@@ -17,7 +17,7 @@ COPY build/file-transfer-go/chuan-next/ ./
 RUN rm -rf .next out
 
 # 前端依赖和构建
-COPY build/file-transfer-go/chuan-next/package.json chuan-next/yarn.lock ./
+COPY build/file-transfer-go/chuan-next/package.json build/file-transfer-go/chuan-next/yarn.lock ./
 RUN yarn install --frozen-lockfile --network-timeout 300000
 
 # 临时移除 API 目录进行 SSG 构建（模拟 build-fullstack.sh 的 build_frontend 函数）
@@ -41,16 +41,16 @@ ENV GOARCH=amd64
 WORKDIR /app
 
 # 先复制所有源代码（确保获取最新代码）
-COPY build/file-transfer-go
+COPY build/file-transfer-go/go.mod build/file-transfer-go/go.sum ./
 
-# Go 依赖
-COPY build/file-transfer-go/go.mod go.sum ./
+# 下载 Go 依赖
 RUN go mod download
 
 # 拷贝前端构建结果
-COPY --from=frontend-builder /app/build/file-transfer-go/chuan-next/out ./internal/web/frontend/
+COPY --from=frontend-builder /app/chuan-next/out ./internal/web/frontend/
 
 # 构建 Go 应用 - AMD64 架构（模拟 build-fullstack.sh 的 build_backend 函数）
+COPY build/file-transfer-go/cmd ./cmd
 RUN go build -ldflags='-s -w -extldflags '-static'' -o server ./cmd
 
 # ==============================================
