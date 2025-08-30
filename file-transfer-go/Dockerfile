@@ -1,2 +1,5 @@
-# 这里的 FROM 指令根据架构动态选择镜像，Docker 将自动为不同平台选择不同的基础镜像。
+# 定义可选的架构变量，默认为 amd64
+ARG ARCH=amd64
+
+# 使用传入的架构变量来构建镜像
 FROM ghcr.io/desmond-dong/file-transfer/file-transfer-${ARCH}:1.0.6
