@@ -29,3 +29,5 @@ panel_icon: "mdi:file-transfer"
 panel_title: "File Transfer Go"
 panel_admin: true
 image: "ghcr.io/wuwweizn/file-transfer-go-{arch}"
+ingress: true
+ingress_port: 8080
