@@ -15,18 +15,30 @@ bashio::log.info "Port: ${PORT}"
 bashio::log.info "Environment: ${NODE_ENV}"
 bashio::log.info "Log Level: ${LOG_LEVEL}"
 
-# 检查文件是否存在和可执行
+# 检查应用文件
 if [ ! -f "/app/file-transfer-go" ]; then
     bashio::log.error "file-transfer-go binary not found!"
+    bashio::log.error "Files in /app:"
+    ls -la /app/ || true
     exit 1
 fi
 
-if [ ! -x "/app/file-transfer-go" ]; then
-    bashio::log.error "file-transfer-go binary is not executable!"
-    chmod +x /app/file-transfer-go
-fi
+# 检查文件内容（用于调试）
+bashio::log.info "Checking file-transfer-go binary..."
+file /app/file-transfer-go || true
+head -c 50 /app/file-transfer-go || true
+
+# 确保可执行权限
+chmod +x /app/file-transfer-go
 
 # 启动应用
 cd /app
 bashio::log.info "Starting file-transfer-go binary..."
-exec ./file-transfer-go
+
+# 如果直接启动失败，尝试其他方式
+if [ -x "/app/file-transfer-go" ]; then
+    exec ./file-transfer-go
+else
+    bashio::log.error "file-transfer-go is not executable"
+    exit 1
+fi

@@ -1,4 +1,4 @@
-name: Build and Push File Transfer Go1 (Multi-Arch, Docker Hub + GHCR)
+name: Build and Push File Transfer Go (Multi-Arch, Docker Hub + GHCR)
 
 on:
   workflow_dispatch:
@@ -21,7 +21,9 @@ jobs:
           - arch: arm64
             platform: linux/arm64
             build_arch: aarch64
-
+          - arch: armv7
+            platform: linux/arm/v7
+            build_arch: armv7
 
     permissions:
       contents: read
@@ -130,12 +132,13 @@ jobs:
           docker buildx imagetools create \
             --tag ghcr.io/${{ env.REPO_OWNER_LC }}/file-transfer-go:${{ env.VERSION }} \
             ghcr.io/${{ env.REPO_OWNER_LC }}/file-transfer-go-amd64:${{ env.VERSION }} \
-            ghcr.io/${{ env.REPO_OWNER_LC }}/file-transfer-go-aarch64:${{ env.VERSION }} 
-
+            ghcr.io/${{ env.REPO_OWNER_LC }}/file-transfer-go-aarch64:${{ env.VERSION }} \
+            ghcr.io/${{ env.REPO_OWNER_LC }}/file-transfer-go-armv7:${{ env.VERSION }}
 
       - name: Create and push multi-arch manifest for Docker Hub
         run: |
           docker buildx imagetools create \
             --tag ${{ secrets.DOCKER_USERNAME }}/file-transfer-go:${{ env.VERSION }} \
             ${{ secrets.DOCKER_USERNAME }}/file-transfer-go-amd64:${{ env.VERSION }} \
-            ${{ secrets.DOCKER_USERNAME }}/file-transfer-go-aarch64:${{ env.VERSION }} 
+            ${{ secrets.DOCKER_USERNAME }}/file-transfer-go-aarch64:${{ env.VERSION }} \
+            ${{ secrets.DOCKER_USERNAME }}/file-transfer-go-armv7:${{ env.VERSION }}
