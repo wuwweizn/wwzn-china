@@ -1,69 +1,44 @@
-# ==============================================
-# AMD64 Dockerfile - 基于 build-fullstack.sh 流程
-# ==============================================
+ARG BUILD_FROM
+FROM ${BUILD_FROM}
 
-# 前端构建阶段
-FROM node:20-alpine AS frontend-builder
+# 设置环境变量
+ENV LANG C.UTF-8
 
-# 安装 yarn
-RUN apk add --no-cache yarn
+# 安装必要的依赖
+RUN apk add --no-cache \
+    bash \
+    curl \
+    tzdata \
+    ca-certificates
 
-WORKDIR /app/chuan-next
-
-# 复制所有源代码（确保获取最新代码）
-COPY build/file-transfer-go/chuan-next/ ./
-
-# 清理构建文件（模拟 build-fullstack.sh 的 clean_all 函数）
-RUN rm -rf .next out
-
-# 前端依赖和构建
-COPY build/file-transfer-go/chuan-next/package.json build/file-transfer-go/chuan-next/yarn.lock ./
-RUN yarn install --frozen-lockfile --network-timeout 300000
-
-# 临时移除 API 目录进行 SSG 构建（模拟 build-fullstack.sh 的 build_frontend 函数）
-RUN if [ -d "src/app/api" ]; then mv src/app/api /tmp/api-backup; fi && \
-    NEXT_EXPORT=true NODE_ENV=production NEXT_PUBLIC_BACKEND_URL= NEXT_PUBLIC_WS_URL= NEXT_PUBLIC_API_BASE_URL= yarn build && \
-    if [ -d "/tmp/api-backup" ]; then mv /tmp/api-backup src/app/api; fi
-
-# ==============================================
-
-# Go 构建阶段
-FROM golang:1.21-alpine AS go-builder
-
-# 安装构建依赖
-RUN apk add --no-cache git ca-certificates tzdata
-
-ENV GOPROXY=https://proxy.golang.org,direct
-ENV CGO_ENABLED=0
-ENV GOOS=linux
-ENV GOARCH=amd64
-
+# 设置工作目录
 WORKDIR /app
 
-# 先复制所有源代码（确保获取最新代码）
-COPY build/file-transfer-go/go.mod build/file-transfer-go/go.sum ./
+# 复制启动脚本
+COPY run.sh /
+RUN chmod a+x /run.sh
 
-# 下载 Go 依赖
-RUN go mod download
+# 从原始镜像复制文件（这里假设我们基于官方镜像）
+# 注意：你需要根据实际情况调整这部分
+ARG TARGETARCH
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+        curl -L -o file-transfer-go https://github.com/MatrixSeven/file-transfer-go/releases/latest/download/file-transfer-go-linux-amd64; \
+    elif [ "$TARGETARCH" = "arm64" ]; then \
+        curl -L -o file-transfer-go https://github.com/MatrixSeven/file-transfer-go/releases/latest/download/file-transfer-go-linux-arm64; \
+    elif [ "$TARGETARCH" = "arm" ]; then \
+        curl -L -o file-transfer-go https://github.com/MatrixSeven/file-transfer-go/releases/latest/download/file-transfer-go-linux-arm; \
+    fi && \
+    chmod +x file-transfer-go
 
-# 拷贝前端构建结果
-COPY --from=frontend-builder /app/chuan-next/out ./internal/web/frontend/
+# 或者如果没有预编译版本，从源码构建
+# 这需要安装 Go 和 Node.js 环境
+# RUN apk add --no-cache git go nodejs npm
+# RUN git clone https://github.com/MatrixSeven/file-transfer-go.git . && \
+#     chmod +x build-fullstack.sh && \
+#     ./build-fullstack.sh
 
-# 构建 Go 应用 - AMD64 架构（模拟 build-fullstack.sh 的 build_backend 函数）
-COPY build/file-transfer-go/cmd ./cmd
-RUN go build -ldflags='-s -w -extldflags '-static'' -o server ./cmd
-
-# ==============================================
-
-# 最终镜像
-FROM alpine:3.18
-
-RUN apk add --no-cache ca-certificates tzdata && \
-    adduser -D -s /bin/sh appuser
-
-WORKDIR /app
-COPY --from=go-builder --chown=appuser:appuser /app/server ./
-USER appuser
-
+# 暴露端口
 EXPOSE 8080
-CMD ["./server"]
+
+# 启动脚本
+CMD [ "/run.sh" ]

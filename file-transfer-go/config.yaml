@@ -1,0 +1,27 @@
+name: File Transfer Go
+version: "1.0.0"
+slug: file-transfer-go
+description: "基于 WebRTC 的端到端文件传输服务，支持文件传输、文字传输和桌面共享"
+url: "https://github.com/MatrixSeven/file-transfer-go"
+arch:
+  - amd64
+  - aarch64
+  - armv7
+init: false
+startup: application
+services:
+  - mysql:want
+  - mqtt:want
+options:
+  port: 8080
+  node_env: "production"
+  log_level: "info"
+schema:
+  port: "int(1,65535)"
+  node_env: "list(production|development)"
+  log_level: "list(trace|debug|info|warn|error|fatal|panic)?"
+ports:
+  "8080/tcp": 8080
+ports_description:
+  "8080/tcp": "Web 界面端口"
+image: "ghcr.io/{arch}"
