@@ -4,13 +4,20 @@ FROM golang:1.19-buster AS builder
 # 设置工作目录
 WORKDIR /app
 
-# 将源代码复制到容器中
-COPY . .
+# 复制 go.mod 和 go.sum 文件
+# 这里需要调整路径，确保 go.mod 被正确复制
+COPY build/file-transfer-go/go.mod build/file-transfer-go/go.sum ./
 
-# 下载 Go 依赖并构建应用
-RUN go mod tidy && go build -o file-transfer-go .
+# 下载 Go 依赖
+RUN go mod tidy
 
-# 使用更小的镜像运行应用
+# 复制其余的源代码到容器中
+COPY build/file-transfer-go/ .
+
+# 构建应用
+RUN go build -o file-transfer-go .
+
+# 使用更小的镜像来运行应用
 FROM debian:bullseye-slim
 
 # 安装必要的依赖
