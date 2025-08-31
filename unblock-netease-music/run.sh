@@ -82,10 +82,12 @@ if [ "${STRICT}" = "true" ]; then
     log_info "已启用严格模式"
 fi
 
-# 自定义端点
-if [ -n "${ENDPOINT}" ]; then
+# 自定义端点 - 只有在有效值时才添加
+if [ -n "${ENDPOINT}" ] && [ "${ENDPOINT}" != "null" ] && [ "${ENDPOINT}" != "" ]; then
     ARGS+=("-e" "${ENDPOINT}")
     log_info "使用自定义端点: ${ENDPOINT}"
+else
+    log_info "使用默认端点"
 fi
 
 # 设置环境变量

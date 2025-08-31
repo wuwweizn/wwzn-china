@@ -16,7 +16,7 @@ options:
   host: "0.0.0.0"
   source_order: "kuwo kugou migu"
   strict: false
-  endpoint: ""
+  endpoint: null
   log_level: "info"
 schema:
   port: "int(1024,65535)"
