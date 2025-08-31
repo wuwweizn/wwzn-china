@@ -1,4 +1,4 @@
-﻿name: Build and Push webtunnel (Multi-Arch, Docker Hub + GHCR)
+﻿name: Build and Push WebTunnel (Multi-Arch, Docker Hub + GHCR)
 
 on:
   workflow_dispatch:
@@ -21,6 +21,9 @@ jobs:
           - arch: arm64
             platform: linux/arm64
             build_arch: aarch64
+          - arch: armv7
+            platform: linux/arm/v7
+            build_arch: armv7
     permissions:
       contents: read
       packages: write
@@ -54,16 +57,15 @@ jobs:
         id: extract_version
         run: |
           ADDON_DIR="webtunnel"
-          CONFIG_PATH="${ADDON_DIR}/config.json"
-
+          CONFIG_PATH="${ADDON_DIR}/config.yaml"
+          
           if [[ -f "$CONFIG_PATH" ]]; then
-            # 去掉引号，避免 "1.0.0" 这种格式
-            VERSION=$(yq e -r '.version' "$CONFIG_PATH")
+            VERSION=$(yq e ".version" "$CONFIG_PATH")
           else
             echo "❌ ERROR: $CONFIG_PATH not found!"
             exit 1
           fi
-
+          
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "BUILD_ARCH=${{ matrix.build_arch }}" >> $GITHUB_ENV
           echo "💡 VERSION=$VERSION"
@@ -75,7 +77,7 @@ jobs:
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push webtunnel for ${{ matrix.arch }}
+      - name: Build and push WebTunnel for ${{ matrix.arch }}
         uses: docker/build-push-action@v5
         with:
           context: webtunnel

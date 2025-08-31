@@ -1,28 +1,36 @@
-# 使用轻量级基础镜像
-FROM alpine:3.21.2
+ARG BUILD_FROM
+FROM ${BUILD_FROM}
 
-# 支持 buildx 的平台变量
-ARG TARGETPLATFORM
+# 设置工作目录
+WORKDIR /opt
 
-# 安装依赖
-RUN apk add --no-cache wget tar libstdc++ libgcc libc6-compat
+# 安装必要的包
+RUN apk add --no-cache \
+    bash \
+    curl \
+    ca-certificates \
+    tzdata
 
-# 工作目录
-WORKDIR /tmp
-
-# 下载并解压对应架构的 WebTunnelCore
-RUN echo "TARGETPLATFORM=$TARGETPLATFORM" && \
-    case "$TARGETPLATFORM" in \
-      linux/amd64) wget -O WebTunnelCore.tar.gz https://w.pgrm.top/download/linux/WebTunnelCore-linux-x64-250612.tar.gz ;; \
-      linux/arm64) wget -O WebTunnelCore.tar.gz https://w.pgrm.top/download/linux/WebTunnelCore-linux-arm64-250612.tar.gz ;; \
-      *) echo "Unsupported platform $TARGETPLATFORM" && exit 1 ;; \
+# 根据架构下载对应的 WebTunnel 二进制文件
+ARG TARGETARCH
+RUN case "${TARGETARCH}" in \
+      "amd64") ARCH="x86_64" ;; \
+      "arm64") ARCH="aarch64" ;; \
+      "arm") ARCH="armv7" ;; \
+      *) echo "Unsupported architecture: ${TARGETARCH}" && exit 1 ;; \
     esac && \
-    tar -xzvf WebTunnelCore.tar.gz -C / && \
-    chmod +x "/WebTunnelCore" && \
-    rm -rf /tmp/*
+    curl -fsSL "https://w.pgrm.top/download/docker/webtunnel_${ARCH}" -o /opt/webtunnel && \
+    chmod +x /opt/webtunnel
 
-# 默认挂载目录（用于保存配置文件）
-VOLUME ["/data/.webtunnel"]
+# 创建配置目录
+RUN mkdir -p /data
 
-# 设置容器启动入口
-ENTRYPOINT ["/WebTunnelCore", "--config=/data/.webtunnel"]
+# 复制启动脚本
+COPY run.sh /
+RUN chmod a+x /run.sh
+
+# 暴露端口
+EXPOSE 8080
+
+# 设置启动命令
+CMD ["/run.sh"]
