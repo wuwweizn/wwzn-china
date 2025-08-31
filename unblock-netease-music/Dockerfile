@@ -46,5 +46,9 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=15s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:8080/ || wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1
 
-# 启动命令 - 使用正确的UnblockNeteaseMusic参数格式
-CMD ["node", "app.js", "-p", "8080", "-a", "0.0.0.0", "-o", "kuwo", "kugou", "migu"]
+# 复制启动脚本并设置权限
+COPY run.sh /
+RUN chmod a+x /run.sh
+
+# 启动命令 - 使用启动脚本而不是直接运行app.js
+CMD ["/run.sh"]

@@ -1,7 +1,7 @@
 name: UnblockNeteaseMusic
-version: "1.0.4"
+version: "1.0.5"
 slug: unblock-netease-music
-description: "解锁网易云音乐灰色歌曲 - 修正配置版本"
+description: "解锁网易云音乐灰色歌曲 - 最终修复版本"
 url: "https://github.com/nondanee/UnblockNeteaseMusic"
 arch:
   - aarch64
@@ -45,7 +45,13 @@ privileged: []
 environment:
   NODE_ENV: "production"
   ENABLE_LOCAL_VIP: "1"
+  PORT: "{{ .port }}"
+  HOST: "{{ .host }}"
+  SOURCE_ORDER: "{{ .source_order }}"
+  STRICT: "{{ .strict }}"
+  ENDPOINT: "{{ .endpoint }}"
+  LOG_LEVEL: "{{ .log_level }}"
 labels:
   io.hass.type: "addon"
-  io.hass.version: "1.0.3"
+  io.hass.version: "1.0.4"
   io.hass.arch: "aarch64|amd64|armv7"
