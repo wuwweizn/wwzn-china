@@ -19,7 +19,6 @@ jobs:
             platform: linux/amd64
             build_arch: amd64
 
-
     permissions:
       contents: read
       packages: write
@@ -80,4 +79,6 @@ jobs:
           push: true
           build-args: |
             BUILD_FROM=ghcr.io/hassio-addons/base/${{ matrix.build_arch }}:15.0.1
-          tags: ghcr.io/${{ env.REPO_OWNER_LC }}/find_music-${{ env.BUILD_ARCH }}:${{ env.VERSION }},${{ secrets.DOCKER_USERNAME }}/find_music-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
+          tags: >
+            ghcr.io/${{ env.REPO_OWNER_LC }}/find_music-${{ env.BUILD_ARCH }}:${{ env.VERSION }},
+            ${{ secrets.DOCKER_USERNAME }}/find_music-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
