@@ -4,6 +4,18 @@ import yaml
 from pathlib import Path
 from tabulate import tabulate
 
+def read_text_fallback(path, encodings=['utf-8', 'gbk', 'latin-1']):
+    """
+    尝试多种编码读取文件，避免 UnicodeDecodeError
+    """
+    for enc in encodings:
+        try:
+            with open(path, 'r', encoding=enc) as f:
+                return f.read()
+        except UnicodeDecodeError:
+            continue
+    raise UnicodeDecodeError(f"Unable to decode {path} with {encodings}")
+
 # 获取上一级目录
 parent_dir = Path(__file__).parent.parent
 
@@ -21,13 +33,14 @@ for subdir in parent_dir.iterdir():
         
         for config_file in config_files:
             try:
-                # 读取配置文件
+                # 读取配置文件（自动尝试不同编码）
+                text = read_text_fallback(config_file)
+
+                # 解析内容
                 if config_file.suffix.lower() == '.json':
-                    with open(config_file, 'r', encoding='utf-8') as f:
-                        config = json.load(f)
+                    config = json.loads(text)
                 else:
-                    with open(config_file, 'r', encoding='utf-8') as f:
-                        config = yaml.safe_load(f)
+                    config = yaml.safe_load(text)
                 
                 # 提取所需字段
                 name = config.get('name', 'N/A')
@@ -41,14 +54,9 @@ for subdir in parent_dir.iterdir():
                 github_link = f"[{relative_path}]({GITHUB_BASE_URL}{relative_path})"
                 
                 # 添加到结果列表
-                results.append([
-                    name, 
-                    description, 
-                    version, 
-                    github_link
-                ])
+                results.append([name, description, version, github_link])
                 
-            except (json.JSONDecodeError, yaml.YAMLError) as e:
+            except Exception as e:
                 print(f"Error parsing {config_file}: {e}")
                 continue
 
