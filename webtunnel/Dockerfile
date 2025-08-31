@@ -1,33 +1,3 @@
-# 第一阶段：下载和准备文件
-FROM alpine:latest AS downloader
-
-RUN apk add --no-cache curl file
-
-ARG TARGETARCH
-WORKDIR /download
-
-RUN echo "Architecture: ${TARGETARCH}" && \
-    if [ "${TARGETARCH}" = "amd64" ]; then \
-        ARCH="x64"; \
-    elif [ "${TARGETARCH}" = "arm64" ]; then \
-        ARCH="arm64"; \
-    else \
-        echo "Unsupported architecture: ${TARGETARCH}"; \
-        exit 1; \
-    fi && \
-    echo "Downloading webtunnel_${ARCH}-250828.tar..." && \
-    curl -fL "https://w.pgrm.top/download/docker/webtunnel_${ARCH}-250828.tar" -o webtunnel.tar && \
-    echo "Downloaded file info:" && \
-    ls -la webtunnel.tar && \
-    file webtunnel.tar && \
-    echo "Extracting tar file..." && \
-    tar -xf webtunnel.tar && \
-    ls -la . && \
-    echo "Making files executable..." && \
-    find . -name "*webtunnel*" -type f -exec chmod +x {} \; && \
-    find . -type f -exec file {} \;
-
-# 第二阶段：构建最终镜像
 ARG BUILD_FROM=ghcr.io/hassio-addons/base/amd64:15.0.1
 FROM ${BUILD_FROM}
 
@@ -41,24 +11,58 @@ RUN apk add --no-cache \
     ca-certificates \
     tzdata
 
-# 从第一阶段复制文件
-COPY --from=downloader /download/ /opt/
+# 根据架构下载对应的 WebTunnel tar 包并解压
+ARG TARGETARCH
+RUN echo "Target architecture: ${TARGETARCH}" && \
+    case "${TARGETARCH}" in \
+      "amd64") ARCH="x64" ;; \
+      "arm64") ARCH="arm64" ;; \
+      "arm") echo "armv7 not available, using arm64"; ARCH="arm64" ;; \
+      *) echo "Unsupported architecture: ${TARGETARCH}" && exit 1 ;; \
+    esac && \
+    echo "Mapped architecture: ${ARCH}" && \
+    URL="https://w.pgrm.top/download/docker/webtunnel_${ARCH}-250828.tar" && \
+    echo "Download URL: ${URL}"
 
-# 确保有一个 webtunnel 可执行文件
-RUN ls -la /opt/ && \
-    if [ ! -f /opt/webtunnel ]; then \
-        WEBTUNNEL_FILE=$(find /opt -name "*webtunnel*" -type f -executable | head -1); \
-        if [ -n "${WEBTUNNEL_FILE}" ]; then \
-            echo "Creating symlink: ${WEBTUNNEL_FILE} -> /opt/webtunnel"; \
-            ln -sf "${WEBTUNNEL_FILE}" /opt/webtunnel; \
-        else \
-            echo "No webtunnel executable found!"; \
-            exit 1; \
-        fi; \
-    fi && \
-    chmod +x /opt/webtunnel && \
-    echo "Final setup complete:" && \
+# 分步执行以便调试
+RUN TARGETARCH_VAL="${TARGETARCH:-amd64}" && \
+    case "${TARGETARCH_VAL}" in \
+      "amd64") ARCH="x64" ;; \
+      "arm64") ARCH="arm64" ;; \
+      *) ARCH="x64" ;; \
+    esac && \
+    echo "Downloading WebTunnel tar for ${ARCH}..." && \
+    curl -fsSL --connect-timeout 30 --max-time 300 \
+      "https://w.pgrm.top/download/docker/webtunnel_${ARCH}-250828.tar" \
+      -o /tmp/webtunnel.tar
+
+# 验证下载并解压
+RUN echo "Checking downloaded file..." && \
+    ls -la /tmp/webtunnel.tar && \
+    file /tmp/webtunnel.tar && \
+    echo "Extracting to /opt..." && \
+    cd /opt && \
+    tar -tf /tmp/webtunnel.tar && \
+    tar -xf /tmp/webtunnel.tar && \
+    echo "Files after extraction:" && \
     ls -la /opt/
+
+# 设置权限和链接
+RUN echo "Setting permissions..." && \
+    find /opt -type f -exec file {} \; && \
+    find /opt -name "*webtunnel*" -type f -exec chmod +x {} \; && \
+    ls -la /opt/ && \
+    if [ ! -f /opt/webtunnel ]; then \
+      echo "Creating webtunnel symlink..." && \
+      WEBTUNNEL_FILE=$(find /opt -name "*webtunnel*" -type f | head -1) && \
+      echo "Found file: ${WEBTUNNEL_FILE}" && \
+      if [ -n "${WEBTUNNEL_FILE}" ]; then \
+        ln -sf "${WEBTUNNEL_FILE}" /opt/webtunnel; \
+      fi; \
+    fi && \
+    echo "Final /opt contents:" && \
+    ls -la /opt/ && \
+    rm -f /tmp/webtunnel.tar
 
 # 创建配置目录
 RUN mkdir -p /data
