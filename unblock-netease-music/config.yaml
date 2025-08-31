@@ -1,0 +1,54 @@
+name: UnblockNeteaseMusic
+version: "1.0.0"
+slug: unblock-netease-music
+description: "解锁网易云音乐灰色歌曲，让您享受完整的音乐库"
+url: "https://github.com/nondanee/UnblockNeteaseMusic"
+arch:
+  - aarch64
+  - amd64
+  - armv7
+init: false
+map:
+  - share:rw
+  - config:rw
+options:
+  port: 8080
+  host: "0.0.0.0"
+  source_order: "kuwo kugou migu"
+  enable_flac: false
+  enable_local_vip: false
+  search_limit: 3
+  log_level: "info"
+schema:
+  port: "int(1024,65535)"
+  host: "str"
+  source_order: "str?"
+  enable_flac: "bool"
+  enable_local_vip: "bool"
+  search_limit: "int(1,10)"
+  log_level: "list(debug|info|warn|error)"
+  strict: "bool?"
+  endpoint: "url?"
+  proxy_only_netease_music: "bool?"
+ports:
+  8080/tcp: null
+ports_description:
+  8080/tcp: "UnblockNeteaseMusic HTTP服务端口"
+image: "ghcr.io/wuwweizn/unblock-netease-music-{arch}"
+startup: services
+boot: manual
+hassio_api: false
+hassio_role: default
+homeassistant_api: false
+host_network: false
+full_access: false
+apparmor: false
+devices: []
+auto_uart: false
+udev: false
+privileged: []
+environment: {}
+labels:
+  io.hass.type: "addon"
+  io.hass.version: "1.0.0"
+  io.hass.arch: "aarch64|amd64|armv7"
