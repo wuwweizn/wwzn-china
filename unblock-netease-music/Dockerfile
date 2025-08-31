@@ -46,5 +46,5 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=15s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:8080/ || wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1
 
-# 启动命令 - 添加更多调试和错误处理
-CMD ["sh", "-c", "echo 'Starting UnblockNeteaseMusic...' && node app.js --port 8080 --host 0.0.0.0"]
+# 启动命令 - 修正参数格式
+CMD ["node", "app.js", "-p", "8080", "-a", "0.0.0.0"]

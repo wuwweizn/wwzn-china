@@ -23,13 +23,9 @@ log_error() {
 PORT=$(bashio::config 'port')
 HOST=$(bashio::config 'host')
 SOURCE_ORDER=$(bashio::config 'source_order')
-ENABLE_FLAC=$(bashio::config 'enable_flac')
-ENABLE_LOCAL_VIP=$(bashio::config 'enable_local_vip')
-SEARCH_LIMIT=$(bashio::config 'search_limit')
-LOG_LEVEL=$(bashio::config 'log_level')
 STRICT=$(bashio::config 'strict')
 ENDPOINT=$(bashio::config 'endpoint')
-PROXY_ONLY=$(bashio::config 'proxy_only_netease_music')
+LOG_LEVEL=$(bashio::config 'log_level')
 
 log_info "开始启动 UnblockNeteaseMusic 服务..."
 log_info "监听地址: ${HOST}:${PORT}"
@@ -61,52 +57,46 @@ test_network "https://www.kuwo.cn/" "酷我音乐"
 test_network "https://www.kugou.com/" "酷狗音乐"
 test_network "https://music.migu.cn/" "咪咕音乐"
 
-# 构建启动命令参数
+# 构建启动命令参数 - 使用正确的UnblockNeteaseMusic参数格式
 ARGS=()
-ARGS+=("--port" "${PORT}")
-ARGS+=("--host" "${HOST}")
+ARGS+=("-p" "${PORT}")           # 端口参数
+ARGS+=("-a" "${HOST}")           # 监听地址参数
 
+# 处理音源参数
 if [ -n "${SOURCE_ORDER}" ]; then
-    ARGS+=("--source" "${SOURCE_ORDER}")
+    ARGS+=("-o")  # 音源选项
+    # 将空格分隔的字符串转换为多个参数
+    for source in ${SOURCE_ORDER}; do
+        ARGS+=("${source}")
+        log_info "添加音源: ${source}"
+    done
+else
+    # 默认音源
+    ARGS+=("-o" "kuwo" "kugou" "migu")
+    log_info "使用默认音源: kuwo kugou migu"
 fi
 
-if [ "${ENABLE_FLAC}" = "true" ]; then
-    ARGS+=("--enable-flac")
-    log_info "已启用 FLAC 格式支持"
-fi
-
-if [ "${ENABLE_LOCAL_VIP}" = "true" ]; then
-    ARGS+=("--enable-local-vip")
-    log_info "已启用本地 VIP 模式"
-fi
-
-if [ -n "${SEARCH_LIMIT}" ] && [ "${SEARCH_LIMIT}" != "3" ]; then
-    ARGS+=("--search-limit" "${SEARCH_LIMIT}")
-fi
-
+# 严格模式
 if [ "${STRICT}" = "true" ]; then
-    ARGS+=("--strict")
+    ARGS+=("-s")
     log_info "已启用严格模式"
 fi
 
+# 自定义端点
 if [ -n "${ENDPOINT}" ]; then
-    ARGS+=("--endpoint" "${ENDPOINT}")
+    ARGS+=("-e" "${ENDPOINT}")
     log_info "使用自定义端点: ${ENDPOINT}"
 fi
 
-if [ "${PROXY_ONLY}" = "true" ]; then
-    ARGS+=("--proxy-only-netease-music")
-    log_info "仅代理网易云音乐流量"
-fi
-
-# 设置日志和调试环境变量
+# 设置环境变量
 export NODE_ENV="production"
 export ENABLE_LOCAL_VIP=1
 
+# 设置日志级别
 case "${LOG_LEVEL}" in
     "debug")
-        export DEBUG="app*"
-        log_info "启用调试模式"
+        export DEBUG="*"
+        log_info "启用详细调试模式"
         ;;
     "info")
         export LOG_LEVEL="info"
@@ -139,6 +129,10 @@ fi
 log_info "  工作目录: $(pwd)"
 log_info "  Node.js 版本: $(node --version)"
 
+# 显示最终启动参数
+log_info "启动参数: ${ARGS[*]}"
+log_info "环境变量: NODE_ENV=${NODE_ENV}, ENABLE_LOCAL_VIP=${ENABLE_LOCAL_VIP}"
+
 # 创建错误处理函数
 handle_error() {
     log_error "❌ 应用异常退出，退出码: $?"
@@ -150,26 +144,11 @@ handle_error() {
 trap handle_error ERR
 
 # 启动服务
-log_info "启动参数: ${ARGS[*]}"
 log_info "UnblockNeteaseMusic 服务正在启动..."
-log_info "服务地址将是: http://${HOST}:${PORT}"
+log_info "服务地址: http://${HOST}:${PORT}"
+log_info "---"
 
 cd /app
 
-# 使用exec确保信号正确传递，同时添加错误处理
-exec node app.js "${ARGS[@]}" 2>&1 | while read -r line; do
-    case "$line" in
-        *"ERROR"*|*"error"*|*"Error"*)
-            echo -e "${RED}[ERROR]${NC} $line"
-            ;;
-        *"WARN"*|*"warn"*|*"Warn"*)
-            echo -e "${YELLOW}[WARN]${NC} $line"
-            ;;
-        *"listening"*|*"server"*|*"started"*)
-            echo -e "${GREEN}[INFO]${NC} $line"
-            ;;
-        *)
-            echo "$line"
-            ;;
-    esac
-done
+# 使用exec确保信号正确传递
+exec node app.js "${ARGS[@]}"
