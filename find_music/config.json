@@ -1,0 +1,15 @@
+{
+  "name": "Find Music",
+  "version": "1.0.0",
+  "slug": "find_music",
+  "description": "Music search and play",
+  "arch": ["armv7", "armhf", "aarch64", "amd64"],
+  "startup": "application",
+  "boot": "auto",
+  "ports": {
+    "3000/tcp": 3000
+  },
+  "options": {},
+  "map": [],
+  "webui": "http://[HOST]:[PORT:3000]"
+}
