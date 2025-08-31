@@ -5,7 +5,7 @@ on:
     inputs:
       version:
         description: '镜像版本（默认为 v1）'
-        default: '1.1.2'
+        default: 'v1'
 
 jobs:
   mirror:
