@@ -9,6 +9,10 @@ arch:
 init: false
 url: https://github.com/wuwweizn/wwzn-china
 image: ghcr.io/wuwweizn/webtunnel-{arch}
+build_from:
+  aarch64: ghcr.io/hassio-addons/base/aarch64:15.0.1
+  amd64: ghcr.io/hassio-addons/base/amd64:15.0.1
+  armv7: ghcr.io/hassio-addons/base/armv7:15.0.1
 map:
   - config:rw
 ports:

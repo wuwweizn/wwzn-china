@@ -1,4 +1,4 @@
-ARG BUILD_FROM
+ARG BUILD_FROM=ghcr.io/hassio-addons/base/amd64:15.0.1
 FROM ${BUILD_FROM}
 
 # 设置工作目录

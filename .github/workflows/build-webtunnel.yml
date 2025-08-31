@@ -84,6 +84,8 @@ jobs:
           file: webtunnel/Dockerfile
           platforms: ${{ matrix.platform }}
           push: true
+          build-args: |
+            BUILD_FROM=ghcr.io/hassio-addons/base/${{ matrix.build_arch }}:15.0.1
           tags: |
             ghcr.io/${{ env.REPO_OWNER_LC }}/webtunnel-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
             ${{ secrets.DOCKER_USERNAME }}/webtunnel-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
