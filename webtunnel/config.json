@@ -1,0 +1,27 @@
+{
+  "version": "1.0.0",
+  "name": "WebTunnel",
+  "slug": "webtunnel",
+  "description": "WebTunnel - 网络隧道工具",
+  "url": "https://github.com/wuwweizn/wwzn-china",
+  "codenotary": "wuweizhineng@163.com",
+  "arch": [
+    "amd64",
+    "aarch64"
+  ],
+  "startup": "services",
+  "image": "ghcr.io/wuwweizn/webtunnel-{arch}",
+  "init": false,
+  "hassio_role": "manager",
+  "panel_icon": "mdi:server-network",
+  "ports": {
+    "9600/tcp": 9600
+  },
+  "devices": [
+    "/dev/net/tun"
+  ],
+  "boot": "auto",
+  "restart": "always",
+  "host_network": true,
+  "webui": "http://[HOST]:[PORT:9600]/?s=gjhAXN"
+}
