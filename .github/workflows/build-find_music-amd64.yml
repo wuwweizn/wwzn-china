@@ -1,11 +1,11 @@
-﻿name: Mirror Find Music Image-amd64 to GHCR + Docker Hub
+﻿name: Mirror Find Music-amd64 Image to GHCR + Docker Hub (amd64)
 
 on:
   workflow_dispatch:
     inputs:
       version:
         description: '镜像版本（默认为 v1）'
-        default: 'v1'
+        default: '1.1.2'
 
 jobs:
   mirror:
@@ -30,14 +30,14 @@ jobs:
       - name: Pull original find-music image
         run: docker pull docker.io/dest16/find-music:${{ env.VERSION }}
 
-      - name: Tag for GHCR
-        run: docker tag docker.io/dest16/find-music:${{ env.VERSION }} ghcr.io/${{ github.repository_owner }}/find_music:${{ env.VERSION }}
+      - name: Tag for GHCR (find_music-amd64)
+        run: docker tag docker.io/dest16/find-music:${{ env.VERSION }} ghcr.io/${{ github.repository_owner }}/find_music-amd64:${{ env.VERSION }}
 
-      - name: Tag for Docker Hub
-        run: docker tag docker.io/dest16/find-music:${{ env.VERSION }} ${{ secrets.DOCKER_USERNAME }}/find_music:${{ env.VERSION }}
+      - name: Tag for Docker Hub (find_music-amd64)
+        run: docker tag docker.io/dest16/find-music:${{ env.VERSION }} ${{ secrets.DOCKER_USERNAME }}/find_music-amd64:${{ env.VERSION }}
 
-      - name: Push to GHCR
-        run: docker push ghcr.io/${{ github.repository_owner }}/find_music:${{ env.VERSION }}
+      - name: Push to GHCR (find_music-amd64)
+        run: docker push ghcr.io/${{ github.repository_owner }}/find_music-amd64:${{ env.VERSION }}
 
-      - name: Push to Docker Hub
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/find_music:${{ env.VERSION }}
+      - name: Push to Docker Hub (find_music-amd64)
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/find_music-amd64:${{ env.VERSION }}
