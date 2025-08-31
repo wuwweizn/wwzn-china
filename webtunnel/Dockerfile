@@ -63,6 +63,7 @@ RUN echo "Verifying and extracting tar file..." && \
 
 # 第二阶段：构建最终镜像
 ARG BUILD_FROM=ghcr.io/hassio-addons/base/amd64:15.0.1
+ARG TARGETARCH
 FROM ${BUILD_FROM}
 
 # 设置工作目录
