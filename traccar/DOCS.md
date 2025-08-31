@@ -1,41 +1,38 @@
-# Home Assistant Community Add-on: Traccar
+# Home Assistant 社区加载项：Traccar
 
-[Traccar][traccar] is a modern GPS Tracking Platform, which is now available
-as an Hass.io add-on and allows you to run your GPS Tracking software
-without any cloud.
+\[Traccar]\[traccar] 是一个现代的 GPS 追踪平台，现在可以作为 Hass.io 加载项运行，让你无需依赖云端即可运行 GPS 追踪软件。
 
-Traccar supports more protocols and device models than any other GPS tracking
-system on the market, straight from your Hass.io instance. You can select GPS
-trackers from a variety of vendors from low-cost Chinese models to high-end
-quality brands.
+Traccar 支持的协议和设备型号比市场上任何其他 GPS 追踪系统都多，直接通过 Hass.io 实例即可使用。你可以从低成本的国产设备到高端品牌选择 GPS 追踪器。
 
-Traccar also has native mobile apps available for Android and iOS platforms
-so that you can track those as well. AND! With the Home Assistant `traccar`
-integration (introduced in 0.83) the data in Traccar will be sent back into
-your Home Assistant instance as well.
+Traccar 还提供 Android 和 iOS 原生移动应用，可以在手机上进行追踪。同时，通过 Home Assistant 的 `traccar` 集成（从版本 0.83 开始引入），Traccar 的数据可以同步回 Home Assistant。
 
-## Installation
+---
 
-The installation of this add-on is pretty straightforward and not different in
-comparison to installing any other Home Assistant add-on.
+## 安装
 
-1. Ensure you have the [official "MariaDB" add-on][mariadb] installed and
-   running!
-1. Click the Home Assistant My button below to open the add-on on your Home
-   Assistant instance.
+安装此加载项非常简单，与其他 Home Assistant 加载项类似。
 
-   [![Open this add-on in your Home Assistant instance.][addon-badge]][addon]
+1. 确保你已经安装并运行了官方的 \[MariaDB 加载项]\[mariadb]。
 
-1. Click the "Install" button to install the add-on.
-1. Start the "Traccar" add-on
-1. Check the logs of the "Traccar" add-on to see if everything went well.
-1. Click the "OPEN WEB UI" button.
+2. 点击 Home Assistant 中的 “My button” 打开加载项页面。
 
-## Configuration
+   \[!\[在 Home Assistant 中打开加载项]\[addon-badge]]\[addon]
 
-**Note**: _Remember to restart the add-on when the configuration is changed._
+3. 点击 “Install” 按钮安装加载项。
 
-Example add-on configuration:
+4. 启动 “Traccar” 加载项。
+
+5. 查看 “Traccar” 加载项日志，确保运行正常。
+
+6. 点击 “OPEN WEB UI” 打开 Web 界面。
+
+---
+
+## 配置
+
+**注意**：修改配置后请记得重启加载项。
+
+示例加载项配置：
 
 ```yaml
 log_level: info
@@ -44,49 +41,45 @@ certfile: fullchain.pem
 keyfile: privkey.pem
 ```
 
-**Note**: _This is just an example, don't copy and paste it! Create your own!_
+**注意**：这是示例配置，请根据实际情况创建自己的配置，不要直接复制粘贴！
 
-### Option: `log_level`
+### 配置选项
 
-The `log_level` option controls the level of log output by the addon and can
-be changed to be more or less verbose, which might be useful when you are
-dealing with an unknown issue. Possible values are:
+#### `log_level`
 
-- `trace`: Show every detail, like all called internal functions.
-- `debug`: Shows detailed debug information.
-- `info`: Normal (usually) interesting events.
-- `warning`: Exceptional occurrences that are not errors.
-- `error`: Runtime errors that do not require immediate action.
-- `fatal`: Something went terribly wrong. Add-on becomes unusable.
+控制加载项日志输出的详细程度。可选值：
 
-Please note that each level automatically includes log messages from a
-more severe level, e.g., `debug` also shows `info` messages. By default,
-the `log_level` is set to `info`, which is the recommended setting unless
-you are troubleshooting.
+* `trace`：显示所有细节，包括所有内部函数调用。
+* `debug`：显示详细调试信息。
+* `info`：正常（通常）信息事件。
+* `warning`：非错误但异常事件。
+* `error`：运行时错误，无需立即处理。
+* `fatal`：严重错误，加载项无法使用。
 
-### Option: `ssl`
+> 每个级别会包含比它更严重的日志。例如 `debug` 会显示 `info` 日志。默认值是 `info`。
 
-Enables/Disables SSL (HTTPS) on the web interface.
-Set it `true` to enable it, `false` otherwise.
+#### `ssl`
 
-### Option: `certfile`
+是否启用 Web 界面的 HTTPS。
 
-The certificate file to use for SSL.
+* 设置为 `true`：启用
+* 设置为 `false`：禁用
 
-**Note**: _The file MUST be stored in `/ssl/`, which is the default_
+#### `certfile`
 
-### Option: `keyfile`
+SSL 证书文件路径，必须存储在 `/ssl/` 下。
 
-The private key file to use for SSL.
+#### `keyfile`
 
-**Note**: _The file MUST be stored in `/ssl/`, which is the default_
+SSL 私钥文件路径，必须存储在 `/ssl/` 下。
 
-## Integrating into Home Assistant
+---
 
-The `traccar` integration of Home Assistant makes it possible to transfer all
-assets tracked by Traccar to appear in Home Assistant as a tracked device.
+## 集成到 Home Assistant
 
-Add the following snippet to your Home Assistant `configuration.yaml` file.
+Home Assistant 的 `traccar` 集成可以将 Traccar 中的所有资产作为设备同步到 Home Assistant。
+
+在 Home Assistant 的 `configuration.yaml` 中添加：
 
 ```yaml
 device_tracker:
@@ -97,93 +90,76 @@ device_tracker:
     password: TRACCAR_PASSWORD
 ```
 
-Restart Home Assistant.
+重启 Home Assistant。
 
-## Enabling more protocols
+---
 
-By default, this add-on has disabled most of the GPS protocols. This has
-been done to reduce the number of open ports the add-on would create.
+## 启用更多协议
 
-By default, only the OsmAnd protocol (used by the Traccar Apps) and the API
-are enabled. If you want more protocols, you can do so, by adding entries
-to your `traccar.xml` file in the add-on configuration folder.
+默认情况下，此加载项禁用了大部分 GPS 协议，以减少开放端口数量。
 
-A list if all entries can be found here:
+默认仅启用 OsmAnd 协议（Traccar App 使用）和 API。
+如果需要更多协议，可在加载项配置文件夹中的 `traccar.xml` 中添加条目。
+完整列表请见：[traccar.xml](https://github.com/hassio-addons/addon-traccar/blob/main/traccar/rootfs/etc/traccar/traccar.xml#L22)
 
-<https://github.com/hassio-addons/addon-traccar/blob/main/traccar/rootfs/etc/traccar/traccar.xml#L22>
+设备使用的协议可参考 [Traccar 官方网站](https://www.traccar.org/devices/)。
 
-To find out which protocol your device uses, please refer to the Traccar
-website: <https://www.traccar.org/devices/>
+---
 
-## Changelog & Releases
+## 更新日志 & 版本发布
 
-This repository keeps a change log using [GitHub's releases][releases]
-functionality.
+本仓库使用 \[GitHub Releases]\[releases] 记录变更。
+版本遵循 \[语义化版本]\[semver] 格式 `MAJOR.MINOR.PATCH`：
 
-Releases are based on [Semantic Versioning][semver], and use the format
-of `MAJOR.MINOR.PATCH`. In a nutshell, the version will be incremented
-based on the following:
+* `MAJOR`：不兼容或重大变更
+* `MINOR`：向下兼容的新功能或增强
+* `PATCH`：向下兼容的 bug 修复或更新
 
-- `MAJOR`: Incompatible or major changes.
-- `MINOR`: Backwards-compatible new features and enhancements.
-- `PATCH`: Backwards-compatible bugfixes and package updates.
+---
 
-## Support
+## 支持
 
-Got questions?
+如有问题，可通过以下方式获取帮助：
 
-You have several options to get them answered:
+* \[Home Assistant 社区加载项 Discord 聊天服务器]\[discord]
+* \[Home Assistant Discord 官方服务器]\[discord-ha]
+* Home Assistant \[社区论坛]\[forum]
+* Reddit 社区 \[/r/homeassistant]\[reddit]
+* 或 \[在 GitHub 上提交 issue]\[issue]
 
-- The [Home Assistant Community Add-ons Discord chat server][discord] for add-on
-  support and feature requests.
-- The [Home Assistant Discord chat server][discord-ha] for general Home
-  Assistant discussions and questions.
-- The Home Assistant [Community Forum][forum].
-- Join the [Reddit subreddit][reddit] in [/r/homeassistant][reddit]
+---
 
-You could also [open an issue here][issue] GitHub.
+## 作者与贡献者
 
-## Authors & contributors
+原始仓库由 \[Franck Nijhof]\[frenck] 创建。
+完整贡献者列表见：\[Contributors 页面]\[contributors]。
 
-The original setup of this repository is by [Franck Nijhof][frenck].
+---
 
-For a full list of all authors and contributors,
-check [the contributor's page][contributors].
-
-## License
+## 许可证
 
 MIT License
 
-Copyright (c) 2018-2024 Franck Nijhof
+版权所有 (c) 2018-2024 Franck Nijhof
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+允许免费使用、修改、合并、发布、分发、再授权或销售本软件及文档，但必须保留版权声明和许可声明。
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+软件按 “原样” 提供，不提供任何明示或暗示的保证，包括适销性或特定用途适用性。作者不对使用过程中产生的任何责任承担责任。
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+---
 
-[addon-badge]: https://my.home-assistant.io/badges/supervisor_addon.svg
-[addon]: https://my.home-assistant.io/redirect/supervisor_addon/?addon=a0d7b954_traccar&repository_url=https%3A%2F%2Fgithub.com%2Fhassio-addons%2Frepository
-[contributors]: https://github.com/hassio-addons/addon-traccar/graphs/contributors
-[discord-ha]: https://discord.gg/c5DvZ4e
-[discord]: https://discord.me/hassioaddons
-[forum]: https://community.home-assistant.io/t/home-assistant-community-add-on-traccar/81407?u=frenck
-[frenck]: https://github.com/frenck
-[issue]: https://github.com/hassio-addons/addon-traccar/issues
-[mariadb]: https://my.home-assistant.io/redirect/supervisor_addon/?addon=core_mariadb
-[reddit]: https://reddit.com/r/homeassistant
-[releases]: https://github.com/hassio-addons/addon-traccar/releases
-[semver]: https://semver.org/spec/v2.0.0.html
-[traccar]: https://www.traccar.org
+### 链接说明
+
+* `[addon-badge]`: ![Supervisor Add-on Badge](https://my.home-assistant.io/badges/supervisor_addon.svg)
+* `[addon]`: [在 Home Assistant 中打开 Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=a0d7b954_traccar&repository_url=https%3A%2F%2Fgithub.com%2Fhassio-addons%2Frepository)
+* `[contributors]`: [贡献者列表](https://github.com/hassio-addons/addon-traccar/graphs/contributors)
+* `[discord-ha]`: [Home Assistant Discord](https://discord.gg/c5DvZ4e)
+* `[discord]`: [Add-ons Discord](https://discord.me/hassioaddons)
+* `[forum]`: [社区论坛](https://community.home-assistant.io/t/home-assistant-community-add-on-traccar/81407?u=frenck)
+* `[reddit]`: [Reddit /r/homeassistant](https://reddit.com/r/homeassistant)
+* `[issue]`: [GitHub Issue](https://github.com/hassio-addons/addon-traccar/issues)
+* `[releases]`: [GitHub Releases](https://github.com/hassio-addons/addon-traccar/releases)
+* `[semver]`: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
+* `[traccar]`: [Traccar 官方网站](https://www.traccar.org)
+
+
