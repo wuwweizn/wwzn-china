@@ -20,7 +20,7 @@ def read_text_fallback(path, encodings=['utf-8', 'gbk', 'latin-1']):
 parent_dir = Path(__file__).parent.parent
 
 # 🔗 设置你的 GitHub 仓库 URL（比如 main 分支）
-GITHUB_BASE_URL = "https://github.com/YourUser/YourRepo/blob/main/"
+GITHUB_BASE_URL = "https://github.com/wuwweizn/wwzn-china/blob/main/"
 
 # 初始化结果列表
 results = []
