@@ -1,5 +1,5 @@
 # 使用 GHCR 官方 amd64 镜像作为基础镜像
-FROM ghcr.io/desmond-dong/webtunnel-aarch64:25.06.12
+FROM ghcr.io/desmond-dong/webtunnel-amd64:25.06.12
 
 # 设置挂载目录（保存配置）
 VOLUME ["/data/.webtunnel"]

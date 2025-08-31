@@ -1,4 +1,4 @@
-﻿name: Build and Push WebTunnel (Multi-Arch, Docker Hub + GHCR)
+﻿name: Build and Push WebTunnel-aarch64 (Multi-Arch, Docker Hub + GHCR)
 
 on:
   workflow_dispatch:
@@ -15,9 +15,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - arch: amd64
-            platform: linux/amd64
-            build_arch: amd64
           - arch: arm64
             platform: linux/arm64
             build_arch: aarch64
