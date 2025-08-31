@@ -1,16 +1,16 @@
-name: "【仓库重要说明】"
-version: "8.0.0"
-url: "https://github.com/wuwweizn/wwzn-china/blob/main/README.md"
-codenotary: "wuweizhineng@163.com"
-slug: "dedeaddon"
-description: "！！请先阅读使用说明 ！！"
+name: 【仓库使用说明】
+version: 8.0.0
+url: https://github.com/wuwweizn/wwzn-china/blob/main/README.md
+codenotary: wuweizhineng@163.com
+slug: 88wwzn88
+description: ！！请先阅读使用说明 ！！
 arch:
   - aarch64
   - amd64
   - armv7
   - i386
   - armhf
-startup: "services"
-boot: "auto"
+startup: services
+boot: auto
 ingress: true
-panel_icon: "mdi:network"
+panel_icon: mdi:network
