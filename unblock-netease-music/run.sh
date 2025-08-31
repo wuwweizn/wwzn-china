@@ -82,10 +82,16 @@ if [ "${STRICT}" = "true" ]; then
     log_info "已启用严格模式"
 fi
 
-# 自定义端点 - 只有在有效值时才添加
-if [ -n "${ENDPOINT}" ] && [ "${ENDPOINT}" != "null" ] && [ "${ENDPOINT}" != "" ]; then
-    ARGS+=("-e" "${ENDPOINT}")
-    log_info "使用自定义端点: ${ENDPOINT}"
+# 自定义端点 - 只有在非空时才添加
+if [ -n "${ENDPOINT}" ] && [ "${ENDPOINT}" != "" ]; then
+    # 验证是否为有效URL格式
+    if [[ "${ENDPOINT}" =~ ^https?:// ]]; then
+        ARGS+=("-e" "${ENDPOINT}")
+        log_info "使用自定义端点: ${ENDPOINT}"
+    else
+        log_warn "端点格式无效，忽略: ${ENDPOINT}"
+        log_info "使用默认端点"
+    fi
 else
     log_info "使用默认端点"
 fi
