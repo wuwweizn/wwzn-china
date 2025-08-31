@@ -1,0 +1,27 @@
+name: Build Config Docs.md
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: pip install pyyaml tabulate
+      - name: Build Config Docs.md
+        run: python 88wwzn88/build_config_docs.py
+      - name: Commit changes
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add 88wwzn88/DOCS.md
+          git commit -m "Update DOCS.md" || echo "No changes to commit"
+          git push
