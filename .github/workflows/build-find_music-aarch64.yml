@@ -51,7 +51,7 @@ jobs:
         id: extract_version
         run: |
           ADDON_DIR="find_music"
-          CONFIG_PATH="${ADDON_DIR}/config.yaml"
+          CONFIG_PATH="${ADDON_DIR}/config.json"
           
           if [[ -f "$CONFIG_PATH" ]]; then
             VERSION=$(yq e ".version" "$CONFIG_PATH")
