@@ -7,9 +7,8 @@
   "startup": "application",
   "boot": "auto",
   "ports": {
-    "3000/tcp": 3000
+    "3002/tcp": 3002
   },
-  "options": {},
-  "map": [],
-  "webui": "http://[HOST]:[PORT:3000]"
+  "image": "ghcr.io/wuwweizn/find-music-{arch}",
+  "webui": "http://[HOST]:[PORT:3002]"
 }

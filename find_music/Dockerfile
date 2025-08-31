@@ -1,12 +1,1 @@
-FROM node:20
-
-WORKDIR /app
-
-COPY . .
-
-RUN npm install --legacy-peer-deps
-RUN npm run build
-
-EXPOSE 3000
-
-CMD ["npm", "start"]
+FROM ghcr.io/dest16/find-music:v1
