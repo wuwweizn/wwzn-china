@@ -1,6 +1,11 @@
 ﻿# File Transfer Go - Home Assistant Add-on
 
-![Logo][logo]
+#快速配置使用
+1.安装
+2.启动
+3.访问：http://HA-IP:8080
+ 
+注意：如有端口冲突，可在配置页自行配置端口
 
 基于 WebRTC 技术的端到端文件传输服务，支持文件传输、文字传输和桌面共享功能。
 
