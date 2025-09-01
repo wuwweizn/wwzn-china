@@ -1,6 +1,6 @@
 name: "FRP Client HA"
 slug: "frp_client_ha"
-version: "1.25.0"
+version: "1.26.0"
 description: "FRP客户端ha版本，仅可对本地Home Assistant操作系统的远程访问穿透"
 url: https://github.com/huxiaoxu2019/hass-addon-frp-client
 host_network: true
@@ -16,7 +16,7 @@ devices:
   - /dev/net/tun
 arch:
   - aarch64
-  - amd6
+  - amd64
 options:
   server_addr: "frp.freefrp.net"
   server_port: 7000
