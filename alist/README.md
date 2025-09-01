@@ -1,5 +1,16 @@
 # Alist Home Assistant 加载项
 
+#快速配置使用
+1.安装
+2.启动
+3.访问：http://HA-IP:5244
+4.alist登录：用户名：admin  密码：ovL6BOgY （查看日志中随机生成）
+例如：
+INFO[2025-09-01 20:55:06] username: admin                              
+INFO[2025-09-01 20:55:06] password: ovL6BOgY 
+ 
+注意：如有端口冲突，可在配置页自行配置端口
+
 ## 简介
 
 Alist 是一个支持多存储的文件列表/WebDAV程序，使用 Gin 和 SolidJS 构建。它可以将多个云存储平台聚合在一个 Web 界面中进行统一管理。
