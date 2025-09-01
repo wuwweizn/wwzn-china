@@ -9,6 +9,6 @@
   "ports": {
     "3002/tcp": 3002
   },
-  "image": "docker.io/dest16/find-music:v1",
+  "image": "ghcr.io/wuwweizn/find_music-{arch}",
   "webui": "http://[HOST]:[PORT:3002]"
 }
