@@ -1,7 +1,7 @@
 name: UnblockNeteaseMusic
-version: "1.0.6"
+version: "1.0.7"
 slug: unblock-netease-music
-description: "解锁网易云音乐灰色歌曲 - 环境变量修复版本"
+description: "解锁网易云音乐灰色歌曲 - 超简单固定配置版本"
 url: "https://github.com/nondanee/UnblockNeteaseMusic"
 arch:
   - aarch64
@@ -11,20 +11,6 @@ init: false
 map:
   - share:rw
   - config:rw
-options:
-  port: 8080
-  host: "0.0.0.0"
-  source_order: "kuwo kugou migu"
-  strict: false
-  endpoint: ""
-  log_level: "info"
-schema:
-  port: "int(1024,65535)"
-  host: "str"
-  source_order: "str"
-  strict: "bool"
-  endpoint: "str"
-  log_level: "list(debug|info|warn|error)"
 ports:
   8080/tcp: null
 ports_description:
@@ -45,13 +31,7 @@ privileged: []
 environment:
   NODE_ENV: "production"
   ENABLE_LOCAL_VIP: "1"
-  UNM_PORT: "{{ .port }}"
-  UNM_HOST: "{{ .host }}"
-  UNM_SOURCE_ORDER: "{{ .source_order }}"
-  UNM_STRICT: "{{ .strict }}"
-  UNM_ENDPOINT: "{{ .endpoint }}"
-  UNM_LOG_LEVEL: "{{ .log_level }}"
 labels:
   io.hass.type: "addon"
-  io.hass.version: "1.0.5"
+  io.hass.version: "1.0.6"
   io.hass.arch: "aarch64|amd64|armv7"
