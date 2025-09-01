@@ -46,9 +46,5 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=15s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:8080/ || wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1
 
-# 复制启动脚本并设置权限
-COPY run.sh /
-RUN chmod a+x /run.sh
-
-# 启动命令 - 使用启动脚本而不是直接运行app.js
-CMD ["/run.sh"]
+# 启动命令 - 直接使用sh处理环境变量
+CMD ["sh", "-c", "echo '[INFO] 启动 UnblockNeteaseMusic...' && echo '[INFO] 端口:' ${PORT:-8080} && echo '[INFO] 地址:' ${HOST:-0.0.0.0} && echo '[INFO] 音源:' ${SOURCE_ORDER:-kuwo kugou migu} && cd /app && exec node app.js -p ${PORT:-8080} -a ${HOST:-0.0.0.0} -o ${SOURCE_ORDER:-kuwo kugou migu}"]
