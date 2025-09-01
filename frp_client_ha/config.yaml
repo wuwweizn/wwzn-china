@@ -1,4 +1,4 @@
-name: "FRP Client HA版"
+name: "FRP Client HA"
 slug: "frp_client_ha"
 version: "1.25.0"
 description: "FRP客户端ha版本，仅可对本地Home Assistant操作系统的远程访问穿透"
