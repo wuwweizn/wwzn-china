@@ -4,7 +4,7 @@
 【引用的项目：samb、configurator、matter_server、mosquitto、openwakeword、piper、ssh、whisper、speech_to_phrase、mariadb】
 
 官方增强加载项：https://github.com/hassio-addons/repository
-【引用的项目：adguard、ftp、node-red、plex、phpmyadmin、ssh、tailscale、zerotier、wireguard、tasmoadmin、nginx-proxy-manager】
+【引用的项目：adguard、ftp、node-red、plex、phpmyadmin、ssh、tailscale、zerotier、wireguard、tasmoadmin、nginx-proxy-manager、traccar】
 
 ESPhome加载项：https://github.com/esphome/home-assistant-addon
 【引用的项目：ESPHome 、ESPHome  (beta)、ESPHome  (dev)】
@@ -42,6 +42,7 @@ da-anda加载项：https://github.com/da-anda/hass-io-addons
 
 huxiaoxu2019加载项：https://github.com/huxiaoxu2019/hass-addon-frp-client
 【引用的项目：frp-client】
+
 zigbee2mqtt加载项：https://github.com/zigbee2mqtt/hassio-zigbee2mqtt
 【引用的项目：zigbee2mqtt、zigbee2mqtt-proxy、zigbee2mqtt-edge】
 
@@ -55,10 +56,14 @@ SirUli加载项：https://github.com/SirUli/homeassistant-ollama-addon
 【引用的项目：ollama】
 
 hasscc加载项：https://github.com/hasscc/addons
-【引用的项目：moontv】
+【引用的项目：moontv
+
 
 ARC-MX加载项：https://github.com/ARC-MX/sgcc_electricity_new
 【引用的项目：sgcc_electricity_new】
+
+waxgourd加载项：https://gitcode.com/waxgourd/addons
+【引用的项目：frp-client-ha、frp-client-plus、ewelink_smart_home】
 
 自学加载项：【alist、clash、ddnsto、istoreos、jdxb、libretv、lucky、musicn、NeteaseCloudMusicApi、passwall、v2rayn、xray、yesplaymusic】
 alist项目地址：https://github.com/AlistGo/alist
@@ -74,3 +79,9 @@ xray项目地址：https://github.com/XTLS/Xray-core
 libretv项目地址：https://github.com/LibreSpark/LibreTV
 ddnsto项目地址：https://web.ddnsto.com/
 istoreos项目地址：https://github.com/istoreos/istoreos
+chinatelecommonitorhttps项目地址://github.com/Cp0204/ChinaTelecomMonitor
+webtunnel项目地址:https://www.webtunnel.cn/index.html
+unblock-netease-music项目地址：https://github.com/nondanee/UnblockNeteaseMusic
+find_music项目地址：https://github.com/shaonianzhentan/find-music
+file-transfer-go项目地址：https://github.com/MatrixSeven/file-transfer-go
+alger_music项目地址：https://github.com/algerkong/AlgerMusicPlayer
