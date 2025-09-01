@@ -21,7 +21,7 @@ arch:
 options:
   server_addr: "frp.freefrp.net"
   server_port: 7000
-  token: "freefrp.net"
+  token: "12345678"
   proxy_type: http
   proxy_name: "myHA"
   local_port: 8123
