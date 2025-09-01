@@ -1,7 +1,7 @@
 name: "FRP Client HA"
 slug: "frp_client_ha"
-version: "0.59.0"
-description: "您可以使用此工具通过端口转发实现对本地Home Assistant操作系统的远程访问"
+version: "1.25.0"
+description: "FRP客户端ha版本，仅可对本地Home Assistant操作系统的远程访问穿透"
 url: https://github.com/huxiaoxu2019/hass-addon-frp-client
 host_network: true
 startup: application
