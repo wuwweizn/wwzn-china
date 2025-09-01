@@ -1,6 +1,6 @@
 {
   "name": "Find Music",
-  "version": "1.0.0",
+  "version": "v1",
   "slug": "find_music",
   "description": "Music search and play",
   "arch": ["armv7", "armhf", "aarch64", "amd64"],
