@@ -1,0 +1,38 @@
+name: "FRP Client Plus"
+slug: "frp_client_plus"
+version: "2.62.0"
+description: "frp增强版 实现对本地Ha以及同局域网的服务和设备穿透进行远程访问"
+url: https://github.com/huxiaoxu2019/hass-addon-frp-client
+host_network: true
+startup: application
+boot: "auto"
+init: false
+image: ghcr.io/wuwweizn/frp_client_plus-{arch}
+map:
+  - share:rw
+privileged:
+  - NET_ADMIN
+devices:
+  - /dev/net/tun
+arch:
+  - aarch64
+  - amd64
+options:
+  serverAddr: "frp.freefrp.net"
+  serverPort: 7000
+  authToken: "freefrp.net"
+  proxies: []
+  debug: false
+schema:
+  serverAddr: str
+  serverPort: int
+  authToken: str
+  proxies: 
+    - type: str
+      localIP: str
+      localPort: int
+      name: str?
+      customDomains: str?
+      subdomain: str?
+      remotePort: int?
+  debug: bool?

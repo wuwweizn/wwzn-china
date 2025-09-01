@@ -1,0 +1,2 @@
+FROM wghaos/frp-client
+
