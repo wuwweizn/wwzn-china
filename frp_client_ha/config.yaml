@@ -1,4 +1,4 @@
-name: "FRP Client HA"
+name: "FRP Client HA版"
 slug: "frp_client_ha"
 version: "1.25.0"
 description: "FRP客户端ha版本，仅可对本地Home Assistant操作系统的远程访问穿透"
@@ -17,7 +17,7 @@ devices:
 arch:
   - aarch64
   - amd6
-  -armv7
+  - armv7
 options:
   server_addr: "frp.freefrp.net"
   server_port: 7000
