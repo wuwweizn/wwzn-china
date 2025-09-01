@@ -46,5 +46,24 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=15s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:8080/ || wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1
 
-# 启动命令 - 使用修正的环境变量名称
-CMD ["sh", "-c", "echo '[INFO] 启动 UnblockNeteaseMusic...' && echo '[INFO] 端口:' ${UNM_PORT:-8080} && echo '[INFO] 地址:' ${UNM_HOST:-0.0.0.0} && echo '[INFO] 音源:' ${UNM_SOURCE_ORDER:-kuwo kugou migu} && cd /app && exec node app.js -p ${UNM_PORT:-8080} -a ${UNM_HOST:-0.0.0.0} -o ${UNM_SOURCE_ORDER:-kuwo kugou migu}"]
+# 创建简单的启动脚本
+RUN echo '#!/bin/sh' > /start.sh && \
+    echo 'echo "[INFO] 启动 UnblockNeteaseMusic..."' >> /start.sh && \
+    echo 'echo "[INFO] 端口: ${UNM_PORT:-8080}"' >> /start.sh && \
+    echo 'echo "[INFO] 地址: ${UNM_HOST:-0.0.0.0}"' >> /start.sh && \
+    echo 'echo "[INFO] 音源: ${UNM_SOURCE_ORDER:-kuwo kugou migu}"' >> /start.sh && \
+    echo 'cd /app' >> /start.sh && \
+    echo 'ARGS="-p ${UNM_PORT:-8080} -a ${UNM_HOST:-0.0.0.0}"' >> /start.sh && \
+    echo 'if [ -n "${UNM_SOURCE_ORDER}" ]; then' >> /start.sh && \
+    echo '  for src in ${UNM_SOURCE_ORDER:-kuwo kugou migu}; do' >> /start.sh && \
+    echo '    ARGS="$ARGS -o $src"' >> /start.sh && \
+    echo '  done' >> /start.sh && \
+    echo 'else' >> /start.sh && \
+    echo '  ARGS="$ARGS -o kuwo -o kugou -o migu"' >> /start.sh && \
+    echo 'fi' >> /start.sh && \
+    echo 'echo "[INFO] 启动参数: node app.js $ARGS"' >> /start.sh && \
+    echo 'exec node app.js $ARGS' >> /start.sh && \
+    chmod +x /start.sh
+
+# 启动命令
+CMD ["/start.sh"]
