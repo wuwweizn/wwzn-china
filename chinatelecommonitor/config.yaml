@@ -1,0 +1,30 @@
+{
+  "name": "chinatelecommonitor",
+  "version": "1.0.4",
+  "slug": "chinatelecommonitor",
+  "codenotary": "wuweizhineng@163.com",
+  #"url": "https://github.com/Cp0204/ChinaTelecomMonitor",
+  "description": "中国电信 用量监控",
+  "arch": [
+    "amd64",
+    "aarch64"
+  ],
+  "startup": "services",
+  "boot": "auto",
+  "ports": {
+    "10000/tcp": 10000
+  },
+  "image": "ghcr.io/wuwweizn/chinatelecommonitor-{arch}",
+  "webui": "http://[HOST]:[PORT:10000]",
+  "panel_icon": "mdi:currency-cny",
+  "options": {
+    "WHITELIST_NUM": ""
+  },
+  "schema": {
+    "WHITELIST_NUM": "str?"
+  },
+  "environment": {
+    "CONFIG_PATH": "/data",
+    "WHITELIST_NUM": ""
+  }
+}
