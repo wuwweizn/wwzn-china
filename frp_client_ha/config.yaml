@@ -21,11 +21,11 @@ arch:
 options:
   server_addr: "frp.freefrp.net"
   server_port: 7000
-  token: "12345678"
+  token: "freefrp.net"
   proxy_type: http
-  proxy_name: "myHA"
+  proxy_name: "myweb"
   local_port: 8123
-  remote_port: 8128
+  remote_port: 18123
 schema:
   server_addr: str
   server_port: int
