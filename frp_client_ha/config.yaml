@@ -23,9 +23,9 @@ options:
   server_port: 7000
   token: "freefrp.net"
   proxy_type: http
-  proxy_name: "myweb"
+  proxy_name: "myHA"
   local_port: 8123
-  remote_port: 18123
+  remote_port: 8128
 schema:
   server_addr: str
   server_port: int
