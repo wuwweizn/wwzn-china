@@ -1,0 +1,32 @@
+name: "Supervisor Updater"
+version: "1.0.10"
+slug: "supervisor-updater"
+description: "通过阿里云镜像更新Home Assistant Supervisor"
+arch:
+  - armhf
+  - armv7
+  - aarch64
+  - amd64
+  - i386
+startup: application
+init: false
+ports:
+  8124/tcp: 8124
+webui: "http://[HOST]:[PORT:8124]"
+ingress: true
+ingress_port: 8124
+panel_icon: mdi:update
+homeassistant_api: true
+hassio_api: true
+docker_api: true
+hassio_role: admin
+privileged:
+  - SYS_ADMIN
+  - NET_ADMIN
+devices: []
+volumes:
+  - /var/run/docker.sock:/var/run/docker.sock:rw
+  - /data:/data:rw
+options: {}
+schema: {}
+image: "ghcr.io/wuwweizn/supervisor-updater-{arch}"

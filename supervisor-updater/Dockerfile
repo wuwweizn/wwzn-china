@@ -1,0 +1,1 @@
+FROM registry.cn-hangzhou.aliyuncs.com/se7en_addons/supervisor-updater
