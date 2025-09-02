@@ -1,4 +1,4 @@
-name: Build and Push UnblockNeteaseMusic (Multi-Arch, Docker Hub + GHCR)
+name: Build and Push UnblockNeteaseMusic Enhanced1 (Multi-Arch, Docker Hub + GHCR)
 
 on:
   workflow_dispatch:
@@ -84,7 +84,7 @@ jobs:
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
       
-      - name: Build and push UnblockNeteaseMusic for ${{ matrix.arch }}
+      - name: Build and push UnblockNeteaseMusic Enhanced for ${{ matrix.arch }}
         uses: docker/build-push-action@v5
         with:
           context: unblock-netease-music
@@ -94,17 +94,17 @@ jobs:
             BUILD_FROM=${{ matrix.build_from }}
           push: true
           tags: |
-            ghcr.io/${{ env.REPO_OWNER_LC }}/unblock-netease-music-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
-            ghcr.io/${{ env.REPO_OWNER_LC }}/unblock-netease-music-${{ env.BUILD_ARCH }}:latest
-            ${{ secrets.DOCKER_USERNAME }}/unblock-netease-music-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
-            ${{ secrets.DOCKER_USERNAME }}/unblock-netease-music-${{ env.BUILD_ARCH }}:latest
+            ghcr.io/${{ env.REPO_OWNER_LC }}/unblock-netease-music-enhanced-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
+            ghcr.io/${{ env.REPO_OWNER_LC }}/unblock-netease-music-enhanced-${{ env.BUILD_ARCH }}:latest
+            ${{ secrets.DOCKER_USERNAME }}/unblock-netease-music-enhanced-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
+            ${{ secrets.DOCKER_USERNAME }}/unblock-netease-music-enhanced-${{ env.BUILD_ARCH }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
       
       - name: Output build info
         run: |
-          echo "✅ Successfully built and pushed UnblockNeteaseMusic"
+          echo "✅ Successfully built and pushed UnblockNeteaseMusic Enhanced"
           echo "🏷️  Version: ${{ env.VERSION }}"
           echo "🏗️  Architecture: ${{ matrix.arch }}"
-          echo "📦 Docker Hub: ${{ secrets.DOCKER_USERNAME }}/unblock-netease-music-${{ env.BUILD_ARCH }}:${{ env.VERSION }}"
-          echo "📦 GHCR: ghcr.io/${{ env.REPO_OWNER_LC }}/unblock-netease-music-${{ env.BUILD_ARCH }}:${{ env.VERSION }}"
+          echo "📦 Docker Hub: ${{ secrets.DOCKER_USERNAME }}/unblock-netease-music-enhanced-${{ env.BUILD_ARCH }}:${{ env.VERSION }}"
+          echo "📦 GHCR: ghcr.io/${{ env.REPO_OWNER_LC }}/unblock-netease-music-enhanced-${{ env.BUILD_ARCH }}:${{ env.VERSION }}"

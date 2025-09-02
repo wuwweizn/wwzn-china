@@ -2,21 +2,18 @@
 ARG BUILD_FROM
 FROM $BUILD_FROM
 
-# 安装必要的软件包
+# 安装Node.js和必要工具
 RUN apk add --no-cache \
     nodejs \
     npm \
-    git \
+    curl \
     && rm -rf /var/cache/apk/*
 
 # 设置工作目录
 WORKDIR /app
 
-# 克隆UnblockNeteaseMusic源码
-RUN git clone --depth 1 https://github.com/nondanee/UnblockNeteaseMusic.git /app
-
-# 安装依赖
-RUN npm install --only=production && npm cache clean --force
+# 全局安装 UnblockNeteaseMusic/server
+RUN npm install -g @unblockneteasemusic/server@latest
 
 # 复制启动脚本
 COPY run.sh /
@@ -24,7 +21,6 @@ RUN chmod a+x /run.sh
 
 # 设置环境变量
 ENV NODE_ENV=production
-ENV ENABLE_LOCAL_VIP=1
 
 # 暴露端口
 EXPOSE 8080
