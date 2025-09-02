@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - 'unblock-netease-music/**'
+      - 'unblock-netease-music-enhanced/**'
       - '.github/workflows/Build unblock-netease-music-enhanced.yml'
   schedule:
     # 每周日凌晨2点自动构建，确保获取最新版本
@@ -63,7 +63,7 @@ jobs:
       - name: Extract VERSION from config
         id: extract_version
         run: |
-          ADDON_DIR="unblock-netease-music"
+          ADDON_DIR="unblock-netease-music-enhanced"
           CONFIG_PATH="${ADDON_DIR}/config.yaml"
           
           if [[ -f "$CONFIG_PATH" ]]; then
@@ -87,17 +87,17 @@ jobs:
       - name: Build and push unblock-netease-music-enhanced for ${{ matrix.arch }}
         uses: docker/build-push-action@v5
         with:
-          context: unblock-netease-music
-          file: unblock-netease-music/Dockerfile
+          context: unblock-netease-music-enhanced
+          file: unblock-netease-music-enhanced/Dockerfile
           platforms: ${{ matrix.platform }}
           build-args: |
             BUILD_FROM=${{ matrix.build_from }}
           push: true
           tags: |
-            ghcr.io/${{ env.REPO_OWNER_LC }}/unblock-netease-music-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
-            ghcr.io/${{ env.REPO_OWNER_LC }}/unblock-netease-music-${{ env.BUILD_ARCH }}:latest
-            ${{ secrets.DOCKER_USERNAME }}/unblock-netease-music-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
-            ${{ secrets.DOCKER_USERNAME }}/unblock-netease-music-${{ env.BUILD_ARCH }}:latest
+            ghcr.io/${{ env.REPO_OWNER_LC }}/unblock-netease-music-enhanced-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
+            ghcr.io/${{ env.REPO_OWNER_LC }}/unblock-netease-music-enhanced-${{ env.BUILD_ARCH }}:latest
+            ${{ secrets.DOCKER_USERNAME }}/unblock-netease-music-enhanced-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
+            ${{ secrets.DOCKER_USERNAME }}/unblock-netease-music-enhanced-${{ env.BUILD_ARCH }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
       
@@ -106,5 +106,5 @@ jobs:
           echo "✅ Successfully built and pushed unblock-netease-music-enhanced"
           echo "🏷️  Version: ${{ env.VERSION }}"
           echo "🏗️  Architecture: ${{ matrix.arch }}"
-          echo "📦 Docker Hub: ${{ secrets.DOCKER_USERNAME }}/unblock-netease-music-${{ env.BUILD_ARCH }}:${{ env.VERSION }}"
-          echo "📦 GHCR: ghcr.io/${{ env.REPO_OWNER_LC }}/unblock-netease-music-${{ env.BUILD_ARCH }}:${{ env.VERSION }}"
+          echo "📦 Docker Hub: ${{ secrets.DOCKER_USERNAME }}/unblock-netease-music-enhanced-${{ env.BUILD_ARCH }}:${{ env.VERSION }}"
+          echo "📦 GHCR: ghcr.io/${{ env.REPO_OWNER_LC }}/unblock-netease-music-enhanced-${{ env.BUILD_ARCH }}:${{ env.VERSION }}"
