@@ -64,6 +64,8 @@ ARC-MX加载项：https://github.com/ARC-MX/sgcc_electricity_new
 
 waxgourd加载项：https://gitcode.com/waxgourd/addons
 【引用的项目：frp-client-ha、frp-client-plus、ewelink_smart_home】
+Poeschl加载项：https://github.com/Poeschl-HomeAssistant-Addons/mpd
+【引用的项目：MPD、ympd……】
 
 自学加载项：【alist、clash、ddnsto、istoreos、jdxb、libretv、lucky、musicn、NeteaseCloudMusicApi、passwall、v2rayn、xray、yesplaymusic】
 alist项目地址：https://github.com/AlistGo/alist
