@@ -1,5 +1,5 @@
 name: UnblockNeteaseMusic Enhanced
-version: "2.0.0"
+version: "2.0.1"
 slug: unblock-netease-music-enhanced
 description: "解锁网易云音乐灰色歌曲 - 基于增强版 UnblockNeteaseMusic/server"
 url: "https://github.com/UnblockNeteaseMusic/server"
@@ -12,7 +12,7 @@ startup: services
 boot: manual
 options:
   port: 8080
-  sources: "kuwo:kugou:migu"
+  sources: "kuwo:kugou:migu:joox"
   strict: false
   log_level: "info"
 schema:

@@ -24,10 +24,18 @@ ARGS=""
 # 添加端口参数
 ARGS="${ARGS} -p ${PORT}"
 
-# 添加音源参数 (UnblockNeteaseMusic/server 使用冒号分隔音源)
+# 添加音源参数 (每个音源单独使用 -o 参数)
 if [ -n "${SOURCES}" ]; then
-    ARGS="${ARGS} -o ${SOURCES}"
-    echo "[INFO] 使用音源: ${SOURCES}"
+    # 将冒号分隔的音源转换为单独的参数
+    SOURCE_LIST=$(echo "${SOURCES}" | tr ':' ' ')
+    for source in ${SOURCE_LIST}; do
+        ARGS="${ARGS} -o ${source}"
+        echo "[INFO] 添加音源: ${source}"
+    done
+else
+    # 默认音源，每个单独添加
+    ARGS="${ARGS} -o kuwo -o kugou -o migu"
+    echo "[INFO] 使用默认音源: kuwo, kugou, migu"
 fi
 
 # 添加严格模式
