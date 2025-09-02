@@ -68,6 +68,9 @@ Poeschl加载项：https://github.com/Poeschl-HomeAssistant-Addons/mpd
 【引用的项目：MPD、ympd……】
 Mincka加载项：https://github.com/Mincka/ha-addons
 【引用的项目：firefox、firefox_edge】
+t0bst4r加载项：https://github.com/t0bst4r/home-assistant-addons
+【引用的项目：hamh、hamh76】
+
 自学加载项：【alist、clash、ddnsto、istoreos、jdxb、libretv、lucky、musicn、NeteaseCloudMusicApi、passwall、v2rayn、xray、yesplaymusic】
 alist项目地址：https://github.com/AlistGo/alist
 clash项目地址：https://github.com/MetaCubeX/mihomo
