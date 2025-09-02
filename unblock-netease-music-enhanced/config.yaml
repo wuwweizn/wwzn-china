@@ -1,5 +1,5 @@
 name: UnblockNeteaseMusic Enhanced
-version: "2.0.1"
+version: "2.0.2"
 slug: unblock-netease-music-enhanced
 description: "解锁网易云音乐灰色歌曲 - 基于增强版 UnblockNeteaseMusic/server"
 url: "https://github.com/UnblockNeteaseMusic/server"
@@ -21,14 +21,14 @@ schema:
   strict: "bool"
   log_level: "list(debug|info|warn|error)"
 ports:
-  8080/tcp: null
+  8080/tcp: 8080
 ports_description:
   8080/tcp: "UnblockNeteaseMusic HTTP代理端口"
 image: "ghcr.io/wuwweizn/unblock-netease-music-enhanced-{arch}"
 hassio_api: true
 hassio_role: default
 homeassistant_api: false
-host_network: false
+host_network: true
 full_access: false
 apparmor: false
 environment:
