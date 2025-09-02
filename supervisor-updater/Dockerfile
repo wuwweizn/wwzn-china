@@ -1,1 +1,0 @@
-FROM se7en_addons/supervisor-updater

@@ -29,4 +29,4 @@ volumes:
   - /data:/data:rw
 options: {}
 schema: {}
-image: "ghcr.io/wuwweizn/supervisor-updater-{arch}"
+image: "registry.cn-hangzhou.aliyuncs.com/se7en_addons/supervisor-updater"
