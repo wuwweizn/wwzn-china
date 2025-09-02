@@ -1,4 +1,4 @@
-name: Build and Push UnblockNeteaseMusic (Multi-Arch, Docker Hub + GHCR)
+name: Build and Push UnblockNeteaseMusic1 (Multi-Arch, Docker Hub + GHCR)
 
 on:
   workflow_dispatch:
@@ -21,10 +21,15 @@ jobs:
           - arch: amd64
             platform: linux/amd64
             build_arch: amd64
+            build_from: "ghcr.io/home-assistant/amd64-base:latest"
           - arch: arm64
             platform: linux/arm64
             build_arch: aarch64
-
+            build_from: "ghcr.io/home-assistant/aarch64-base:latest"
+          - arch: armv7
+            platform: linux/arm/v7
+            build_arch: armv7
+            build_from: "ghcr.io/home-assistant/armv7-base:latest"
     
     permissions:
       contents: read
@@ -85,6 +90,8 @@ jobs:
           context: unblock-netease-music
           file: unblock-netease-music/Dockerfile
           platforms: ${{ matrix.platform }}
+          build-args: |
+            BUILD_FROM=${{ matrix.build_from }}
           push: true
           tags: |
             ghcr.io/${{ env.REPO_OWNER_LC }}/unblock-netease-music-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
