@@ -29,4 +29,5 @@ COPY run.sh /
 COPY parse_subscription.py /
 RUN chmod a+x /run.sh
 
-CMD [ "/run.sh" ]
+# Override the entrypoint to use bash instead of v2ray
+ENTRYPOINT ["/run.sh"]
