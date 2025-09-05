@@ -55,7 +55,7 @@ jobs:
         id: extract_version
         run: |
           ADDON_DIR="calendar-poetry"
-          CONFIG_PATH="${ADDON_DIR}/config.json"
+          CONFIG_PATH="${ADDON_DIR}/config.yaml"
           
           if [[ -f "$CONFIG_PATH" ]]; then
             # ✅ 使用 -r 去掉双引号
