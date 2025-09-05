@@ -21,6 +21,9 @@ jobs:
           - arch: arm64
             platform: linux/arm64
             build_arch: aarch64
+          - arch: armv7
+            platform: linux/arm/v7
+            build_arch: armv7
 
     permissions:
       contents: read
