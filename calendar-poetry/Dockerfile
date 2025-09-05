@@ -1,1 +1,1 @@
-FROM wghaos/amd64-calendar-poetry
+FROM wghaos/aarch64-calendar-poetry
