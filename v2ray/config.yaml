@@ -1,5 +1,5 @@
 name: "V2Ray Core"
-version: "5.24.0"
+version: "5.24.1"
 slug: "v2ray"
 description: "V2Ray is a platform for building proxies to bypass network restrictions"
 url: "https://github.com/wuwweizn/wwzn-china"
@@ -13,8 +13,16 @@ map:
   - "ssl:rw"
 options:
   log_level: "warning"
-  config_file: "/config/v2ray/config.json"
+  subscription_url: ""
+  socks_port: 10808
+  http_port: 10809
+  update_interval: 24
+  auto_start: true
 schema:
   log_level: "list(debug|info|warning|error|none)"
-  config_file: "str"
+  subscription_url: "str"
+  socks_port: "int(1024,65535)"
+  http_port: "int(1024,65535)" 
+  update_interval: "int(1,168)"
+  auto_start: "bool"
 image: "ghcr.io/wuwweizn/v2ray-{arch}"

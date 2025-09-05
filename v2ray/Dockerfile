@@ -18,10 +18,15 @@ LABEL \
 RUN apk add --no-cache \
     bash \
     curl \
-    jq
+    jq \
+    python3 \
+    py3-pip \
+    py3-requests \
+    py3-yaml
 
-# Copy run script
+# Copy scripts
 COPY run.sh /
+COPY parse_subscription.py /
 RUN chmod a+x /run.sh
 
 CMD [ "/run.sh" ]
