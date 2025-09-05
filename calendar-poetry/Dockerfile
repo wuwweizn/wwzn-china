@@ -1,1 +1,1 @@
-FROM bugprogrammer/calendar-remark:latest
+FROM wghaos/amd64-calendar-poetry
