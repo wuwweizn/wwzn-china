@@ -1,53 +1,59 @@
-# 更新日志
+# 项目目录结构
 
-所有此项目的重要更改都会记录在此文件中。
+在您的仓库 `https://github.com/wuwweizn/wwzn-china` 中，需要创建以下目录结构：
 
-格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
-此项目遵循 [语义版本控制](https://semver.org/lang/zh-CN/)。
+```
+wwzn-china/
+├── .github/
+│   └── workflows/
+│       └── v2ray-builder.yml          # GitHub Actions 工作流文件
+├── v2ray/                             # V2Ray 加载项目录
+│   ├── config.yaml                    # Home Assistant 加载项配置
+│   ├── Dockerfile                     # Docker 构建文件
+│   ├── run.sh                         # 启动脚本
+│   └── README.md                      # 使用说明
+└── repository.yaml                    # 仓库配置文件 (可选)
+```
 
-## [6.60] - 2024-12-07
+## 部署步骤
 
-### 新增
-- 初始版本发布
-- 支持多架构构建 (amd64, arm64, armv7)
-- 集成 v2ray 和 xray 核心
-- Web 管理界面
-- HTTP 和 SOCKS5 代理支持
-- 自动配置生成
-- 路由规则支持
-- DNS over HTTPS 支持
-- 统计和监控功能
-- 自动备份和恢复
-- 健康检查机制
+### 1. 创建文件
+将上面提供的文件放置在对应位置：
 
-### 功能特性
-- 支持 VMess, VLESS, Trojan, Shadowsocks 协议
-- 流量嗅探和路由
-- 局域网访问控制
-- 日志管理
-- 配置验证
-- 性能优化
+- 将 `v2ray-builder.yml` 放在 `.github/workflows/` 目录下
+- 将 `config.yaml`, `Dockerfile`, `run.sh`, `README.md` 放在 `v2ray/` 目录下
 
-### 技术特性
-- 基于 Alpine Linux
-- S6 监督系统
-- 多阶段 Docker 构建
-- GitHub Actions 自动化
-- 容器安全最佳实践
+### 2. 配置 GitHub Secrets
+在您的 GitHub 仓库设置中添加以下 Secrets：
 
-## [计划中] - 未来版本
+- `DOCKER_USERNAME`: Docker Hub 用户名
+- `DOCKER_PASSWORD`: Docker Hub 密码或访问令牌
+- `GH_PAT`: GitHub Personal Access Token (用于推送到 GHCR)
 
-### 计划新增
-- 订阅链接支持
-- 自动节点测速
-- 图形化配置界面
-- 更多协议支持
-- 插件系统
-- API 扩展
+### 3. 运行构建
+- 推送代码到 `main` 分支，或者
+- 在 GitHub Actions 页面手动触发 `workflow_dispatch`
 
-### 计划改进
-- 性能优化
-- 内存使用优化
-- 启动速度提升
-- 更好的错误处理
-- 增强的日志系统
+### 4. 添加到 Home Assistant
+构建完成后，在 Home Assistant 中：
+1. 进入 Supervisor > Add-on Store
+2. 点击右上角菜单 > Repositories
+3. 添加仓库地址：`https://github.com/wuwweizn/wwzn-china`
+4. 安装 V2Ray Core 加载项
+
+## 可选：repository.yaml
+
+如果要自定义仓库信息，可以创建 `repository.yaml`：
+
+```yaml
+name: "WWZN China Add-ons"
+url: "https://github.com/wuwweizn/wwzn-china"
+maintainer: "wuwweizn"
+```
+
+## 注意事项
+
+1. **版本控制**: 在 `config.yaml` 中更新版本号时，构建会自动使用该版本号
+2. **架构支持**: 支持 amd64, aarch64, armv7 三种架构
+3. **镜像仓库**: 镜像会同时推送到 Docker Hub 和 GitHub Container Registry
+4. **配置文件**: V2Ray 配置文件位于 `/config/v2ray/config.json`，首次运行会自动创建模板
