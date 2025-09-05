@@ -18,9 +18,7 @@ jobs:
           - arch: amd64
             platform: linux/amd64
             build_arch: amd64
-          - arch: armv7
-            platform: linux/arm/v7
-            build_arch: armv7
+
 
     permissions:
       contents: read
