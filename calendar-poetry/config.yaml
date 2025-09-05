@@ -1,5 +1,5 @@
 name: "Calendar Poetry"
-version: '1.0.3'
+version: '1.0.4'
 slug: 'calendar-poetry'
 codenotary: wuweizhineng@163.com
 description: '它是本地日历和古诗词相结合的接口'
