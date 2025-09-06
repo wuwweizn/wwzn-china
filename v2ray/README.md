@@ -6,9 +6,12 @@
 
 ## 配置
 
-【订阅连接配置】 subscription_url: https://wuwweizn.com
-【手动节点选择】 selected_node：1-30(填入节点序号，日志中查看节点信息)
-【节点轮询模式】 enable_node_selection：开或关
+-【订阅连接配置】 subscription_url: https://wuwweizn.com
+
+-【手动节点选择】 selected_node：1-30(填入节点序号，日志中查看节点信息)
+
+-【节点轮询模式】 enable_node_selection：开或关
+
 其他默认
 
 ## 使用说明(请查阅使用文档)

@@ -21,19 +21,6 @@ Clash是一个现代化的代理工具，支持多种协议（Shadowsocks、VMes
 - 📊 **实时监控**：流量统计和连接管理
 - 🚀 **高性能**：原生Go语言编写，性能优异
 
-## 安装
-
-1. 在Home Assistant中添加此存储库：
-   ```
-   https://github.com/wuwweizn/wwzn-china
-   ```
-
-2. 从Add-on Store安装Clash加载项
-
-3. 配置订阅链接（可选）
-
-4. 启动加载项
-
 ## 配置
 
 ### 基本选项
