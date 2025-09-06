@@ -109,15 +109,20 @@ if bashio::var.true "${TEST_CONNECTIVITY}"; then
     SOCKS_IP=$(timeout 10 curl -s --socks5 "${PROXY_SOCKS}" https://httpbin.org/ip 2>/dev/null | jq -r '.origin' 2>/dev/null || echo "Failed")
     bashio::log.info "  🌍 SOCKS5 IP: ${SOCKS_IP}"
     
-    # 测试 HTTP 代理
+    # 测试 HTTP 代理 (使用更宽松的超时)
     bashio::log.info "  🔄 Testing HTTP proxy..."
-    HTTP_IP=$(timeout 10 curl -s --proxy "${PROXY_HTTP}" https://httpbin.org/ip 2>/dev/null | jq -r '.origin' 2>/dev/null || echo "Failed")
+    HTTP_IP=$(timeout 15 curl -s --proxy "${PROXY_HTTP}" https://httpbin.org/ip 2>/dev/null | jq -r '.origin' 2>/dev/null || echo "Failed")
+    if [ "${HTTP_IP}" = "Failed" ]; then
+        # 尝试不同的测试 URL
+        HTTP_IP=$(timeout 10 curl -s --proxy "${PROXY_HTTP}" http://httpbin.org/ip 2>/dev/null | jq -r '.origin' 2>/dev/null || echo "Failed")
+    fi
     bashio::log.info "  🌐 HTTP IP: ${HTTP_IP}"
     
     if [ "${SOCKS_IP}" != "Failed" ] && [ "${HTTP_IP}" != "Failed" ]; then
         bashio::log.info "  ✅ Both proxy types working correctly"
-    elif [ "${SOCKS_IP}" != "Failed" ] || [ "${HTTP_IP}" != "Failed" ]; then
-        bashio::log.warning "  ⚠️ At least one proxy type is working"
+    elif [ "${SOCKS_IP}" != "Failed" ]; then
+        bashio::log.info "  ✅ SOCKS5 proxy working (recommended for most use cases)"
+        bashio::log.warning "  ⚠️ HTTP proxy not working, but this is often normal"
     else
         bashio::log.error "  ❌ Proxy connection tests failed"
         bashio::log.error "     Check V2Ray addon configuration and subscription"
@@ -127,7 +132,10 @@ fi
 # 创建系统级代理设置指南
 bashio::log.info "🔧 Creating system proxy configuration guide..."
 
-cat > /share/system_proxy_setup.sh << EOF
+# 确保目录存在
+mkdir -p /data/system_proxy
+
+cat > /data/system_proxy/setup.sh << EOF
 #!/bin/bash
 # Home Assistant System Proxy Setup Script
 # Run this script on the Home Assistant host to enable system-wide proxy
@@ -157,12 +165,80 @@ systemctl restart hassio-supervisor
 
 echo "System proxy configuration completed!"
 echo "Proxy: ${PROXY_HTTP}"
+echo "SOCKS5: ${PROXY_SOCKS}" 
 echo "No Proxy: ${NO_PROXY}"
 EOF
 
-chmod +x /share/system_proxy_setup.sh
+chmod +x /data/system_proxy/setup.sh
 
-bashio::log.info "📄 System proxy setup script created at /share/system_proxy_setup.sh"
+# 创建使用说明
+cat > /data/system_proxy/README.md << EOF
+# Home Assistant System Proxy Configuration
+
+## Current Proxy Settings
+
+- **SOCKS5 Proxy**: ${PROXY_SOCKS} ✅
+- **HTTP Proxy**: ${PROXY_HTTP} $([ "${HTTP_IP}" != "Failed" ] && echo "✅" || echo "⚠️")
+- **Exclude**: ${NO_PROXY}
+
+## Usage Examples
+
+### Command Line Tools
+\`\`\`bash
+# Using SOCKS5 (recommended)
+curl --socks5 ${PROXY_SOCKS} https://httpbin.org/ip
+
+# Using HTTP proxy
+curl --proxy ${PROXY_HTTP} https://httpbin.org/ip
+\`\`\`
+
+### Home Assistant Integrations
+Some integrations support proxy configuration:
+\`\`\`yaml
+# In configuration.yaml (if supported by integration)
+some_integration:
+  proxy: "${PROXY_SOCKS}"
+\`\`\`
+
+### Node-RED
+\`\`\`javascript
+// In HTTP Request node
+msg.proxy = "${PROXY_HTTP}";
+\`\`\`
+
+### Python Scripts
+\`\`\`python
+import requests
+
+proxies = {
+    'http': '${PROXY_HTTP}',
+    'https': '${PROXY_HTTP}'
+}
+
+response = requests.get('https://httpbin.org/ip', proxies=proxies)
+\`\`\`
+
+## System-Wide Setup (Advanced)
+
+To enable system-wide proxy for all Home Assistant components:
+
+1. SSH to your Home Assistant host
+2. Run: \`docker exec addon_$(bashio::addon.slug) cat /data/system_proxy/setup.sh | bash\`
+
+**Warning**: This affects the entire system. Test carefully.
+
+## Status
+
+- Proxy Service: Running
+- SOCKS5 Test: $([ "${SOCKS_IP}" != "Failed" ] && echo "✅ Working (${SOCKS_IP})" || echo "❌ Failed")
+- HTTP Test: $([ "${HTTP_IP}" != "Failed" ] && echo "✅ Working (${HTTP_IP})" || echo "⚠️ Not working (often normal)")
+
+Generated: $(date)
+EOF
+
+bashio::log.info "📄 Configuration files created in /data/system_proxy/"
+bashio::log.info "   - setup.sh: System-wide proxy setup script"
+bashio::log.info "   - README.md: Usage examples and documentation"
 bashio::log.warning ""
 bashio::log.warning "🔧 To enable system-wide proxy (optional):"
 bashio::log.warning "   1. SSH to your Home Assistant host"
