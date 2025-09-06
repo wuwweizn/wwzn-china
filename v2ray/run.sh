@@ -1,58 +1,75 @@
-#!/usr/bin/with-contenv bashio
+#!/bin/bash
+set -e
 
-# Parse configuration
-SUBSCRIPTION_URL=$(bashio::config 'subscription_url')
-LOG_LEVEL=$(bashio::config 'log_level')
-SOCKS_PORT=$(bashio::config 'socks_port')
-HTTP_PORT=$(bashio::config 'http_port')
-UPDATE_INTERVAL=$(bashio::config 'update_interval')
-AUTO_START=$(bashio::config 'auto_start')
+# Function to get config value from options.json
+get_config() {
+    local key=$1
+    local default_value=$2
+    if [ -f "/data/options.json" ]; then
+        jq -r --arg key "$key" --arg default "$default_value" '.[$key] // $default' /data/options.json
+    else
+        echo "$default_value"
+    fi
+}
+
+# Parse configuration from Home Assistant
+SUBSCRIPTION_URL=$(get_config "subscription_url" "")
+LOG_LEVEL=$(get_config "log_level" "warning")
+SOCKS_PORT=$(get_config "socks_port" "10808")
+HTTP_PORT=$(get_config "http_port" "10809")
+UPDATE_INTERVAL=$(get_config "update_interval" "24")
+AUTO_START=$(get_config "auto_start" "true")
+
+echo "INFO: Starting V2Ray Add-on"
+echo "INFO: Log level: $LOG_LEVEL"
+echo "INFO: SOCKS port: $SOCKS_PORT"
+echo "INFO: HTTP port: $HTTP_PORT"
 
 # Create config directory
-mkdir -p /config/v2ray
+mkdir -p /data/v2ray
 
-CONFIG_FILE="/config/v2ray/config.json"
-SUBSCRIPTION_FILE="/config/v2ray/subscription_config.json"
+CONFIG_FILE="/data/v2ray/config.json"
+SUBSCRIPTION_FILE="/data/v2ray/subscription_config.json"
 
 # Function to download and parse subscription
 update_subscription() {
     if [ -n "$SUBSCRIPTION_URL" ]; then
-        bashio::log.info "Downloading subscription from: $SUBSCRIPTION_URL"
+        echo "INFO: Downloading subscription from: $SUBSCRIPTION_URL"
         
         # Download subscription content
         if curl -L -s -o /tmp/subscription.txt "$SUBSCRIPTION_URL"; then
-            bashio::log.info "Subscription downloaded successfully"
+            echo "INFO: Subscription downloaded successfully"
             
             # Decode base64 if needed
             if base64 -d /tmp/subscription.txt > /tmp/decoded.txt 2>/dev/null; then
                 mv /tmp/decoded.txt /tmp/subscription.txt
-                bashio::log.info "Base64 decoded subscription"
+                echo "INFO: Base64 decoded subscription"
             fi
             
             # Parse subscription and generate V2Ray config
-            python3 /parse_subscription.py /tmp/subscription.txt "$SUBSCRIPTION_FILE" "$SOCKS_PORT" "$HTTP_PORT" "$LOG_LEVEL"
+            python3 /app/parse_subscription.py /tmp/subscription.txt "$SUBSCRIPTION_FILE" "$SOCKS_PORT" "$HTTP_PORT" "$LOG_LEVEL"
             
             if [ -f "$SUBSCRIPTION_FILE" ]; then
                 cp "$SUBSCRIPTION_FILE" "$CONFIG_FILE"
-                bashio::log.info "V2Ray config updated from subscription"
+                echo "INFO: V2Ray config updated from subscription"
                 return 0
             else
-                bashio::log.error "Failed to parse subscription"
+                echo "ERROR: Failed to parse subscription"
                 return 1
             fi
         else
-            bashio::log.error "Failed to download subscription"
+            echo "ERROR: Failed to download subscription"
             return 1
         fi
     else
-        bashio::log.warning "No subscription URL provided"
+        echo "WARNING: No subscription URL provided"
         return 1
     fi
 }
 
 # Function to create default config
 create_default_config() {
-    bashio::log.info "Creating default V2Ray config"
+    echo "INFO: Creating default V2Ray config"
     cat > "$CONFIG_FILE" << EOF
 {
     "log": {
@@ -107,9 +124,9 @@ if [ -n "$SUBSCRIPTION_URL" ] && [ "$AUTO_START" = "true" ]; then
     (
         while true; do
             sleep $((UPDATE_INTERVAL * 3600))
-            bashio::log.info "Updating subscription (interval: ${UPDATE_INTERVAL}h)"
+            echo "INFO: Updating subscription (interval: ${UPDATE_INTERVAL}h)"
             if update_subscription; then
-                bashio::log.info "Subscription updated, restarting V2Ray"
+                echo "INFO: Subscription updated, restarting V2Ray"
                 pkill v2ray 2>/dev/null || true
                 sleep 2
             fi
@@ -119,24 +136,24 @@ fi
 
 # Validate config file
 if [ ! -f "$CONFIG_FILE" ]; then
-    bashio::log.error "Config file not found: $CONFIG_FILE"
+    echo "ERROR: Config file not found: $CONFIG_FILE"
     exit 1
 fi
 
-if ! v2ray test -config "$CONFIG_FILE"; then
-    bashio::log.error "Invalid V2Ray configuration"
+if ! /usr/bin/v2ray test -c "$CONFIG_FILE"; then
+    echo "ERROR: Invalid V2Ray configuration"
     exit 1
 fi
 
 # Start V2Ray
-bashio::log.info "Starting V2Ray..."
-bashio::log.info "SOCKS5 proxy: localhost:$SOCKS_PORT"
-bashio::log.info "HTTP proxy: localhost:$HTTP_PORT"
-bashio::log.info "Log level: $LOG_LEVEL"
+echo "INFO: Starting V2Ray..."
+echo "INFO: SOCKS5 proxy: localhost:$SOCKS_PORT"
+echo "INFO: HTTP proxy: localhost:$HTTP_PORT"
+echo "INFO: Log level: $LOG_LEVEL"
 
 if [ -n "$SUBSCRIPTION_URL" ]; then
-    bashio::log.info "Subscription URL configured"
-    bashio::log.info "Auto update interval: ${UPDATE_INTERVAL} hours"
+    echo "INFO: Subscription URL configured"
+    echo "INFO: Auto update interval: ${UPDATE_INTERVAL} hours"
 fi
 
 # Run v2ray

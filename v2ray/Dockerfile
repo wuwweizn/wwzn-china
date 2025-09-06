@@ -14,7 +14,7 @@ LABEL \
     org.opencontainers.image.source="https://github.com/wuwweizn/wwzn-china" \
     org.opencontainers.image.licenses="MIT"
 
-# Install additional packages if needed
+# Install additional packages
 RUN apk add --no-cache \
     bash \
     curl \
@@ -24,11 +24,19 @@ RUN apk add --no-cache \
     py3-requests \
     py3-yaml
 
-# Copy scripts
-COPY run.sh /usr/local/bin/run.sh
-COPY parse_subscription.py /usr/local/bin/parse_subscription.py
-RUN chmod +x /usr/local/bin/run.sh /usr/local/bin/parse_subscription.py
+# Create directories
+RUN mkdir -p /app
 
-# Reset entrypoint and cmd
+# Copy scripts
+COPY run.sh /app/run.sh
+COPY parse_subscription.py /app/parse_subscription.py
+
+# Set permissions
+RUN chmod +x /app/run.sh
+
+# Set working directory
+WORKDIR /app
+
+# Reset entrypoint and set cmd
 ENTRYPOINT []
-CMD ["/usr/local/bin/run.sh"]
+CMD ["bash", "/app/run.sh"]
