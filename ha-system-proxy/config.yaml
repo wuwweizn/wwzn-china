@@ -1,6 +1,6 @@
 # ha-system-proxy/config.yaml
 name: "HA System Proxy"
-version: "1.0.0"
+version: "1.0.1"
 slug: "ha-system-proxy" 
 description: "Configure system-wide proxy for Home Assistant OS"
 url: "https://github.com/wuwweizn/wwzn-china"
@@ -9,10 +9,12 @@ arch:
   - aarch64
   - armv7
 init: false
+host_network: true
 startup: application
 boot: auto
 options:
   proxy_mode: "selective"
+  v2ray_host: "172.30.33.0"
   v2ray_socks_port: 10808
   v2ray_http_port: 10809
   enable_system_proxy: true
@@ -20,6 +22,7 @@ options:
   test_connectivity: true
 schema:
   proxy_mode: "list(selective|global|disabled)"
+  v2ray_host: "str"
   v2ray_socks_port: "int(1024,65535)"
   v2ray_http_port: "int(1024,65535)"
   enable_system_proxy: "bool"
