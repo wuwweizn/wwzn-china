@@ -25,9 +25,10 @@ RUN apk add --no-cache \
     py3-yaml
 
 # Copy scripts
-COPY run.sh /
-COPY parse_subscription.py /
-RUN chmod a+x /run.sh
+COPY run.sh /usr/local/bin/run.sh
+COPY parse_subscription.py /usr/local/bin/parse_subscription.py
+RUN chmod +x /usr/local/bin/run.sh /usr/local/bin/parse_subscription.py
 
-# Override the entrypoint to use bash instead of v2ray
-ENTRYPOINT ["/run.sh"]
+# Reset entrypoint and cmd
+ENTRYPOINT []
+CMD ["/usr/local/bin/run.sh"]

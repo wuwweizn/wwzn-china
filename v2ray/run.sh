@@ -140,4 +140,4 @@ if [ -n "$SUBSCRIPTION_URL" ]; then
 fi
 
 # Run v2ray
-exec v2ray run -c "$CONFIG_FILE"
+exec /usr/bin/v2ray run -c "$CONFIG_FILE"
