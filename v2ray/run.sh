@@ -1,67 +1,69 @@
 #!/bin/bash
 set -e
 
-get_config() {
-    local key=$1
-    local default_value=$2
-    if [ -f "/data/options.json" ]; then
-        jq -r --arg key "$key" --arg default "$default_value" '.[$key] // $default' /data/options.json
-    else
-        echo "$default_value"
-    fi
+get_config(){
+  key=$1
+  default=$2
+  [ -f /data/options.json ] && jq -r --arg key "$key" '.[$key]//"'$default'"' /data/options.json || echo "$default"
 }
 
 SUBSCRIPTION_URL=$(get_config "subscription_url" "")
 LOG_LEVEL=$(get_config "log_level" "warning")
-SOCKS_PORT=$(get_config "socks_port" "10808")
-HTTP_PORT=$(get_config "http_port" "10809")
-UPDATE_INTERVAL=$(get_config "update_interval" "24")
+SOCKS_PORT=$(get_config "socks_port" 10808)
+HTTP_PORT=$(get_config "http_port" 10809)
+UPDATE_INTERVAL=$(get_config "update_interval" 24)
 AUTO_START=$(get_config "auto_start" "true")
-SELECTED_NODE=$(get_config "selected_node" "0")
-ENABLE_NODE_SELECTION=$(get_config "enable_node_selection" "true")
+SELECTED_NODE=$(get_config "selected_node" -1)
 
 mkdir -p /data/v2ray
-CONFIG_FILE="/data/v2ray/config.json"
-SUBSCRIPTION_FILE="/data/v2ray/subscription_config.json"
+CONFIG_FILE=/data/v2ray/config.json
+SUB_FILE=/data/v2ray/subscription_config.json
 
-update_subscription() {
-    if [ -n "$SUBSCRIPTION_URL" ]; then
-        echo "INFO: Downloading subscription..."
-        if curl -L -s -o /tmp/subscription.txt "$SUBSCRIPTION_URL"; then
-            if base64 -d /tmp/subscription.txt > /tmp/decoded.txt 2>/dev/null; then
-                mv /tmp/decoded.txt /tmp/subscription.txt
-            fi
-            python3 /app/parse_subscription.py /tmp/subscription.txt "$SUBSCRIPTION_FILE" "$SOCKS_PORT" "$HTTP_PORT" "$LOG_LEVEL" "$SELECTED_NODE" "$ENABLE_NODE_SELECTION"
-            cp "$SUBSCRIPTION_FILE" "$CONFIG_FILE"
-            return 0
-        fi
-    fi
-    return 1
+update_subscription(){
+  if [ -n "$SUBSCRIPTION_URL" ]; then
+    echo "INFO: Downloading subscription..."
+    curl -L -s -o /tmp/sub.txt "$SUBSCRIPTION_URL" || { echo "ERROR: download failed"; return 1; }
+    python3 /app/parse_subscription.py /tmp/sub.txt "$SUB_FILE" "$SOCKS_PORT" "$HTTP_PORT" "$LOG_LEVEL" "$SELECTED_NODE" || return 1
+    cp "$SUB_FILE" "$CONFIG_FILE"
+    echo "INFO: V2Ray config updated from subscription"
+    return 0
+  fi
+  return 1
 }
 
-create_default_config() {
-    cat > "$CONFIG_FILE" << EOF
+create_default_config(){
+  cat > "$CONFIG_FILE" << EOF
 {
-    "log": {"loglevel": "$LOG_LEVEL"},
-    "inbounds": [
-        {"port": $SOCKS_PORT,"protocol": "socks","settings":{"auth":"noauth","udp":true},"tag":"socks-in"},
-        {"port": $HTTP_PORT,"protocol": "http","settings":{},"tag":"http-in"}
-    ],
-    "outbounds":[{"protocol":"freedom","settings":{},"tag":"direct"}],
-    "routing":{"domainStrategy":"IPIfNonMatch","rules":[]}
+  "log": {"loglevel":"$LOG_LEVEL"},
+  "inbounds":[
+    {"port":$SOCKS_PORT,"protocol":"socks","settings":{"auth":"noauth","udp":true},"tag":"socks-in"},
+    {"port":$HTTP_PORT,"protocol":"http","settings":{},"tag":"http-in"}
+  ],
+  "outbounds":[{"protocol":"freedom","settings":{},"tag":"direct"}]
 }
 EOF
 }
 
-if ! update_subscription && [ ! -f "$CONFIG_FILE" ]; then
-    create_default_config
+if ! update_subscription; then
+  [ -f "$CONFIG_FILE" ] || create_default_config
 fi
 
 if [ -n "$SUBSCRIPTION_URL" ] && [ "$AUTO_START" = "true" ]; then
-    (while true; do
-        sleep $((UPDATE_INTERVAL*3600))
-        update_subscription
-    done) &
+(
+  while true; do
+    sleep $((UPDATE_INTERVAL*3600))
+    echo "INFO: Updating subscription..."
+    if update_subscription; then
+      pkill v2ray 2>/dev/null || true
+      sleep 2
+    fi
+  done
+) &
+fi
+
+[ -f "$CONFIG_FILE" ] || { echo "ERROR: config not found"; exit 1; }
+if ! /usr/bin/v2ray test -c "$CONFIG_FILE"; then
+  echo "ERROR: invalid config"; exit 1
 fi
 
 exec /usr/bin/v2ray run -c "$CONFIG_FILE"
