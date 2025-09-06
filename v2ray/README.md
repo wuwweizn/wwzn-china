@@ -6,13 +6,6 @@
 
 ## 配置
 
-### 配置选项
-
-- `log_level`: 日志级别 (debug, info, warning, error, none)
-- `config_file`: V2Ray 配置文件路径，默认为 `/config/v2ray/config.json`
-
-### 配置示例
-
 subscription_url: https://sub.gugu.cc/data1/resourrces2/linnk3/3243253453454（填写你的节点订阅连接）
 其他默认
 
