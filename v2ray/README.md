@@ -4,17 +4,6 @@
 
 这是一个基于 V2Ray Core 的 Home Assistant 加载项，用于在 Home Assistant 环境中运行 V2Ray 代理服务。
 
-## 安装步骤
-
-1. **添加仓库到 Home Assistant**
-   - 在 Home Assistant 中，转到 "Supervisor" > "Add-on Store"
-   - 点击右上角的菜单，选择 "Repositories"
-   - 添加此仓库地址：`https://github.com/wuwweizn/wwzn-china`
-
-2. **安装加载项**
-   - 在加载项商店中找到 "V2Ray Core"
-   - 点击安装
-
 ## 配置
 
 ### 配置选项
@@ -22,49 +11,12 @@
 - `log_level`: 日志级别 (debug, info, warning, error, none)
 - `config_file`: V2Ray 配置文件路径，默认为 `/config/v2ray/config.json`
 
-### 配置文件
+### 配置示例
 
-首次启动时，加载项会在 `/config/v2ray/config.json` 创建一个基本的配置文件模板。你可以根据需要编辑这个文件。
+subscription_url: https://sub.gugu.cc/data1/resourrces2/linnk3/3243253453454（填写你的节点订阅连接）
+其他默认
 
-配置文件示例：
-```json
-{
-    "log": {
-        "loglevel": "warning"
-    },
-    "inbounds": [
-        {
-            "port": 10808,
-            "protocol": "socks",
-            "settings": {
-                "auth": "noauth",
-                "udp": true
-            }
-        }
-    ],
-    "outbounds": [
-        {
-            "protocol": "vmess",
-            "settings": {
-                "vnext": [
-                    {
-                        "address": "your-server.com",
-                        "port": 443,
-                        "users": [
-                            {
-                                "id": "your-uuid-here",
-                                "security": "auto"
-                            }
-                        ]
-                    }
-                ]
-            }
-        }
-    ]
-}
-```
-
-## 使用说明
+## 使用说明(请查阅使用文档)
 
 1. 启动加载项后，V2Ray 将监听配置文件中指定的端口
 2. 默认配置下：
@@ -77,8 +29,6 @@
 - amd64
 - aarch64 (ARM64)
 - armv7
-
-## 故障排除
 
 ### 查看日志
 - 在 Home Assistant 的 Supervisor > V2Ray Core 中查看日志
