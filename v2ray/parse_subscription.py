@@ -263,32 +263,43 @@ def generate_v2ray_config(outbounds, socks_port, http_port, log_level):
         ],
         "outbounds": outbounds + [
             {
-                "protocol": "direct",
+                "protocol": "freedom",
                 "settings": {},
                 "tag": "direct"
             },
             {
                 "protocol": "blackhole",
-                "settings": {},
+                "settings": {
+                    "response": {
+                        "type": "http"
+                    }
+                },
                 "tag": "block"
             }
         ],
         "routing": {
+            "domainStrategy": "IPIfNonMatch",
             "rules": [
                 {
                     "type": "field",
                     "outboundTag": "direct",
-                    "domain": ["geosite:private"]
+                    "domain": [
+                        "geosite:private"
+                    ]
                 },
                 {
                     "type": "field",
                     "outboundTag": "direct",
-                    "ip": ["geoip:private"]
+                    "ip": [
+                        "geoip:private"
+                    ]
                 },
                 {
                     "type": "field",
                     "outboundTag": "block",
-                    "domain": ["geosite:category-ads-all"]
+                    "domain": [
+                        "geosite:category-ads-all"
+                    ]
                 }
             ]
         }

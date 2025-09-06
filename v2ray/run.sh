@@ -94,17 +94,18 @@ create_default_config() {
     ],
     "outbounds": [
         {
-            "protocol": "direct",
+            "protocol": "freedom",
             "settings": {},
             "tag": "direct"
         }
     ],
     "routing": {
+        "domainStrategy": "IPIfNonMatch",
         "rules": [
             {
                 "type": "field",
                 "outboundTag": "direct",
-                "protocol": ["bittorrent"]
+                "network": "tcp,udp"
             }
         ]
     }
