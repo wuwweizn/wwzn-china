@@ -1,4 +1,6 @@
-#!/usr/bin/env python3
+if not v2ray_config:
+        print("Failed to generate V2Ray configuration", file=sys.stderr)
+        sys.exit(1)#!/usr/bin/env python3
 import base64
 import json
 import sys

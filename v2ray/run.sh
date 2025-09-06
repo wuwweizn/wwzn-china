@@ -47,7 +47,7 @@ update_subscription() {
             fi
             
             # Parse subscription and generate V2Ray config
-            python3 /app/parse_subscription.py /tmp/subscription.txt "$SUBSCRIPTION_FILE" "$SOCKS_PORT" "$HTTP_PORT" "$LOG_LEVEL"
+            python3 /app/parse_subscription.py /tmp/subscription.txt "$SUBSCRIPTION_FILE" "$SOCKS_PORT" "$HTTP_PORT" "$LOG_LEVEL" "$SELECTED_NODE"
             
             if [ -f "$SUBSCRIPTION_FILE" ]; then
                 cp "$SUBSCRIPTION_FILE" "$CONFIG_FILE"
