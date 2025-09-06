@@ -1,4 +1,4 @@
-name: Build and Push V2Ray2 (Multi-Arch, Docker Hub + GHCR)
+name: Build and Push V2Ray (Multi-Arch, Docker Hub + GHCR)
 on:
   workflow_dispatch:
   push:

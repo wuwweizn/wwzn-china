@@ -1,3 +1,4 @@
+# ha-system-proxy/config.yaml
 name: "HA System Proxy"
 version: "1.0.0"
 slug: "ha-system-proxy" 
@@ -8,27 +9,20 @@ arch:
   - aarch64
   - armv7
 init: false
-host_network: true
-privileged:
-  - NET_ADMIN
-  - SYS_ADMIN
 startup: application
 boot: auto
 options:
   proxy_mode: "selective"
   v2ray_socks_port: 10808
   v2ray_http_port: 10809
-  enable_for_supervisor: true
-  enable_for_addons: true
+  enable_system_proxy: true
   bypass_private_networks: true
-  bypass_china_sites: false
   test_connectivity: true
 schema:
   proxy_mode: "list(selective|global|disabled)"
   v2ray_socks_port: "int(1024,65535)"
   v2ray_http_port: "int(1024,65535)"
-  enable_for_supervisor: "bool"
-  enable_for_addons: "bool"
+  enable_system_proxy: "bool"
   bypass_private_networks: "bool"
-  bypass_china_sites: "bool"
   test_connectivity: "bool"
+image: "ghcr.io/wuwweizn/ha-system-proxy-{arch}"
