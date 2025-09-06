@@ -65,7 +65,7 @@ headers = ['Name', 'Description', 'Version', 'Config Path']
 markdown_table = tabulate(results, headers, tablefmt='github')
 
 # 写入 DOCS.md
-output_file = parent_dir / "88wwzn88" / "DOCS.md"
+output_file = parent_dir / "4neng" / "DOCS.md"
 output_file.parent.mkdir(exist_ok=True, parents=True)  # 确保目录存在
 
 with open(output_file, 'w', encoding='utf-8') as f:

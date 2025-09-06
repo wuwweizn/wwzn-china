@@ -1,4 +1,4 @@
-name: Build Config Docs.md
+name: Build Config Docs.md 4NENG
 
 on:
   push:
@@ -26,13 +26,13 @@ jobs:
 
       # 生成 DOCS.md
       - name: Build Config Docs.md
-        run: python 88wwzn88/build_config_docs.py
+        run: python 4neng/build_config_docs.py
 
       # 提交修改
       - name: Commit changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add 88wwzn88/DOCS.md
+          git add 4neng/DOCS.md
           git commit -m "Update DOCS.md" || echo "No changes to commit"
           git push

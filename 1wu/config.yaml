@@ -1,0 +1,16 @@
+name: "【HAOS安装与升级】"
+version: "1.0.0"
+slug: "1wu"
+description: "HAOS-ZG安装"
+url: "https://github.com/wuwweizn/wwzn-china/blob/main/README.md"
+startup: "services"
+arch:
+  - "amd64"
+  - "aarch64" 
+  - "armv7"
+  - "i386"
+  - "armhf" 
+panel_icon: "mdi:folder-multiple"
+panel_title: "安装与升级"
+panel_admin: true
+ingress: false

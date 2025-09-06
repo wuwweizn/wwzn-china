@@ -1,0 +1,16 @@
+name: "【加载项商店安装】"
+version: "2.0.0"
+slug: "2wei"
+description: "功能扩展，加载项商店安装"
+url: "https://github.com/wuwweizn/wwzn-china/blob/main/README.md"
+startup: "services"
+arch:
+  - "amd64"
+  - "aarch64" 
+  - "armv7"
+  - "i386"
+  - "armhf" 
+panel_icon: "mdi:folder-multiple"
+panel_title: "加载项安装说明"
+panel_admin: true
+ingress: false
