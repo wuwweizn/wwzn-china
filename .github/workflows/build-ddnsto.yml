@@ -64,7 +64,7 @@ jobs:
 
           ADDON_DIR="ddnsto"
           YAML_PATH="${ADDON_DIR}/build.yaml"
-          CONFIG_PATH="${ADDON_DIR}/config.json"
+          CONFIG_PATH="${ADDON_DIR}/config.yaml"
 
           if [[ -f "$YAML_PATH" ]]; then
             BUILD_FROM=$(yq e ".build_from.${BUILD_ARCH}" "$YAML_PATH")
