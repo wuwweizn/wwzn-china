@@ -1,0 +1,78 @@
+name: Docker Wyze Bridge
+version: "2.11.1"
+slug: wyze-bridge
+description: WEBRTC/RTSP/RTMP/LL-HLS桥，用于docker中的Wyze Cams
+url: "https://github.com/mrlt8/docker-wyze-bridge"
+webui: "http://[HOST]:[PORT:5000]"
+arch:
+  - amd64
+  - aarch64
+  - armv7
+init: false
+startup: application
+panel_icon: mdi:webcam
+ingress: false
+ingress_port: 0
+host_network: true
+privileged:
+  - SYS_ADMIN
+  - SYS_RAWIO
+ports:
+  1935/tcp: RTMP流媒体
+  8554/tcp: RTSP流媒体  
+  8888/tcp: HLS流媒体
+  8889/tcp: WebRTC
+  5000/tcp: Web管理界面
+ports_description:
+  1935/tcp: RTMP流媒体端口
+  8554/tcp: RTSP流媒体端口
+  8888/tcp: HLS流媒体端口
+  8889/tcp: WebRTC端口
+  5000/tcp: Web管理界面端口
+image: "mrlt8/wyze-bridge"
+environment:
+  WB_AUTH: false
+  HOME_ASSISTANT: true
+  HASS_MODE: true
+options:
+  wyze_email: ""
+  wyze_password: ""
+  api_id: ""
+  api_key: ""
+  web_auth: false
+  rtsp_port: 8554
+  hls_port: 8888
+  rtmp_port: 1935
+  web_port: 5000
+  quality: "HD120"
+  record_all: false
+  snapshot: true
+  audio: false
+  filter_names: ""
+  filter_mode: ""
+  debug_level: "INFO"
+schema:
+  wyze_email: str
+  wyze_password: password
+  api_id: str?
+  api_key: str?
+  web_auth: bool
+  rtsp_port: int
+  hls_port: int
+  rtmp_port: int
+  web_port: int
+  quality: list(SD30|SD60|HD60|HD120|FHD120)?
+  record_all: bool
+  snapshot: bool
+  audio: bool
+  filter_names: str?
+  filter_mode: list(INCLUDE|EXCLUDE|BLOCK)?
+  debug_level: list(CRITICAL|ERROR|WARNING|INFO|DEBUG)?
+map:
+  - share:rw
+  - media:rw
+  - config:rw
+backup_exclude:
+  - "*.mp4"
+  - "*.jpg"
+  - "cache/*"
