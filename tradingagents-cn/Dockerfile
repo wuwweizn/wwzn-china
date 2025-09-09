@@ -34,7 +34,8 @@ RUN pip install --upgrade pip setuptools wheel
 # 安装Python依赖
 RUN pip install -r requirements.txt && \
     pip install pytdx && \
-    (pip install -r requirements_db.txt || echo "Database requirements optional")
+    (pip install -r requirements_db.txt || echo "Database requirements optional") && \
+    apk del .build-deps
 
 # 复制配置文件
 COPY rootfs /
