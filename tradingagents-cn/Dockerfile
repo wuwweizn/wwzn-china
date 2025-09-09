@@ -30,13 +30,13 @@ RUN git clone https://github.com/hsliuping/TradingAgents-CN.git . && \
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# 升级pip
-RUN pip install --upgrade pip
+# 升级pip并安装wheel
+RUN pip install --upgrade pip setuptools wheel
 
 # 安装Python依赖
 RUN pip install -r requirements.txt && \
     pip install pytdx && \
-    pip install -r requirements_db.txt || true
+    (pip install -r requirements_db.txt || echo "Database requirements optional")
 
 # 复制配置文件
 COPY rootfs /
