@@ -3,21 +3,23 @@ FROM $BUILD_FROM
 
 # 设置环境变量
 ENV LANG C.UTF-8
-ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
-# 安装系统依赖
-RUN apt-get update && apt-get install -y \
+# 安装系统依赖 (Alpine Linux)
+RUN apk update && apk add --no-cache \
     python3 \
-    python3-pip \
-    python3-venv \
+    python3-dev \
+    py3-pip \
     git \
     curl \
-    build-essential \
+    build-base \
     libffi-dev \
-    libssl-dev \
-    && rm -rf /var/lib/apt/lists/*
+    openssl-dev \
+    gcc \
+    musl-dev \
+    linux-headers \
+    bash
 
 # 设置工作目录
 WORKDIR /opt/tradingagents
