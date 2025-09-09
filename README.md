@@ -72,8 +72,10 @@ t0bst4r加载项：https://github.com/t0bst4r/home-assistant-addons
 【引用的项目：hamh、hamh76】
 xswxm加载项：https://github.com/xswxm/hassio-addons
 【引用的项目：wenotify_tx、zhonghong_vrf】
+scrypted加载项：https://github.com/koush/scrypted
+【引用的项目：scrypted、Docker Wyze Bridge】
 
-自学加载项：【alist、clash、ddnsto、istoreos、jdxb、libretv、lucky、musicn、NeteaseCloudMusicApi、passwall、v2rayn、xray、yesplaymusic】
+自行构建加载项：【alist、clash、ddnsto、istoreos、jdxb、libretv、lucky、musicn、NeteaseCloudMusicApi、passwall、v2ray-core、xray、yesplaymusic】
 alist项目地址：https://github.com/AlistGo/alist
 clash项目地址：https://github.com/MetaCubeX/mihomo
 jdxb项目地址：https://www.iepose.com/
@@ -82,7 +84,7 @@ lucky项目地址：https://github.com/gdy666/lucky
 NeteaseCloudMusicApi项目地址：https://github.com/Binaryify/NeteaseCloudMusicApi
 yesplaymusic项目地址：https://github.com/qier222/YesPlayMusic
 passwall项目地址：https://github.com/xiaorouji/openwrt-passwall
-v2rayn项目地址：https://github.com/2dust/v2rayN
+v2ray-core项目地址：https://github.com/v2fly/v2ray-core
 xray项目地址：https://github.com/XTLS/Xray-core
 libretv项目地址：https://github.com/LibreSpark/LibreTV
 ddnsto项目地址：https://web.ddnsto.com/
