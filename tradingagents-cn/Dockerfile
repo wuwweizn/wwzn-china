@@ -37,7 +37,7 @@ RUN pip install --upgrade pip setuptools wheel
 RUN pip install -r requirements.txt && \
     pip install pytdx && \
     (pip install -r requirements_db.txt || echo "Database requirements optional") && \
-    apk del .build-deps
+    (apk del .build-deps || echo "No build deps to remove")
 
 # 复制配置文件
 COPY rootfs /
