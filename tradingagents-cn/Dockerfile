@@ -29,9 +29,6 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
 # 复制配置文件
 COPY rootfs /
 
-# 安装 bashio（Home Assistant 加载项必需）
-RUN pip install --no-cache-dir bashio
-
 # 设置权限
 RUN chmod +x /etc/services.d/tradingagents/run && \
     chmod +x /etc/services.d/tradingagents/finish && \
