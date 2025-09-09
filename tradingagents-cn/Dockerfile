@@ -1,23 +1,17 @@
-ARG BUILD_FROM
-FROM $BUILD_FROM
+FROM python:3.11-slim
 
 # 设置环境变量
-ENV LANG C.UTF-8
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
+ENV LANG=C.UTF-8 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
 
-# 安装系统依赖 (Alpine Linux)
-RUN apk update && \
-    apk add --no-cache \
-        python3 \
-        py3-pip \
-        git \
-        curl && \
-    apk add --no-cache --virtual .build-deps \
-        python3-dev \
-        build-base \
-        libffi-dev \
-        openssl-dev
+# 安装系统依赖
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    jq \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
 # 设置工作目录
 WORKDIR /opt/tradingagents
@@ -26,21 +20,17 @@ WORKDIR /opt/tradingagents
 RUN git clone https://github.com/hsliuping/TradingAgents-CN.git . && \
     git checkout main
 
-# 创建虚拟环境并安装依赖
-RUN python3 -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-
-# 升级pip并安装wheel
-RUN pip install --upgrade pip setuptools wheel
-
 # 安装Python依赖
-RUN pip install -r requirements.txt && \
-    pip install pytdx && \
-    (pip install -r requirements_db.txt || echo "Database requirements optional") && \
-    (apk del .build-deps || echo "No build deps to remove")
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir pytdx && \
+    (pip install --no-cache-dir -r requirements_db.txt || echo "Database requirements optional")
 
 # 复制配置文件
 COPY rootfs /
+
+# 安装 bashio（Home Assistant 加载项必需）
+RUN pip install --no-cache-dir bashio
 
 # 设置权限
 RUN chmod +x /etc/services.d/tradingagents/run && \
