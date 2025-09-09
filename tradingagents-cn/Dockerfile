@@ -7,15 +7,17 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
 # 安装系统依赖 (Alpine Linux)
-RUN apk update && apk upgrade && apk add --no-cache \
-    python3 \
-    python3-dev \
-    py3-pip \
-    git \
-    curl \
-    build-base \
-    libffi-dev \
-    openssl-dev
+RUN apk update && \
+    apk add --no-cache \
+        python3 \
+        py3-pip \
+        git \
+        curl && \
+    apk add --no-cache --virtual .build-deps \
+        python3-dev \
+        build-base \
+        libffi-dev \
+        openssl-dev
 
 # 设置工作目录
 WORKDIR /opt/tradingagents
