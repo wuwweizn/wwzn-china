@@ -1,0 +1,15 @@
+#!/usr/bin/with-contenv bashio
+
+# 等待网络就绪
+bashio::net.wait_for 8501
+
+bashio::log.info "Starting TradingAgents-CN..."
+
+# 激活虚拟环境
+source /opt/venv/bin/activate
+
+# 切换到工作目录
+cd /opt/tradingagents
+
+# 启动应用
+exec /usr/bin/start-tradingagents.sh
