@@ -1,11 +1,7 @@
 #!/bin/bash
 
-# 激活虚拟环境
-source /opt/venv/bin/activate
-
 # 设置环境变量
 export PYTHONPATH="/opt/tradingagents:$PYTHONPATH"
-export PATH="/opt/venv/bin:$PATH"
 
 # 进入应用目录
 cd /opt/tradingagents
@@ -14,7 +10,7 @@ cd /opt/tradingagents
 sleep 5
 
 # 启动Streamlit应用
-exec streamlit run web/app.py \
+exec python -m streamlit run web/app.py \
     --server.address 0.0.0.0 \
     --server.port 8501 \
     --server.headless true \
