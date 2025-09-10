@@ -1,35 +1,5 @@
 # TradingAgents-CN Home Assistant Add-on
 
-
-- Web UI: `http://<HA-IP>:8501`
-- 需要在加载项配置中填入对应的 API Key（OpenAI / DeepSeek / Gemini / Qwen / Tavily 等）。
-
-
-## 选项（Options）
-- `openai_api_key`
-- `deepseek_api_key`
-- `gemini_api_key`
-- `qwen_api_key`
-- `tavily_api_key`
-- `other_env`: 额外环境变量，`FOO=bar` 形式的字符串数组。
-
-
-> 以上选项会在启动时写入容器内 `/app/.env`。
-
-
-## 镜像命名
-- GHCR: `ghcr.io/wuwweizn/tradingagents-cn-{arch}:{version}`
-- Docker Hub: `<你的DOCKER_USERNAME>/tradingagents-cn-{arch}:{version}`
-
-
-## 支持架构
-- `amd64`, `aarch64`, `armv7`
-
-
-
-
-# TradingAgents-CN Home Assistant Add-on
-
 基于多智能体LLM的中文金融交易框架 Home Assistant 加载项。
 
 ## 关于

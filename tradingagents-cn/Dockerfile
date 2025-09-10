@@ -1,16 +1,22 @@
-FROM python:3.11-slim
+ARG BUILD_FROM
+FROM $BUILD_FROM
 
 # 设置环境变量
-ENV LANG=C.UTF-8 \
-    PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
+ENV LANG C.UTF-8
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
 
 # 安装系统依赖
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-venv \
     git \
     curl \
-    jq \
     build-essential \
+    libffi-dev \
+    libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # 设置工作目录
@@ -20,17 +26,22 @@ WORKDIR /opt/tradingagents
 RUN git clone https://github.com/hsliuping/TradingAgents-CN.git . && \
     git checkout main
 
+# 创建虚拟环境并安装依赖
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# 升级pip并安装wheel
+RUN pip install --upgrade pip setuptools wheel
+
 # 安装Python依赖
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir pytdx && \
-    (pip install --no-cache-dir -r requirements_db.txt || echo "Database requirements optional")
+RUN pip install -r requirements.txt && \
+    pip install pytdx && \
+    (pip install -r requirements_db.txt || echo "Database requirements optional")
 
 # 复制配置文件
 COPY rootfs /
 
 # 设置权限
-COPY start-tradingagents.sh /usr/bin/start-tradingagents.sh
 RUN chmod +x /etc/services.d/tradingagents/run && \
     chmod +x /etc/services.d/tradingagents/finish && \
     chmod +x /etc/cont-init.d/01-setup.sh && \

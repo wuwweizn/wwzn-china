@@ -1,6 +1,6 @@
 name: "TradingAgents-CN"
 description: "基于多智能体LLM的中文金融交易框架"
-version: "1.0.0"
+version: "1.0.3"
 slug: "tradingagents-cn"
 init: true  # 启用 cont-init.d 初始化脚本
 arch:
