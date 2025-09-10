@@ -7,12 +7,14 @@ ARG TA_REF=main
 ENV TA_REF=${TA_REF}
 
 # 安装必要构建依赖（已包含 python3/pip）
-RUN apk update && apk add --no-cache \
-      git \
-      build-base \
-      python3-dev \
-      libffi-dev \
-      cmake
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+       git \
+       build-essential \
+       python3-dev \
+       libffi-dev \
+       cmake \
+    && rm -rf /var/lib/apt/lists/*
 
 # 设置工作目录
 WORKDIR /app
