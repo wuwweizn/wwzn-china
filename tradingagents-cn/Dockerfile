@@ -6,15 +6,12 @@ FROM ${BUILD_FROM}
 ARG TA_REF=main
 ENV TA_REF=${TA_REF}
 
-# 安装基础依赖（科学计算库常用构建依赖）
+# 安装必要构建依赖（已包含 python3/pip）
 RUN apk add --no-cache \
       git \
-      python3 \
-      py3-pip \
       build-base \
       python3-dev \
       libffi-dev \
-      openblas-dev \
       cmake
 
 # 设置工作目录
