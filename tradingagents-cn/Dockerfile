@@ -1,12 +1,12 @@
-# Home Assistant 插件常用写法：通过 BUILD_FROM 注入基础镜像
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:14.0.4
+# 使用官方 Home Assistant base，支持 apt
+ARG BUILD_FROM=ghcr.io/home-assistant/base:2024.6.0
 FROM ${BUILD_FROM}
 
 # 允许在构建时指定上游分支/Tag（缺省 main）
 ARG TA_REF=main
 ENV TA_REF=${TA_REF}
 
-# 安装必要构建依赖（已包含 python3/pip）
+# 安装必要构建依赖
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
        git \
