@@ -1,5 +1,5 @@
 name: TradingAgents-CN
-version: "1.0.0"
+version: "1.0.2"
 slug: tradingagents_cn
 description: "中文 Trading Agents 框架（Streamlit 8501），基于自有镜像运行"
 url: https://github.com/hsliuping/TradingAgents-CN
