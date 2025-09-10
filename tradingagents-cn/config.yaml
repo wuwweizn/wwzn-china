@@ -1,21 +1,54 @@
-name: TradingAgents-CN
-version: "1.0.2"
-slug: tradingagents-cn
-description: 基于多智能体LLM的中文金融交易框架
+name: "TradingAgents-CN"
+description: "基于多智能体LLM的中文金融交易框架"
+version: "1.0.0"
+slug: "tradingagents-cn"
+init: true  # 启用 cont-init.d 初始化脚本
 arch:
   - amd64
-  - arm64
+  - aarch64
   - armv7
 startup: services
 boot: auto
-host_network: true
-webui: "http://[HOST]:8501"
-homeassistant: false
-ingress: true
-panel_icon: "mdi:finance"
-map:
-  config: true
-  data: true
-options: {}
-schema: {}
-image: "ghcr.io/你的用户名/tradingagents-cn:1.0.0"
+hassio_api: false
+hassio_role: default
+homeassistant_api: false
+host_network: false  # 如果需要直接访问本机端口可改 true
+privileged: []       # 不需要特权可留空
+devices: []          # 不需要 FUSE 可留空
+tmpfs: false
+
+ports:
+  "8501/tcp": 8501
+
+ports_description:
+  "8501/tcp": "TradingAgents Web UI"
+
+options:
+  dashscope_api_key: ""
+  finnhub_api_key: ""
+  google_api_key: ""
+  openai_api_key: ""
+  anthropic_api_key: ""
+  mongodb_enabled: false
+  redis_enabled: false
+  mongodb_host: "localhost"
+  mongodb_port: 27017
+  redis_host: "localhost"
+  redis_port: 6379
+  log_level: "info"
+
+schema:
+  dashscope_api_key: "str?"
+  finnhub_api_key: "str?"
+  google_api_key: "str?"
+  openai_api_key: "str?"
+  anthropic_api_key: "str?"
+  mongodb_enabled: "bool"
+  redis_enabled: "bool"
+  mongodb_host: "str"
+  mongodb_port: "port"
+  redis_host: "str"
+  redis_port: "port"
+  log_level: "list(trace|debug|info|notice|warning|error|fatal)"
+
+image: "ghcr.io/wuwweizn/tradingagents-cn-{arch}"
