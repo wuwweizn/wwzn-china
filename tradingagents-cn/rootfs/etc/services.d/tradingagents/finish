@@ -1,3 +1,3 @@
 #!/usr/bin/with-contenv bash
-# 可选：容器退出时清理动作
-exit 0
+# 容器停止时执行的清理动作（可选）
+echo "TradingAgents-CN container is stopping..."

@@ -30,6 +30,7 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
 COPY rootfs /
 
 # 设置权限
+COPY start-tradingagents.sh /usr/bin/start-tradingagents.sh
 RUN chmod +x /etc/services.d/tradingagents/run && \
     chmod +x /etc/services.d/tradingagents/finish && \
     chmod +x /etc/cont-init.d/01-setup.sh && \
