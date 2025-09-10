@@ -1,9 +1,9 @@
 #!/usr/bin/with-contenv bashio
 
+bashio::log.info "Starting TradingAgents-CN..."
+
 # 等待网络就绪
 bashio::net.wait_for 8501
-
-bashio::log.info "Starting TradingAgents-CN..."
 
 # 激活虚拟环境
 source /opt/venv/bin/activate
