@@ -7,7 +7,7 @@ ARG TA_REF=main
 ENV TA_REF=${TA_REF}
 
 # 安装必要构建依赖（已包含 python3/pip）
-RUN apk add --no-cache \
+RUN apk update && apk add --no-cache \
       git \
       build-base \
       python3-dev \
@@ -21,7 +21,7 @@ WORKDIR /app
 RUN git clone --depth 1 --branch "${TA_REF}" https://github.com/hsliuping/TradingAgents-CN.git /app
 
 # 安装 Python 依赖
-RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip3 install --no-cache-dir -r /app/requirements.txt
 
 # 暴露 Streamlit 默认端口
 EXPOSE 8501
