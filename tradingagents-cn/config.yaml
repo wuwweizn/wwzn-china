@@ -1,40 +1,21 @@
 name: TradingAgents-CN
 version: "1.0.2"
-slug: tradingagents_cn
-description: "中文 Trading Agents 框架（Streamlit 8501），基于自有镜像运行"
-url: https://github.com/hsliuping/TradingAgents-CN
+slug: tradingagents-cn
+description: 基于多智能体LLM的中文金融交易框架
 arch:
-- amd64
-- aarch64
-- armv7
+  - amd64
+  - arm64
+  - armv7
 startup: services
-init: false
-stage: stable
-panel_icon: mdi:robot
-webui: "http://[HOST]:[PORT:8501]"
-ingress: false
-ports:
-"8501/tcp": 8501
-ports_description:
-"8501/tcp": Web UI (Streamlit)
-image: "ghcr.io/wuwweizn/tradingagents-cn-{arch}:{version}"
-
-
-# 运行时选项（会写入 /app/.env）
-options:
-openai_api_key: ""
-deepseek_api_key: ""
-gemini_api_key: ""
-qwen_api_key: ""
-tavily_api_key: ""
-other_env: []
-
-
-schema:
-openai_api_key: str?
-deepseek_api_key: str?
-gemini_api_key: str?
-qwen_api_key: str?
-tavily_api_key: str?
-other_env:
-- str?
+boot: auto
+host_network: true
+webui: "http://[HOST]:8501"
+homeassistant: false
+ingress: true
+panel_icon: "mdi:finance"
+map:
+  config: true
+  data: true
+options: {}
+schema: {}
+image: "ghcr.io/你的用户名/tradingagents-cn:1.0.0"
