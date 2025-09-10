@@ -1,56 +1,40 @@
-name: "TradingAgents-CN"
-description: "基于多智能体LLM的中文金融交易框架"
-version: "1.0.1"
-slug: "tradingagents-cn"
-init: false
+name: TradingAgents-CN
+version: "1.0.0"
+slug: tradingagents_cn
+description: "中文 Trading Agents 框架（Streamlit 8501），基于自有镜像运行"
+url: https://github.com/hsliuping/TradingAgents-CN
 arch:
-  - aarch64
-  - amd64
-  - armv7
+- amd64
+- aarch64
+- armv7
 startup: services
-boot: auto
-hassio_api: true
-hassio_role: default
-homeassistant_api: false
-host_network: false
-privileged:
-  - SYS_ADMIN
-devices:
-  - /dev/fuse
-tmpfs: false
-
+init: false
+stage: stable
+panel_icon: mdi:robot
+webui: "http://[HOST]:[PORT:8501]"
+ingress: false
 ports:
-  "8501/tcp": 8501
-
+"8501/tcp": 8501
 ports_description:
-  "8501/tcp": "TradingAgents Web UI"
+"8501/tcp": Web UI (Streamlit)
+image: "ghcr.io/wuwweizn/tradingagents-cn-{arch}:{version}"
 
+
+# 运行时选项（会写入 /app/.env）
 options:
-  dashscope_api_key: ""
-  finnhub_api_key: ""
-  google_api_key: ""
-  openai_api_key: ""
-  anthropic_api_key: ""
-  mongodb_enabled: false
-  redis_enabled: false
-  mongodb_host: "localhost"
-  mongodb_port: 27017
-  redis_host: "localhost"
-  redis_port: 6379
-  log_level: "info"
+openai_api_key: ""
+deepseek_api_key: ""
+gemini_api_key: ""
+qwen_api_key: ""
+tavily_api_key: ""
+other_env: []
+
 
 schema:
-  dashscope_api_key: "str?"
-  finnhub_api_key: "str?"
-  google_api_key: "str?"
-  openai_api_key: "str?"
-  anthropic_api_key: "str?"
-  mongodb_enabled: "bool"
-  redis_enabled: "bool"
-  mongodb_host: "str"
-  mongodb_port: "port"
-  redis_host: "str"
-  redis_port: "port"
-  log_level: "list(trace|debug|info|notice|warning|error|fatal)"
-
-image: "ghcr.io/wuwweizn/tradingagents-cn-{arch}"
+openai_api_key: str?
+deepseek_api_key: str?
+gemini_api_key: str?
+qwen_api_key: str?
+tavily_api_key: str?
+other_env:
+- str?

@@ -1,15 +1,20 @@
-#!/usr/bin/with-contenv bashio
+#!/usr/bin/with-contenv bash
+set -euo pipefail
+cd /app
 
-bashio::log.info "Starting TradingAgents-CN..."
 
-# 等待网络就绪
-bashio::net.wait_for 8501
-
-# 激活虚拟环境
-source /opt/venv/bin/activate
-
-# 切换到工作目录
-cd /opt/tradingagents
-
-# 启动应用
-exec /usr/bin/start-tradingagents.sh
+# 若存在常见入口，优先使用；否则找首个 .py 尝试用 streamlit 启动
+if [ -f app.py ]; then
+exec streamlit run app.py --server.port 8501 --server.address 0.0.0.0
+elif [ -f Home.py ]; then
+exec streamlit run Home.py --server.port 8501 --server.address 0.0.0.0
+else
+first_py=$(find . -maxdepth 2 -name '*.py' | head -n 1)
+if [ -n "$first_py" ]; then
+exec streamlit run "$first_py" --server.port 8501 --server.address 0.0.0.0
+else
+echo "No entrypoint found (app.py/Home.py). Please adjust run script." >&2
+sleep 5
+exit 1
+fi
+fi
