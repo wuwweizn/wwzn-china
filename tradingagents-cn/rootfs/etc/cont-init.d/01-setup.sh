@@ -1,12 +1,16 @@
 #!/bin/bash
+set -e
 
-# 由于使用标准镜像，需要手动解析选项
+echo "=== TradingAgents-CN Setup Starting ==="
+
+# 配置文件路径
 OPTIONS_FILE="/data/options.json"
+ENV_FILE="/opt/tradingagents/.env"
 
-# 检查配置文件是否存在
+# 创建默认配置（如果不存在）
 if [[ ! -f "$OPTIONS_FILE" ]]; then
-    echo "Configuration file not found: $OPTIONS_FILE"
     echo "Creating default configuration..."
+    mkdir -p /data
     cat > "$OPTIONS_FILE" <<EOF
 {
   "dashscope_api_key": "",
@@ -25,24 +29,37 @@ if [[ ! -f "$OPTIONS_FILE" ]]; then
 EOF
 fi
 
-# 解析配置选项
-DASHSCOPE_API_KEY=$(cat "$OPTIONS_FILE" | jq -r '.dashscope_api_key // ""')
-FINNHUB_API_KEY=$(cat "$OPTIONS_FILE" | jq -r '.finnhub_api_key // ""')
-GOOGLE_API_KEY=$(cat "$OPTIONS_FILE" | jq -r '.google_api_key // ""')
-OPENAI_API_KEY=$(cat "$OPTIONS_FILE" | jq -r '.openai_api_key // ""')
-ANTHROPIC_API_KEY=$(cat "$OPTIONS_FILE" | jq -r '.anthropic_api_key // ""')
-MONGODB_ENABLED=$(cat "$OPTIONS_FILE" | jq -r '.mongodb_enabled // false')
-REDIS_ENABLED=$(cat "$OPTIONS_FILE" | jq -r '.redis_enabled // false')
-MONGODB_HOST=$(cat "$OPTIONS_FILE" | jq -r '.mongodb_host // "localhost"')
-MONGODB_PORT=$(cat "$OPTIONS_FILE" | jq -r '.mongodb_port // 27017')
-REDIS_HOST=$(cat "$OPTIONS_FILE" | jq -r '.redis_host // "localhost"')
-REDIS_PORT=$(cat "$OPTIONS_FILE" | jq -r '.redis_port // 6379')
-LOG_LEVEL=$(cat "$OPTIONS_FILE" | jq -r '.log_level // "info"')
+echo "Parsing configuration options..."
 
-echo "Setting up TradingAgents-CN..."
+# 使用更安全的配置解析
+DASHSCOPE_API_KEY=""
+FINNHUB_API_KEY=""
+GOOGLE_API_KEY=""
+OPENAI_API_KEY=""
+ANTHROPIC_API_KEY=""
+MONGODB_ENABLED="false"
+REDIS_ENABLED="false"
+MONGODB_HOST="localhost"
+MONGODB_PORT="27017"
+REDIS_HOST="localhost"
+REDIS_PORT="6379"
+LOG_LEVEL="info"
 
-# 创建.env配置文件
-ENV_FILE="/opt/tradingagents/.env"
+# 如果jq可用，使用jq解析
+if command -v jq >/dev/null 2>&1; then
+    DASHSCOPE_API_KEY=$(jq -r '.dashscope_api_key // ""' "$OPTIONS_FILE")
+    FINNHUB_API_KEY=$(jq -r '.finnhub_api_key // ""' "$OPTIONS_FILE")
+    GOOGLE_API_KEY=$(jq -r '.google_api_key // ""' "$OPTIONS_FILE")
+    OPENAI_API_KEY=$(jq -r '.openai_api_key // ""' "$OPTIONS_FILE")
+    ANTHROPIC_API_KEY=$(jq -r '.anthropic_api_key // ""' "$OPTIONS_FILE")
+    MONGODB_ENABLED=$(jq -r '.mongodb_enabled // false' "$OPTIONS_FILE")
+    REDIS_ENABLED=$(jq -r '.redis_enabled // false' "$OPTIONS_FILE")
+    LOG_LEVEL=$(jq -r '.log_level // "info"' "$OPTIONS_FILE")
+fi
+
+echo "Creating environment configuration..."
+
+# 创建环境配置文件
 cat > "$ENV_FILE" <<EOF
 # API Keys
 DASHSCOPE_API_KEY=${DASHSCOPE_API_KEY}
@@ -59,30 +76,40 @@ MONGODB_PORT=${MONGODB_PORT}
 REDIS_HOST=${REDIS_HOST}
 REDIS_PORT=${REDIS_PORT}
 
-# Data Directory
+# Paths
 TRADING_AGENTS_DATA_DIR=/data/tradingagents
 
 # Logging
 LOG_LEVEL=${LOG_LEVEL}
 
-# MongoDB详细配置
-MONGODB_DATABASE=trading_agents
-MONGODB_USERNAME=
-MONGODB_PASSWORD=
-
-# Redis详细配置
-REDIS_PASSWORD=
-REDIS_DB=0
+# Streamlit Configuration
+STREAMLIT_SERVER_ADDRESS=0.0.0.0
+STREAMLIT_SERVER_PORT=8501
+STREAMLIT_SERVER_HEADLESS=true
 EOF
 
-echo "Environment configuration created"
-
-# 确保数据目录存在
-mkdir -p /data/tradingagents
-mkdir -p /config/tradingagents
-
-# 设置权限
+# 确保目录和权限
+mkdir -p /data/tradingagents /config/tradingagents /share/tradingagents
 chown -R root:root /opt/tradingagents
 chmod 644 "$ENV_FILE"
 
-echo "TradingAgents-CN setup completed"
+# 测试Python环境
+echo "Testing Python environment..."
+if /opt/venv/bin/python --version; then
+    echo "✓ Python environment OK"
+else
+    echo "✗ Python environment failed"
+    exit 1
+fi
+
+# 测试Streamlit
+echo "Testing Streamlit installation..."
+if /opt/venv/bin/python -c "import streamlit; print(f'Streamlit version: {streamlit.__version__}')"; then
+    echo "✓ Streamlit OK"
+else
+    echo "✗ Streamlit failed"
+    # 尝试安装Streamlit
+    /opt/venv/bin/pip install streamlit || echo "Failed to install Streamlit"
+fi
+
+echo "=== TradingAgents-CN Setup Completed ==="
