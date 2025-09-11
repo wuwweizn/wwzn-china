@@ -1,7 +1,7 @@
 name: "TradingAgents-CN"
 description: "基于多智能体LLM的中文金融交易框架"
-version: "1.0.4"
-slug: "tradingagents-cn"
+version: "1.0.1"
+slug: tradingagents-cn
 init: false
 arch:
   - aarch64
@@ -17,10 +17,10 @@ privileged: false
 tmpfs: false
 
 ports:
-  "8501/tcp": 8501
+  8501/tcp: 8501
 
 ports_description:
-  "8501/tcp": "TradingAgents Web UI"
+  8501/tcp: "TradingAgents Web UI"
 
 options:
   dashscope_api_key: ""
@@ -31,25 +31,25 @@ options:
   anthropic_api_key: ""
   mongodb_enabled: false
   redis_enabled: false
-  mongodb_host: "localhost"
+  mongodb_host: localhost
   mongodb_port: 27017
-  redis_host: "localhost"
+  redis_host: localhost
   redis_port: 6379
-  log_level: "info"
+  log_level: info
 
 schema:
-  dashscope_api_key: "str?"
-  tushare_token: "str?"
-  finnhub_api_key: "str?"
-  google_api_key: "str?"
-  openai_api_key: "str?"
-  anthropic_api_key: "str?"
-  mongodb_enabled: "bool"
-  redis_enabled: "bool"
-  mongodb_host: "str"
-  mongodb_port: "port"
-  redis_host: "str"
-  redis_port: "port"
-  log_level: "list(trace|debug|info|notice|warning|error|fatal)"
+  dashscope_api_key: str?
+  tushare_token: str?
+  finnhub_api_key: str?
+  google_api_key: str?
+  openai_api_key: str?
+  anthropic_api_key: str?
+  mongodb_enabled: bool
+  redis_enabled: bool
+  mongodb_host: str
+  mongodb_port: port
+  redis_host: str
+  redis_port: port
+  log_level: list(trace|debug|info|notice|warning|error|fatal)
 
-image: "ghcr.io/wuwweizn/tradingagents-cn-{arch}"
+image: ghcr.io/wuwweizn/tradingagents-cn-{arch}
