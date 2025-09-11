@@ -34,9 +34,14 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
 
 # 创建启动脚本
 RUN echo '#!/bin/bash\n\
-# 启动Xvfb虚拟显示器\n\
-Xvfb :99 -screen 0 1024x768x24 -ac +extension GLX &\n\
-export DISPLAY=:99\n\
+# 启动Xvfb虚拟显示器（如果可用）\n\
+if command -v Xvfb >/dev/null 2>&1; then\n\
+    Xvfb :99 -screen 0 1024x768x24 -ac +extension GLX &\n\
+    export DISPLAY=:99\n\
+    echo "Xvfb started on :99"\n\
+else\n\
+    echo "Xvfb not available, PDF export may not work"\n\
+fi\n\
 \n\
 # 解析配置\n\
 OPTIONS_FILE="/data/options.json"\n\
@@ -54,6 +59,8 @@ if [[ -f "$OPTIONS_FILE" ]]; then\n\
     REDIS_HOST=$(cat "$OPTIONS_FILE" | jq -r ".redis_host // \"localhost\"")\n\
     REDIS_PORT=$(cat "$OPTIONS_FILE" | jq -r ".redis_port // 6379")\n\
     LOG_LEVEL=$(cat "$OPTIONS_FILE" | jq -r ".log_level // \"info\"")\n\
+else\n\
+    echo "No configuration file found, using defaults"\n\
 fi\n\
 \n\
 # 创建.env文件\n\
@@ -81,11 +88,17 @@ REDIS_DB=0\n\
 DOCKER_CONTAINER=true\n\
 EOF\n\
 \n\
+echo "Configuration loaded:"\n\
+echo "- DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:0:10}..."\n\
+echo "- TUSHARE_TOKEN: ${TUSHARE_TOKEN:0:10}..."\n\
+echo "- FINNHUB_API_KEY: ${FINNHUB_API_KEY:0:10}..."\n\
+\n\
 # 确保数据目录存在\n\
 mkdir -p /data/tradingagents\n\
 \n\
 # 启动应用\n\
 cd /opt/tradingagents\n\
+echo "Starting TradingAgents-CN..."\n\
 exec python -m streamlit run web/app.py \\\n\
     --server.address 0.0.0.0 \\\n\
     --server.port 8501 \\\n\
