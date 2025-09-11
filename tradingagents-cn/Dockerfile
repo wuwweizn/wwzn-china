@@ -5,18 +5,11 @@ ENV LANG=C.UTF-8 \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
-# 安装系统依赖
+# 只安装最基本的系统依赖
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
     jq \
-    build-essential \
-    pandoc \
-    wkhtmltopdf \
-    xvfb \
-    fonts-wqy-zenhei \
-    fonts-wqy-microhei \
-    fonts-liberation \
     && rm -rf /var/lib/apt/lists/*
 
 # 设置工作目录
@@ -34,18 +27,12 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
 
 # 创建启动脚本
 RUN echo '#!/bin/bash\n\
-# 启动Xvfb虚拟显示器（如果可用）\n\
-if command -v Xvfb >/dev/null 2>&1; then\n\
-    Xvfb :99 -screen 0 1024x768x24 -ac +extension GLX &\n\
-    export DISPLAY=:99\n\
-    echo "Xvfb started on :99"\n\
-else\n\
-    echo "Xvfb not available, PDF export may not work"\n\
-fi\n\
+echo "Starting TradingAgents-CN..."\n\
 \n\
 # 解析配置\n\
 OPTIONS_FILE="/data/options.json"\n\
 if [[ -f "$OPTIONS_FILE" ]]; then\n\
+    echo "Loading configuration from $OPTIONS_FILE"\n\
     DASHSCOPE_API_KEY=$(cat "$OPTIONS_FILE" | jq -r ".dashscope_api_key // \"\"")\n\
     TUSHARE_TOKEN=$(cat "$OPTIONS_FILE" | jq -r ".tushare_token // \"\"")\n\
     FINNHUB_API_KEY=$(cat "$OPTIONS_FILE" | jq -r ".finnhub_api_key // \"\"")\n\
@@ -60,11 +47,25 @@ if [[ -f "$OPTIONS_FILE" ]]; then\n\
     REDIS_PORT=$(cat "$OPTIONS_FILE" | jq -r ".redis_port // 6379")\n\
     LOG_LEVEL=$(cat "$OPTIONS_FILE" | jq -r ".log_level // \"info\"")\n\
 else\n\
-    echo "No configuration file found, using defaults"\n\
+    echo "No configuration file found at $OPTIONS_FILE, using defaults"\n\
+    DASHSCOPE_API_KEY=""\n\
+    TUSHARE_TOKEN=""\n\
+    FINNHUB_API_KEY=""\n\
+    GOOGLE_API_KEY=""\n\
+    OPENAI_API_KEY=""\n\
+    ANTHROPIC_API_KEY=""\n\
+    MONGODB_ENABLED="false"\n\
+    REDIS_ENABLED="false"\n\
+    MONGODB_HOST="localhost"\n\
+    MONGODB_PORT="27017"\n\
+    REDIS_HOST="localhost"\n\
+    REDIS_PORT="6379"\n\
+    LOG_LEVEL="info"\n\
 fi\n\
 \n\
 # 创建.env文件\n\
 ENV_FILE="/opt/tradingagents/.env"\n\
+echo "Creating environment file at $ENV_FILE"\n\
 cat > "$ENV_FILE" <<EOF\n\
 DASHSCOPE_API_KEY=${DASHSCOPE_API_KEY}\n\
 TUSHARE_TOKEN=${TUSHARE_TOKEN}\n\
@@ -88,17 +89,20 @@ REDIS_DB=0\n\
 DOCKER_CONTAINER=true\n\
 EOF\n\
 \n\
-echo "Configuration loaded:"\n\
-echo "- DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:0:10}..."\n\
-echo "- TUSHARE_TOKEN: ${TUSHARE_TOKEN:0:10}..."\n\
-echo "- FINNHUB_API_KEY: ${FINNHUB_API_KEY:0:10}..."\n\
+# 显示配置信息（隐藏敏感信息）\n\
+echo "Configuration summary:"\n\
+[[ -n "$DASHSCOPE_API_KEY" ]] && echo "- DASHSCOPE_API_KEY: Configured" || echo "- DASHSCOPE_API_KEY: Not configured"\n\
+[[ -n "$TUSHARE_TOKEN" ]] && echo "- TUSHARE_TOKEN: Configured" || echo "- TUSHARE_TOKEN: Not configured"\n\
+[[ -n "$FINNHUB_API_KEY" ]] && echo "- FINNHUB_API_KEY: Configured" || echo "- FINNHUB_API_KEY: Not configured"\n\
+echo "- LOG_LEVEL: $LOG_LEVEL"\n\
 \n\
 # 确保数据目录存在\n\
 mkdir -p /data/tradingagents\n\
+echo "Data directory created: /data/tradingagents"\n\
 \n\
 # 启动应用\n\
 cd /opt/tradingagents\n\
-echo "Starting TradingAgents-CN..."\n\
+echo "Starting Streamlit application..."\n\
 exec python -m streamlit run web/app.py \\\n\
     --server.address 0.0.0.0 \\\n\
     --server.port 8501 \\\n\
