@@ -1,20 +1,19 @@
 name: "TradingAgents-CN"
 description: "基于多智能体LLM的中文金融交易框架"
-version: "1.0.3"
+version: "1.0.4"
 slug: "tradingagents-cn"
-init: true  # 启用 cont-init.d 初始化脚本
+init: false
 arch:
-  - amd64
   - aarch64
+  - amd64
   - armv7
-startup: services
+startup: application
 boot: auto
-hassio_api: false
+hassio_api: true
 hassio_role: default
 homeassistant_api: false
-host_network: false  # 如果需要直接访问本机端口可改 true
-privileged: []       # 不需要特权可留空
-devices: []          # 不需要 FUSE 可留空
+host_network: false
+privileged: false
 tmpfs: false
 
 ports:
@@ -25,6 +24,7 @@ ports_description:
 
 options:
   dashscope_api_key: ""
+  tushare_token: ""
   finnhub_api_key: ""
   google_api_key: ""
   openai_api_key: ""
@@ -39,6 +39,7 @@ options:
 
 schema:
   dashscope_api_key: "str?"
+  tushare_token: "str?"
   finnhub_api_key: "str?"
   google_api_key: "str?"
   openai_api_key: "str?"
