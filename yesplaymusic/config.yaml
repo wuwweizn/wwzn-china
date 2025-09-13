@@ -1,8 +1,8 @@
 name: YesPlayMusic
-version: "1.0.0"
+version: "0.4.16-3"
 slug: yesplaymusic
-description: "高颜值的第三方网易云音乐播放器 - A beautiful third-party NetEase Cloud Music player"
-url: "https://github.com/stark81/my_yesplaymusic"
+description: "高颜值的第三方网易云播放器，支持本地音乐播放、离线歌单、桌面歌词"
+url: https://github.com/stark81/my_yesplaymusic
 arch:
   - armhf
   - armv7
@@ -10,32 +10,15 @@ arch:
   - amd64
   - i386
 startup: application
-boot: manual
-ports:
-  "8080/tcp": 8080
-ports_description:
-  "8080/tcp": "Web interface"
-webui: "http://[HOST]:[PORT:8080]"
-hassio_api: false
-hassio_role: default
-homeassistant_api: false
-privileged: []
-full_access: false
-audio: false
-video: false
-stdin: false
-legacy: false
-stage: stable
+boot: auto
 init: false
-image: "ghcr.io/wuwweizn/yesplaymusic-{arch}"
 options:
-  netease_api_url: "http://47.121.211.116:3001"
-  port: 8080
+  netease_api_url: "https://netease-api.example.com"
 schema:
-  netease_api_url:
-    str?
-  port:
-    port?
-environment:
-  VUE_APP_NETEASE_API_URL: "netease_api_url"
-  PORT: "port"
+  netease_api_url: "str?"
+ports:
+  80/tcp: 3001
+ports_description:
+  80/tcp: Web interface
+webui: http://[HOST]:[PORT:80]
+image: "ghcr.io/wuwweizn/yesplaymusic-{arch}"
