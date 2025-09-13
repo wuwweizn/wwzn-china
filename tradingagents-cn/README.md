@@ -57,8 +57,8 @@ http://homeassistant.local:8501
 4. 填入获取的API密钥：
 ```yaml
 dashscope_api_key: "您的阿里百炼API密钥（必须）"
-tushare_token："您的Tushare API 密钥（推荐用于A股）"
-finnhub_api_key: "您的FinnHub API密钥（用于美股）"
+tushare_token："您的Tushare API 密钥（必须 推荐用于A股）"
+finnhub_api_key: "您的FinnHub API密钥（必须 用于美股）"
 google_api_key: "您的Google AI API密钥（可选）"
 openai_api_key: "您的OpenAI API密钥（可选）"
 anthropic_api_key: "您的Anthropic API密钥（可选）"
