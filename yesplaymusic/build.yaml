@@ -1,7 +1,0 @@
-labels:
-  org.opencontainers.image.title: "Home Assistant Add-on: YesPlayMusic"
-  org.opencontainers.image.description: "高颜值的第三方网易云音乐播放器"
-  org.opencontainers.image.source: "https://github.com/wuwweizn/wwzn-china"
-  org.opencontainers.image.licenses: "MIT"
-args:
-  YESPLAYMUSIC_VERSION: "latest"
