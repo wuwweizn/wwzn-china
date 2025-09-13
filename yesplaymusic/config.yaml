@@ -12,6 +12,10 @@ arch:
 startup: application
 boot: auto
 init: false
+options:
+  netease_api_url: "https://netease-api.example.com"
+schema:
+  netease_api_url: "str?"
 ports:
   80/tcp: 3001
 ports_description:
