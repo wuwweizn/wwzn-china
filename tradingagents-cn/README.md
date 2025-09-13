@@ -31,17 +31,19 @@ http://homeassistant.local:8501
 3. 格式: sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 4. 获取API Key
 
-**FinnHub API密钥（必需 用于获取美股金融数据）**
+**Tushare API Token (A股必需推荐，专业的中国金融数据源)**
+1. 获取地址: https://tushare.pro/register?reg=128886
+2. 注册Tushare账号 -> 邮箱验证
+3. 登录后进入个人中心 -> 获取Token
+4.复制Token（格式：xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx）
+# 注意：免费用户有调用频率限制，建议升级积分获得更高权限
+
+**FinnHub API密钥（美股必需 用于获取美股金融数据）**
 1. 访问 [FinnHub](https://finnhub.io/)
 2. 免费账户每分钟60次请求，足够日常使用
 3. 获取API Key 格式: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-**Tushare API Token (推荐，专业的中国金融数据源)**
-1. 获取地址: https://tushare.pro/register?reg=128886
-2. 注册Tushare账号 -> 邮箱验证
-3. 登录后进入个人中心 -> 获取Token
-4.复制Token（格式：xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-# 注意：免费用户有调用频率限制，建议升级积分获得更高权限
+
 
 **其他API密钥（可选）**
 - Google AI API：用于Gemini模型
@@ -55,7 +57,8 @@ http://homeassistant.local:8501
 4. 填入获取的API密钥：
 ```yaml
 dashscope_api_key: "您的阿里百炼API密钥"
-finnhub_api_key: "您的FinnHub API密钥"
+tushare_token："您的Tushare API 密钥"
+finnhub_api_key: "您的FinnHub API密钥（可选）"
 google_api_key: "您的Google AI API密钥（可选）"
 openai_api_key: "您的OpenAI API密钥（可选）"
 anthropic_api_key: "您的Anthropic API密钥（可选）"

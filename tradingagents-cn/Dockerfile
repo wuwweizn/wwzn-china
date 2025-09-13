@@ -25,6 +25,9 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
     pip install --no-cache-dir pytdx && \
     (pip install --no-cache-dir -r requirements_db.txt || echo "Database requirements optional")
 
+# 禁用pypandoc的自动下载功能
+ENV PYPANDOC_PANDOC=/usr/bin/pandoc
+
 # 创建启动脚本
 RUN echo '#!/bin/bash\n\
 echo "Starting TradingAgents-CN..."\n\
