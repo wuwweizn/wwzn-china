@@ -1,4 +1,4 @@
-## 5. DOCS.md
+
 ```markdown
 # Home Assistant Add-on: YesPlayMusic
 
