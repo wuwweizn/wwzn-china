@@ -1,6 +1,6 @@
 name: TradingAgents-CN
 description: 基于多智能体LLM的中文金融交易框架
-version: 1.0.5
+version: 1.0.6
 slug: tradingagents-cn
 init: false
 arch:

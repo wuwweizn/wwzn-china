@@ -38,7 +38,7 @@ http://homeassistant.local:8501
 4.复制Token（格式：xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx）
 # 注意：免费用户有调用频率限制，建议升级积分获得更高权限
 
-**FinnHub API密钥（美股推荐 用于获取美股金融数据）**
+**FinnHub API密钥（美股必需推荐 用于获取美股金融数据）**
 1. 访问 [FinnHub](https://finnhub.io/)
 2. 免费账户每分钟60次请求，足够日常使用
 3. 获取API Key 格式: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -57,8 +57,8 @@ http://homeassistant.local:8501
 4. 填入获取的API密钥：
 ```yaml
 dashscope_api_key: "您的阿里百炼API密钥（必须）"
-tushare_token："您的Tushare API 密钥（必须）"
-finnhub_api_key: "您的FinnHub API密钥（可选）"
+tushare_token："您的Tushare API 密钥（推荐用于A股）"
+finnhub_api_key: "您的FinnHub API密钥（用于美股）"
 google_api_key: "您的Google AI API密钥（可选）"
 openai_api_key: "您的OpenAI API密钥（可选）"
 anthropic_api_key: "您的Anthropic API密钥（可选）"
