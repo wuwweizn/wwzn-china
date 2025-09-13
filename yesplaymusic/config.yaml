@@ -4,17 +4,17 @@ slug: yesplaymusic
 description: "高颜值的第三方网易云播放器，支持本地音乐播放、离线歌单、桌面歌词"
 url: https://github.com/stark81/my_yesplaymusic
 arch:
-  - amd64
-  - aarch64
+  - armhf
   - armv7
+  - aarch64
+  - amd64
+  - i386
 startup: application
 boot: auto
 init: false
-host_network: false
 ports:
   80/tcp: 3001
 ports_description:
   80/tcp: Web interface
 webui: "http://[HOST]:[PORT:80]"
-# 直接使用原始镜像进行测试
 image: "dnyo666/my_yesplaymusic:v0.4.16-3"
