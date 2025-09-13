@@ -8,11 +8,19 @@ LABEL \
   io.hass.type="addon" \
   io.hass.version="0.4.16-3"
 
-# 安装必要工具
+# 安装必要工具和依赖
 RUN apk add --no-cache \
     bash \
     curl \
-    jq
+    jq \
+    nodejs \
+    npm \
+    git
+
+# 克隆并安装 NeteaseCloudMusicApi
+WORKDIR /api
+RUN git clone https://github.com/Binaryify/NeteaseCloudMusicApi.git . \
+    && npm install
 
 # 下载并安装 bashio
 RUN curl -J -L -o /tmp/bashio.tar.gz \
@@ -23,12 +31,15 @@ RUN curl -J -L -o /tmp/bashio.tar.gz \
     && ln -s /usr/lib/bashio/bashio /usr/bin/bashio \
     && rm -rf /tmp/bashio.tar.gz /tmp/bashio
 
-# 复制 run.sh 到容器根目录
+# 复制启动脚本
 COPY run.sh /usr/local/bin/run.sh
 RUN chmod +x /usr/local/bin/run.sh
 
-# 暴露端口
-EXPOSE 80
+# 暴露端口（80 为前端，3000 为 API）
+EXPOSE 80 3000
+
+# 设置工作目录
+WORKDIR /
 
 # 使用自定义启动脚本
 ENTRYPOINT ["/usr/local/bin/run.sh"]
