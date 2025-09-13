@@ -19,7 +19,7 @@ RUN apk add --no-cache \
 
 # 克隆并安装 NeteaseCloudMusicApi
 WORKDIR /api
-RUN git clone https://github.com/Binaryify/NeteaseCloudMusicApi.git . \
+RUN git clone https://github.com/nooblong/NeteaseCloudMusicApiBackup.git . \
     && npm install
 
 # 下载并安装 bashio
