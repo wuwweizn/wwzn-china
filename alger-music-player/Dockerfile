@@ -48,7 +48,8 @@ RUN mkdir -p /etc/services.d/alger-music \
 COPY rootfs /
 
 # 创建自定义的 nginx 配置
-RUN cat > /etc/nginx/nginx.conf << 'EOF'
+RUN mkdir -p /etc/nginx/conf.d && \
+    cat > /etc/nginx/nginx.conf << 'EOF'
 user nginx;
 worker_processes auto;
 error_log /var/log/nginx/error.log warn;
@@ -123,18 +124,13 @@ http {
             proxy_read_timeout 60s;
         }
         
-        # 音乐 API 代理（支持外部和内置 UNM）
+        # 音乐 API 代理 - 优先使用内置 UNM
         location /api_music/ {
             # 移除前缀
             rewrite ^/api_music/(.*) /$1 break;
             
-            # 检查是否配置了外部音乐 API
-            set $api_backend unm;
-            if ($arg_external = "1") {
-                set $api_backend $music_api_url;
-            }
-            
-            proxy_pass http://$api_backend;
+            # 默认使用内置 UNM 服务
+            proxy_pass http://unm;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -157,6 +153,16 @@ http {
                 add_header Content-Length 0;
                 return 204;
             }
+        }
+        
+        # UNM 直接访问接口
+        location /unm/ {
+            rewrite ^/unm/(.*) /$1 break;
+            proxy_pass http://unm;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
         }
     }
 }
