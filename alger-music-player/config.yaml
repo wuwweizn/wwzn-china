@@ -1,0 +1,59 @@
+name: Alger Music Player
+version: "1.0.0"
+slug: alger_music_player
+description: "网易云音乐播放器，支持高音质播放和自定义音乐API"
+url: "https://github.com/algerkong/AlgerMusicPlayer"
+startup: application
+boot: auto
+init: false
+
+arch:
+  - armhf
+  - armv7
+  - aarch64
+  - amd64
+  - i386
+
+image: "ghcr.io/{arch}/alger-music-player"
+
+map:
+  - ssl
+
+options:
+  music_api_url: "http://localhost:3001"
+  log_level: "info"
+
+schema:
+  music_api_url: str?
+  log_level: list(trace|debug|info|notice|warning|error|fatal)?
+
+ports:
+  3010/tcp: 3010
+
+ports_description:
+  3010/tcp: "Web Interface (HTTP)"
+
+webui: "http://[HOST]:[PORT:3010]"
+
+environment:
+  MUSIC_API_URL: "music_api_url"
+  LOG_LEVEL: "log_level"
+
+ingress: true
+ingress_port: 3010
+ingress_stream: false
+panel_icon: mdi:music
+
+services:
+  - mqtt:want
+
+homeassistant_api: false
+hassio_api: false
+hassio_role: default
+auth_api: false
+docker_api: false
+privileged: []
+full_access: false
+apparmor: true
+
+backup: hot

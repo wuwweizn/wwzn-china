@@ -1,0 +1,12 @@
+#!/usr/bin/with-contenv bashio
+
+bashio::log.info "Starting UnblockNeteaseMusic service..."
+
+cd /opt/unm
+
+# 设置 UNM 环境变量
+export PORT=3001
+export HOST=0.0.0.0
+
+# 启动 UnblockNeteaseMusic
+exec node app.js -p 3001 -o
