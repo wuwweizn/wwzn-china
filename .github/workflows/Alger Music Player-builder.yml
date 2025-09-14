@@ -1,4 +1,4 @@
-name: Build and Push Alger Music Player (Simplified Multi-Arch)
+name: Build and Push Alger Music Player (Multi-Arch, Docker Hub + GHCR)
 
 on:
   workflow_dispatch:
@@ -9,13 +9,19 @@ on:
       - 'alger-music-player/**'
       - '.github/workflows/alger-music-player-builder.yml'
 
-env:
-  REGISTRY_GHCR: ghcr.io
-  REGISTRY_DOCKERHUB: docker.io
-
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            platform: linux/amd64
+            build_arch: amd64
+          - arch: arm64
+            platform: linux/arm64
+            build_arch: aarch64
+
     permissions:
       contents: read
       packages: write
@@ -29,148 +35,192 @@ jobs:
           sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
           sudo chmod +x /usr/local/bin/yq
 
-      - name: Extract metadata
-        id: meta
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GH_PAT }}
+
+      - name: Get lowercase repo owner
+        run: echo "REPO_OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+
+      - name: Extract VERSION from config
+        id: extract_version
         run: |
           ADDON_DIR="alger-music-player"
           CONFIG_PATH="${ADDON_DIR}/config.yaml"
           
           if [[ -f "$CONFIG_PATH" ]]; then
             VERSION=$(yq e ".version" "$CONFIG_PATH")
-            NAME=$(yq e ".name" "$CONFIG_PATH")
-            DESCRIPTION=$(yq e ".description" "$CONFIG_PATH")
           else
             echo "❌ ERROR: $CONFIG_PATH not found!"
             exit 1
           fi
           
-          REPO_OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}
-          
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "REPO_OWNER_LC=$REPO_OWNER_LC" >> $GITHUB_ENV
-          echo "ADDON_NAME=$NAME" >> $GITHUB_ENV
-          echo "ADDON_DESCRIPTION=$DESCRIPTION" >> $GITHUB_ENV
-          
-          echo "💡 Version: $VERSION"
-          echo "💡 Repository: $REPO_OWNER_LC"
-          echo "💡 Name: $NAME"
+          echo "BUILD_ARCH=${{ matrix.build_arch }}" >> $GITHUB_ENV
+          echo "💡 VERSION=$VERSION"
+          echo "💡 BUILD_ARCH=${{ matrix.build_arch }}"
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
-        with:
-          driver: docker-container
-          use: true
 
-      - name: Login to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY_GHCR }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GH_PAT }}
+      - name: Determine base image
+        id: base_image
+        run: |
+          case "${{ matrix.build_arch }}" in
+            amd64)
+              BASE_IMAGE="ghcr.io/home-assistant/amd64-base:latest"
+              ;;
+            aarch64)
+              BASE_IMAGE="ghcr.io/home-assistant/aarch64-base:latest"
+              ;;
+            armv7)
+              BASE_IMAGE="ghcr.io/home-assistant/armv7-base:latest"
+              ;;
+            armhf)
+              BASE_IMAGE="ghcr.io/home-assistant/armhf-base:latest"
+              ;;
+            i386)
+              BASE_IMAGE="ghcr.io/home-assistant/i386-base:latest"
+              ;;
+            *)
+              echo "❌ Unsupported architecture: ${{ matrix.build_arch }}"
+              exit 1
+              ;;
+          esac
+          echo "BASE_IMAGE=$BASE_IMAGE" >> $GITHUB_ENV
+          echo "💡 BASE_IMAGE=$BASE_IMAGE"
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY_DOCKERHUB }}
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Generate image metadata
-        id: image_meta
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ${{ env.REGISTRY_GHCR }}/${{ env.REPO_OWNER_LC }}/alger-music-player
-            ${{ env.REGISTRY_DOCKERHUB }}/${{ secrets.DOCKER_USERNAME }}/alger-music-player
-          tags: |
-            type=raw,value=${{ env.VERSION }}
-            type=raw,value=latest
-          labels: |
-            org.opencontainers.image.title=${{ env.ADDON_NAME }}
-            org.opencontainers.image.description=${{ env.ADDON_DESCRIPTION }}
-            org.opencontainers.image.source=https://github.com/${{ github.repository }}
-            org.opencontainers.image.version=${{ env.VERSION }}
-            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
-            org.opencontainers.image.revision=${{ github.sha }}
-            io.hass.name=${{ env.ADDON_NAME }}
-            io.hass.description=${{ env.ADDON_DESCRIPTION }}
-            io.hass.type=addon
-            io.hass.version=${{ env.VERSION }}
-
-      - name: Build and push multi-architecture images
+      - name: Build and push Alger Music Player for ${{ matrix.arch }}
         uses: docker/build-push-action@v5
         with:
           context: alger-music-player
           file: alger-music-player/Dockerfile
-          platforms: |
-            linux/amd64
-            linux/arm64
-            linux/arm/v7
-            linux/arm/v6
-            linux/386
+          platforms: ${{ matrix.platform }}
           push: true
-          tags: ${{ steps.image_meta.outputs.tags }}
-          labels: ${{ steps.image_meta.outputs.labels }}
           build-args: |
-            BUILD_VERSION=${{ env.VERSION }}
-            BUILD_DATE=${{ github.event.head_commit.timestamp }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          provenance: false
-          sbom: false
+            BUILD_FROM=${{ env.BASE_IMAGE }}
+          tags: |
+            ghcr.io/${{ env.REPO_OWNER_LC }}/alger-music-player-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
+            ghcr.io/${{ env.REPO_OWNER_LC }}/alger-music-player-${{ env.BUILD_ARCH }}:latest
+            ${{ secrets.DOCKER_USERNAME }}/alger-music-player-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
+            ${{ secrets.DOCKER_USERNAME }}/alger-music-player-${{ env.BUILD_ARCH }}:latest
+          labels: |
+            org.opencontainers.image.title=Alger Music Player Add-on
+            org.opencontainers.image.description=网易云音乐播放器 Home Assistant 加载项
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.version=${{ env.VERSION }}
+            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            io.hass.name=Alger Music Player
+            io.hass.description=网易云音乐播放器，支持高音质播放和自定义音乐API
+            io.hass.arch=${{ matrix.build_arch }}
+            io.hass.type=addon
+            io.hass.version=${{ env.VERSION }}
 
-      - name: Generate build summary
+  create_manifest:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GH_PAT }}
+
+      - name: Get lowercase repo owner and version
+        run: |
+          echo "REPO_OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+          VERSION=$(yq e ".version" "alger-music-player/config.yaml")
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create and push multi-arch manifest for GHCR
+        run: |
+          docker manifest create ghcr.io/${{ env.REPO_OWNER_LC }}/alger-music-player:${{ env.VERSION }} \
+            ghcr.io/${{ env.REPO_OWNER_LC }}/alger-music-player-amd64:${{ env.VERSION }} \
+            ghcr.io/${{ env.REPO_OWNER_LC }}/alger-music-player-aarch64:${{ env.VERSION }} \
+            ghcr.io/${{ env.REPO_OWNER_LC }}/alger-music-player-armv7:${{ env.VERSION }} \
+            ghcr.io/${{ env.REPO_OWNER_LC }}/alger-music-player-armhf:${{ env.VERSION }} \
+            ghcr.io/${{ env.REPO_OWNER_LC }}/alger-music-player-i386:${{ env.VERSION }}
+          
+          docker manifest create ghcr.io/${{ env.REPO_OWNER_LC }}/alger-music-player:latest \
+            ghcr.io/${{ env.REPO_OWNER_LC }}/alger-music-player-amd64:latest \
+            ghcr.io/${{ env.REPO_OWNER_LC }}/alger-music-player-aarch64:latest \
+            ghcr.io/${{ env.REPO_OWNER_LC }}/alger-music-player-armv7:latest \
+            ghcr.io/${{ env.REPO_OWNER_LC }}/alger-music-player-armhf:latest \
+            ghcr.io/${{ env.REPO_OWNER_LC }}/alger-music-player-i386:latest
+
+          docker manifest push ghcr.io/${{ env.REPO_OWNER_LC }}/alger-music-player:${{ env.VERSION }}
+          docker manifest push ghcr.io/${{ env.REPO_OWNER_LC }}/alger-music-player:latest
+
+      - name: Create and push multi-arch manifest for Docker Hub
+        run: |
+          docker manifest create ${{ secrets.DOCKER_USERNAME }}/alger-music-player:${{ env.VERSION }} \
+            ${{ secrets.DOCKER_USERNAME }}/alger-music-player-amd64:${{ env.VERSION }} \
+            ${{ secrets.DOCKER_USERNAME }}/alger-music-player-aarch64:${{ env.VERSION }} \
+            ${{ secrets.DOCKER_USERNAME }}/alger-music-player-armv7:${{ env.VERSION }} \
+            ${{ secrets.DOCKER_USERNAME }}/alger-music-player-armhf:${{ env.VERSION }} \
+            ${{ secrets.DOCKER_USERNAME }}/alger-music-player-i386:${{ env.VERSION }}
+          
+          docker manifest create ${{ secrets.DOCKER_USERNAME }}/alger-music-player:latest \
+            ${{ secrets.DOCKER_USERNAME }}/alger-music-player-amd64:latest \
+            ${{ secrets.DOCKER_USERNAME }}/alger-music-player-aarch64:latest \
+            ${{ secrets.DOCKER_USERNAME }}/alger-music-player-armv7:latest \
+            ${{ secrets.DOCKER_USERNAME }}/alger-music-player-armhf:latest \
+            ${{ secrets.DOCKER_USERNAME }}/alger-music-player-i386:latest
+
+          docker manifest push ${{ secrets.DOCKER_USERNAME }}/alger-music-player:${{ env.VERSION }}
+          docker manifest push ${{ secrets.DOCKER_USERNAME }}/alger-music-player:latest
+
+      - name: Output summary
         run: |
           echo "## 🎵 Alger Music Player Add-on Build Complete" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📦 Published Multi-Arch Images" >> $GITHUB_STEP_SUMMARY
+          echo "### 📦 Published Images" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**GitHub Container Registry:**" >> $GITHUB_STEP_SUMMARY
-          echo "- \`${{ env.REGISTRY_GHCR }}/${{ env.REPO_OWNER_LC }}/alger-music-player:${{ env.VERSION }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- \`${{ env.REGISTRY_GHCR }}/${{ env.REPO_OWNER_LC }}/alger-music-player:latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "**GHCR:**" >> $GITHUB_STEP_SUMMARY
+          echo "- \`ghcr.io/${{ env.REPO_OWNER_LC }}/alger-music-player:${{ env.VERSION }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`ghcr.io/${{ env.REPO_OWNER_LC }}/alger-music-player:latest\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Docker Hub:**" >> $GITHUB_STEP_SUMMARY
-          echo "- \`${{ env.REGISTRY_DOCKERHUB }}/${{ secrets.DOCKER_USERNAME }}/alger-music-player:${{ env.VERSION }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- \`${{ env.REGISTRY_DOCKERHUB }}/${{ secrets.DOCKER_USERNAME }}/alger-music-player:latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`${{ secrets.DOCKER_USERNAME }}/alger-music-player:${{ env.VERSION }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`${{ secrets.DOCKER_USERNAME }}/alger-music-player:latest\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🏗️ Supported Platforms" >> $GITHUB_STEP_SUMMARY
-          echo "- **linux/amd64** (x86_64)" >> $GITHUB_STEP_SUMMARY
-          echo "- **linux/arm64** (aarch64)" >> $GITHUB_STEP_SUMMARY
-          echo "- **linux/arm/v7** (armv7)" >> $GITHUB_STEP_SUMMARY
-          echo "- **linux/arm/v6** (armhf)" >> $GITHUB_STEP_SUMMARY
-          echo "- **linux/386** (i386)" >> $GITHUB_STEP_SUMMARY
+          echo "### 🏗️ Supported Architectures" >> $GITHUB_STEP_SUMMARY
+          echo "- amd64, aarch64, armv7, armhf, i386" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📋 Add-on Information" >> $GITHUB_STEP_SUMMARY
-          echo "- **Name:** ${{ env.ADDON_NAME }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Version:** ${{ env.VERSION }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Description:** ${{ env.ADDON_DESCRIPTION }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🔗 Installation" >> $GITHUB_STEP_SUMMARY
-          echo "Add repository to Home Assistant: \`https://github.com/${{ github.repository }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### ✅ Next Steps" >> $GITHUB_STEP_SUMMARY
-          echo "1. Go to Home Assistant → Supervisor → Add-on Store" >> $GITHUB_STEP_SUMMARY
-          echo "2. Click ⋮ → Repositories" >> $GITHUB_STEP_SUMMARY
-          echo "3. Add: \`https://github.com/${{ github.repository }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "4. Install **Alger Music Player** add-on" >> $GITHUB_STEP_SUMMARY
-          echo "5. Start the add-on and enjoy! 🎵" >> $GITHUB_STEP_SUMMARY
-
-      - name: Test image availability
-        run: |
-          echo "🔍 Testing image availability..."
-          
-          # 等待镜像完全推送
-          sleep 30
-          
-          # 测试 GHCR 镜像
-          echo "Testing GHCR image..."
-          docker manifest inspect ${{ env.REGISTRY_GHCR }}/${{ env.REPO_OWNER_LC }}/alger-music-player:${{ env.VERSION }} || echo "⚠️ GHCR manifest not immediately available"
-          
-          # 测试 Docker Hub 镜像  
-          echo "Testing Docker Hub image..."
-          docker manifest inspect ${{ env.REGISTRY_DOCKERHUB }}/${{ secrets.DOCKER_USERNAME }}/alger-music-player:${{ env.VERSION }} || echo "⚠️ Docker Hub manifest not immediately available"
-          
-          echo "✅ Build process completed successfully!"
+          echo "### 🔗 Repository" >> $GITHUB_STEP_SUMMARY
+          echo "Add to Home Assistant: \`https://github.com/${{ github.repository }}\`" >> $GITHUB_STEP_SUMMARY

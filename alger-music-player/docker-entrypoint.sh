@@ -1,157 +1,152 @@
 #!/bin/bash
 set -e
 
-echo "🎵 Initializing Alger Music Player Add-on..."
+# 设置颜色输出
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
 
-# 检查并下载原始应用（如果不存在）
-if [ ! -f "/app/server.js" ]; then
-    echo "📥 Downloading Alger Music Player application..."
-    
-    # 使用 wget 下载并解压（假设有可用的下载链接）
-    # 或者直接从 Docker Hub 镜像中提取
-    cd /tmp
-    
-    # 这里我们需要一个替代方案来获取原始应用文件
-    # 方案1：如果原项目提供了发布包
-    # wget -O alger-app.tar.gz "https://github.com/algerkong/AlgerMusicPlayer/archive/refs/heads/main.tar.gz"
-    # tar -xzf alger-app.tar.gz --strip-components=1 -C /app
-    
-    # 方案2：从现有的 Docker 镜像提取（推荐）
-    echo "⚠️  Warning: Alger Music Player files not found."
-    echo "Please ensure the application files are properly copied to /app"
-    
-    # 创建一个基本的服务器文件作为回退
-    cat > /app/server.js << 'EOF'
-const express = require('express');
-const path = require('path');
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-app.use(express.static('/app/dist'));
-
-app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', message: 'Alger Music Player API is running' });
-});
-
-app.get('*', (req, res) => {
-    res.sendFile(path.join('/app/dist', 'index.html'));
-});
-
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Alger Music Player backend running on port ${PORT}`);
-});
-EOF
-    
-    # 创建基本的前端文件
-    mkdir -p /app/dist
-    cat > /app/dist/index.html << 'EOF'
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alger Music Player</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-        .container {
-            background: rgba(255,255,255,0.1);
-            padding: 40px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        }
-        h1 { margin-bottom: 20px; }
-        .status {
-            padding: 10px 20px;
-            border-radius: 10px;
-            background: rgba(255,255,255,0.2);
-            margin: 20px 0;
-        }
-        .loading {
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>🎵 Alger Music Player</h1>
-        <div class="status loading">
-            正在初始化音乐服务...
-        </div>
-        <p>UnblockNeteaseMusic 服务已启动</p>
-        <p>请稍等片刻，系统正在加载完整的音乐播放器</p>
-    </div>
-    
-    <script>
-        // 检查服务状态
-        async function checkServices() {
-            try {
-                const response = await fetch('/api/health');
-                if (response.ok) {
-                    document.querySelector('.status').innerHTML = '✅ 服务运行正常';
-                    document.querySelector('.status').classList.remove('loading');
-                }
-            } catch (error) {
-                setTimeout(checkServices, 2000);
-            }
-        }
-        
-        // 定期检查服务状态
-        checkServices();
-        setInterval(checkServices, 5000);
-    </script>
-</body>
-</html>
-EOF
-
-    # 如果没有 package.json，创建一个基本的
-    if [ ! -f "/app/package.json" ]; then
-        cat > /app/package.json << 'EOF'
-{
-  "name": "alger-music-player",
-  "version": "1.0.0",
-  "description": "Alger Music Player with UnblockNeteaseMusic",
-  "main": "server.js",
-  "dependencies": {
-    "express": "^4.18.0"
-  },
-  "scripts": {
-    "start": "node server.js"
-  }
+log() {
+    echo -e "${BLUE}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} $1"
 }
+
+log_success() {
+    echo -e "${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')] ✅${NC} $1"
+}
+
+log_warning() {
+    echo -e "${YELLOW}[$(date +'%Y-%m-%d %H:%M:%S')] ⚠️${NC} $1"
+}
+
+log_error() {
+    echo -e "${RED}[$(date +'%Y-%m-%d %H:%M:%S')] ❌${NC} $1"
+}
+
+# 显示启动横幅
+cat << 'EOF'
+
+    ╔═══════════════════════════════════════════╗
+    ║        🎵 Alger Music Player Add-on        ║
+    ║                                           ║
+    ║     With UnblockNeteaseMusic Support      ║
+    ╚═══════════════════════════════════════════╝
+
 EOF
-        cd /app && npm install --production
-    fi
+
+log "Initializing Alger Music Player Home Assistant Add-on..."
+
+# 读取 Home Assistant Add-on 选项（如果可用）
+if command -v bashio &> /dev/null; then
+    log "Loading Home Assistant Add-on configuration..."
+    
+    # 从 options.json 读取配置
+    MUSIC_API_URL=$(bashio::config 'music_api_url' 'http://localhost:3001')
+    LOG_LEVEL=$(bashio::config 'log_level' 'info')
+    ENABLE_UNM=$(bashio::config 'enable_unm' 'true')
+    UNM_SOURCE=$(bashio::config 'unm_source' 'netease qq kuwo kugou baidu migu')
+    
+    log "Configuration loaded:"
+    log "  - Music API URL: $MUSIC_API_URL"
+    log "  - Log Level: $LOG_LEVEL"  
+    log "  - Enable UNM: $ENABLE_UNM"
+    log "  - UNM Sources: $UNM_SOURCE"
+else
+    log_warning "bashio not available, using environment variables"
+    
+    # 使用环境变量作为回退
+    MUSIC_API_URL=${MUSIC_API_URL:-"http://localhost:3001"}
+    LOG_LEVEL=${LOG_LEVEL:-"info"}
+    ENABLE_UNM=${ENABLE_UNM:-"true"}
+    UNM_SOURCE=${UNM_SOURCE:-"netease qq kuwo kugou baidu migu"}
 fi
 
-# 验证 UnblockNeteaseMusic
-if [ ! -f "/opt/unm/app.js" ]; then
-    echo "❌ UnblockNeteaseMusic not found!"
+# 导出环境变量供 supervisor 使用
+export MUSIC_API_URL
+export LOG_LEVEL
+export ENABLE_UNM
+export UNM_SOURCE
+
+# 验证必要文件和目录
+log "Verifying installation..."
+
+if [ ! -d "/app" ]; then
+    log_error "Alger Music Player application directory not found!"
     exit 1
 fi
 
-echo "✅ All services initialized"
+if [ ! -f "/opt/unm/app.js" ]; then
+    log_error "UnblockNeteaseMusic not found!"
+    exit 1
+fi
+
+if [ ! -f "/etc/nginx/nginx.conf" ]; then
+    log_error "Nginx configuration not found!"
+    exit 1
+fi
+
+log_success "All required files verified"
 
 # 设置权限
-chown -R app:app /app
+log "Setting up permissions..."
+chown -R app:app /app /opt/unm
 chown -R nginx:nginx /var/log/nginx /run/nginx
+chmod 755 /opt/unm /app
 
-echo "🚀 Starting services with supervisor..."
+# 检查并安装 Node.js 依赖（如果需要）
+if [ -f "/app/package.json" ] && [ ! -d "/app/node_modules" ]; then
+    log "Installing Node.js dependencies for Alger Music Player..."
+    cd /app
+    npm install --production --no-audit || log_warning "Failed to install dependencies, continuing anyway"
+fi
+
+# 创建必要的日志目录
+mkdir -p /var/log
+touch /var/log/supervisord.log
+
+log_success "Permissions and dependencies configured"
+
+# 验证端口可用性
+log "Checking port availability..."
+if netstat -tulpn 2>/dev/null | grep -q ":3010 "; then
+    log_warning "Port 3010 might be in use"
+fi
+
+# 创建健康检查端点
+log "Setting up health check..."
+mkdir -p /usr/share/nginx/html
+cat > /usr/share/nginx/html/50x.html << 'EOF'
+<!DOCTYPE html>
+<html><head><title>Service Unavailable</title></head>
+<body><h1>Service Unavailable</h1><p>The music service is temporarily unavailable.</p></body></html>
+EOF
+
+cat > /usr/share/nginx/html/404.html << 'EOF'
+<!DOCTYPE html>
+<html><head><title>Not Found</title></head>
+<body><h1>Not Found</h1><p>The requested resource was not found.</p></body></html>
+EOF
+
+# 显示服务状态
+log "Service configuration:"
+log "  📱 Web Interface: http://localhost:3010"
+log "  🎵 Music API: http://localhost:3010/api_music/"
+log "  🔓 UnblockNeteaseMusic: http://localhost:3010/unm/"
+log "  💚 Health Check: http://localhost:3010/health"
+
+# 如果是调试模式，显示更多信息
+if [ "$LOG_LEVEL" = "debug" ] || [ "$LOG_LEVEL" = "trace" ]; then
+    log "Debug information:"
+    log "  - Node.js version: $(node --version)"
+    log "  - NPM version: $(npm --version)"
+    log "  - Nginx version: $(nginx -v 2>&1)"
+    log "  - Available memory: $(free -h | awk '/^Mem:/ {print $7}')"
+    log "  - CPU cores: $(nproc)"
+fi
+
+log_success "Initialization complete!"
+log "🚀 Starting services with supervisor..."
 
 # 启动 supervisor
 exec /usr/bin/supervisord -c /etc/supervisor.d/supervisord.conf

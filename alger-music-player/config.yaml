@@ -1,5 +1,5 @@
 name: Alger Music Player
-version: "1.0.1"
+version: "1.0.0"
 slug: alger_music_player
 description: "网易云音乐播放器，支持高音质播放和内置UnblockNeteaseMusic服务"
 url: "https://github.com/wuwweizn/wwzn-china"
@@ -14,8 +14,8 @@ arch:
   - amd64
   - i386
 
-# 使用自有仓库的镜像（不需要架构后缀，Docker 会自动选择）
-image: "ghcr.io/wuwweizn/alger-music-player"
+# 使用自有仓库的镜像
+image: "ghcr.io/wuwweizn/alger-music-player-{arch}"
 
 map:
   - ssl:rw
