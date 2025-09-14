@@ -1,8 +1,8 @@
 name: Alger Music Player
-version: "1.0.0"
+version: "1.0.1"
 slug: alger_music_player
-description: "网易云音乐播放器，支持高音质播放和自定义音乐API"
-url: "https://github.com/algerkong/AlgerMusicPlayer"
+description: "网易云音乐播放器，支持高音质播放和内置UnblockNeteaseMusic服务"
+url: "https://github.com/wuwweizn/wwzn-china"
 startup: application
 boot: auto
 init: false
@@ -14,41 +14,47 @@ arch:
   - amd64
   - i386
 
-image: "ghcr.io/{arch}/alger-music-player"
+# 使用自有仓库的镜像（不需要架构后缀，Docker 会自动选择）
+image: "ghcr.io/wuwweizn/alger-music-player"
 
 map:
-  - ssl
+  - ssl:rw
 
 options:
   music_api_url: "http://localhost:3001"
   log_level: "info"
+  enable_unm: true
+  unm_source: "netease kuwo qq baidu kugou migu"
 
 schema:
   music_api_url: str?
   log_level: list(trace|debug|info|notice|warning|error|fatal)?
+  enable_unm: bool?
+  unm_source: str?
 
 ports:
   3010/tcp: 3010
 
 ports_description:
-  3010/tcp: "Web Interface (HTTP)"
+  3010/tcp: "Web Interface & Music Player"
 
 webui: "http://[HOST]:[PORT:3010]"
 
 environment:
   MUSIC_API_URL: "music_api_url"
   LOG_LEVEL: "log_level"
+  ENABLE_UNM: "enable_unm"
+  UNM_SOURCE: "unm_source"
 
 ingress: true
 ingress_port: 3010
 ingress_stream: false
-panel_icon: mdi:music
+panel_icon: mdi:music-box-multiple
 
-services:
-  - mqtt:want
+services: []
 
 homeassistant_api: false
-hassio_api: false
+hassio_api: true
 hassio_role: default
 auth_api: false
 docker_api: false
@@ -57,3 +63,7 @@ full_access: false
 apparmor: true
 
 backup: hot
+
+stage: stable
+
+advanced: false
