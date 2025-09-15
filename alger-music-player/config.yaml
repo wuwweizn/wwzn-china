@@ -1,69 +1,33 @@
 name: Alger Music Player
-version: "1.0.0"
+version: "1.0.3"
 slug: alger_music_player
-description: "网易云音乐播放器，支持高音质播放和内置UnblockNeteaseMusic服务"
-url: "https://github.com/wuwweizn/wwzn-china"
-startup: application
-boot: auto
-init: false
-
+description: "一个第三方音乐播放器，支持网易云音乐、本地服务、桌面歌词、音乐下载、远程控制"
+url: "https://github.com/algerkong/AlgerMusicPlayer"
+codenotary: "notary@home-assistant.io"
 arch:
-  - armhf
-  - armv7
   - aarch64
   - amd64
-  - i386
-
-# 使用自有仓库的镜像
-image: "ghcr.io/wuwweizn/alger-music-player-{arch}"
-
+  - armv7
+init: false
 map:
-  - ssl:rw
-
+  - config:rw
+ports:
+  8080/tcp: 8080
+ports_description:
+  8080/tcp: Web interface (HTTP)
 options:
   music_api_url: "http://localhost:3001"
   log_level: "info"
-  enable_unm: true
-  unm_source: "netease kuwo qq baidu kugou migu"
-
 schema:
-  music_api_url: str?
-  log_level: list(trace|debug|info|notice|warning|error|fatal)?
-  enable_unm: bool?
-  unm_source: str?
-
-ports:
-  3010/tcp: 3010
-
-ports_description:
-  3010/tcp: "Web Interface & Music Player"
-
-webui: "http://[HOST]:[PORT:3010]"
-
+  music_api_url: "str?"
+  log_level: "list(trace|debug|info|notice|warning|error|fatal)?"
 environment:
-  MUSIC_API_URL: "music_api_url"
-  LOG_LEVEL: "log_level"
-  ENABLE_UNM: "enable_unm"
-  UNM_SOURCE: "unm_source"
-
+  MUSIC_API_URL: "{music_api_url}"
+image: "ghcr.io/{repository}/alger-music-player-{arch}:{version}"
 ingress: true
-ingress_port: 3010
-ingress_stream: false
-panel_icon: mdi:music-box-multiple
-
-services: []
-
-homeassistant_api: false
-hassio_api: true
-hassio_role: default
-auth_api: false
-docker_api: false
-privileged: []
-full_access: false
-apparmor: true
-
-backup: hot
-
-stage: stable
-
-advanced: false
+ingress_port: 8080
+panel_icon: "mdi:music"
+panel_title: "Alger Music Player"
+panel_admin: false
+startup: services
+webui: "[PROTO:ssl]://[HOST]:[PORT:8080]"
