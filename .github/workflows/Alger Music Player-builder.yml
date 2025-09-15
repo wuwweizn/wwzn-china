@@ -21,15 +21,7 @@ jobs:
           - arch: arm64
             platform: linux/arm64
             build_arch: aarch64
-          - arch: armv7
-            platform: linux/arm/v7
-            build_arch: armv7
-          - arch: armhf
-            platform: linux/arm/v6
-            build_arch: armhf
-          - arch: i386
-            platform: linux/386
-            build_arch: i386
+
     permissions:
       contents: read
       packages: write
