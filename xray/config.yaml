@@ -1,7 +1,7 @@
 name: XRay Proxy
 version: 1.8.24
 slug: xray
-description: XRay is a platform for building proxies to bypass network restrictions
+description: Xray是构建代理绕过网络限制的平台
 url: https://github.com/XTLS/Xray-core
 arch:
   - amd64
