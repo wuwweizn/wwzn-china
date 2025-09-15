@@ -23,7 +23,7 @@ schema:
   log_level: "list(trace|debug|info|notice|warning|error|fatal)?"
 environment:
   MUSIC_API_URL: "{music_api_url}"
-image: "ghcr.io/{repository}/alger-music-player-{arch}:{version}"
+image: "ghcr.io/wuwweizn/alger-music-player-{arch}"
 ingress: true
 ingress_port: 8080
 panel_icon: "mdi:music"
