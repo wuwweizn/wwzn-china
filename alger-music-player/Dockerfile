@@ -7,7 +7,7 @@ LABEL \
   io.hass.description="一个第三方音乐播放器，支持网易云音乐、本地服务、桌面歌词、音乐下载、远程控制" \
   io.hass.arch="aarch64|amd64|armv7" \
   io.hass.type="addon" \
-  io.hass.version="1.0.0"
+  io.hass.version="1.0.5"
 
 # 安装必要工具
 RUN apk add --no-cache jq bash curl
