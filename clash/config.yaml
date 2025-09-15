@@ -1,7 +1,7 @@
 name: Clash Meta
 version: 1.18.0
 slug: clash
-description: A rule-based tunnel with web dashboard for managing proxy subscriptions (Clash.Meta/mihomo)
+description: 带有用于管理代理订阅的Web仪表板的基于规则的隧道（Clash.Meta/Mihomo）
 url: https://github.com/MetaCubeX/mihomo
 arch:
   - amd64
