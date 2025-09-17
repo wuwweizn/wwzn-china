@@ -1,10 +1,9 @@
 build_from:
-  aarch64: "ghcr.io/hassio-addons/base/aarch64:16.0.1"
-  amd64: "ghcr.io/hassio-addons/base/amd64:16.0.1"
-  armv7: "ghcr.io/hassio-addons/base/armv7:16.0.1"
+  aarch64: python:3.11-slim
+  amd64: python:3.11-slim
+  armv7: python:3.11-slim
 labels:
-  org.opencontainers.image.title: "TradingAgents-CN"
-  org.opencontainers.image.description: "基于多智能体LLM的中文金融交易框架"
-  org.opencontainers.image.source: "https://github.com/wuwweizn/wwzn-china"
-  org.opencontainers.image.licenses: "Apache-2.0"
-args: {}
+  org.opencontainers.image.title: TradingAgents-CN
+  org.opencontainers.image.description: 基于多智能体LLM的中文金融交易框架
+  org.opencontainers.image.source: https://github.com/wuwweizn/wwzn-china
+  org.opencontainers.image.licenses: Apache-2.0

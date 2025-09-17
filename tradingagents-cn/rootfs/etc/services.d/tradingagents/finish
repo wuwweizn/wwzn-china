@@ -1,3 +1,0 @@
-#!/usr/bin/with-contenv bashio
-
-bashio::log.info "TradingAgents-CN service stopped"

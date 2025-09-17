@@ -31,17 +31,19 @@ http://homeassistant.local:8501
 3. 格式: sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 4. 获取API Key
 
-**FinnHub API密钥（必需 用于获取美股金融数据）**
+**Tushare API Token (A股必需推荐，专业的中国金融数据源)**
+1. 获取地址: https://tushare.pro/register?reg=128886
+2. 注册Tushare账号 -> 邮箱验证
+3. 登录后进入个人中心 -> 获取Token
+4.复制Token（格式：xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx）
+# 注意：免费用户有调用频率限制，建议升级积分获得更高权限
+
+**FinnHub API密钥（美股必需推荐 用于获取美股金融数据）**
 1. 访问 [FinnHub](https://finnhub.io/)
 2. 免费账户每分钟60次请求，足够日常使用
 3. 获取API Key 格式: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-**Tushare API Token (推荐，专业的中国金融数据源)**
-1. 获取地址: https://tushare.pro/register?reg=128886
-2. 注册Tushare账号 -> 邮箱验证
-3. 登录后进入个人中心 -> 获取Token
-4.复制Token（格式：xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-# 注意：免费用户有调用频率限制，建议升级积分获得更高权限
+
 
 **其他API密钥（可选）**
 - Google AI API：用于Gemini模型
@@ -54,8 +56,9 @@ http://homeassistant.local:8501
 3. 点击 `配置` 标签页
 4. 填入获取的API密钥：
 ```yaml
-dashscope_api_key: "您的阿里百炼API密钥"
-finnhub_api_key: "您的FinnHub API密钥"
+dashscope_api_key: "您的阿里百炼API密钥（必须）"
+tushare_token："您的Tushare API 密钥（必须 推荐用于A股）"
+finnhub_api_key: "您的FinnHub API密钥（必须 用于美股）"
 google_api_key: "您的Google AI API密钥（可选）"
 openai_api_key: "您的OpenAI API密钥（可选）"
 anthropic_api_key: "您的Anthropic API密钥（可选）"
@@ -70,6 +73,22 @@ anthropic_api_key: "您的Anthropic API密钥（可选）"
 #### 1. 访问界面
 - 打开浏览器，访问 `http://您的IP:8501`
 - 等待界面加载完成
+
+用户权限管理
+
+🔑 默认账号信息
+系统提供以下默认账号，首次启动时自动创建：
+
+用户名	密码	角色	权限说明
+admin	admin123	管理员	完整系统权限，用户管理，系统配置
+user	user123	普通用户	股票分析，报告查看，基础功能
+⚠️ 安全提醒: 首次登录后请立即修改默认密码！
+
+🛡️ 权限控制体系
+🔐 登录认证: 基于用户名密码的安全认证
+👥 角色管理: 管理员、普通用户等多级权限
+⏰ 会话管理: 自动超时保护，安全登出
+📊 操作日志: 完整的用户活动记录
 
 #### 2. 输入股票代码
 **A股示例：**
