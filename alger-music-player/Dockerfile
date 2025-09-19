@@ -12,7 +12,7 @@ LABEL \
 # 安装必要工具
 RUN apk add --no-cache jq bash curl
 
-# 创建启动脚本来处理配置并启动原始服务
+# 创建启动脚本
 RUN cat > /ha-start.sh << 'EOF'
 #!/bin/bash
 set -e
@@ -24,20 +24,17 @@ CONFIG_PATH="/data/options.json"
 MUSIC_API_URL="http://localhost:3001"
 
 if [ -f "$CONFIG_PATH" ]; then
-    echo "Reading configuration from $CONFIG_PATH"
+    echo "Reading configuration:"
     cat "$CONFIG_PATH"
     MUSIC_API_URL=$(jq -r '.music_api_url // "http://localhost:3001"' "$CONFIG_PATH")
 fi
 
 echo "Music API URL: $MUSIC_API_URL"
-
-# 设置环境变量（与原镜像保持一致）
 export MUSIC_API_URL="$MUSIC_API_URL"
 
-# 创建nginx配置文件添加API代理
-if [ ! -f "/etc/nginx/conf.d/api-proxy.conf" ]; then
-    echo "Adding API proxy configuration to nginx..."
-    cat > /etc/nginx/conf.d/api-proxy.conf << 'NGINX_EOF'
+# 添加nginx API代理配置
+echo "Configuring nginx proxy..."
+cat > /etc/nginx/conf.d/api-proxy.conf << 'NGINX_EOF'
 upstream backend_api {
     server 127.0.0.1:3000;
 }
@@ -52,7 +49,6 @@ server {
         try_files $uri $uri/ /index.html;
     }
     
-    # 代理到内部API服务
     location /api/ {
         proxy_pass http://backend_api/;
         proxy_set_header Host $host;
@@ -62,54 +58,58 @@ server {
         proxy_timeout 30s;
         proxy_connect_timeout 10s;
         
-        # 添加CORS头部
         add_header 'Access-Control-Allow-Origin' '*' always;
         add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
         add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range' always;
     }
 }
 NGINX_EOF
-fi
 
-# 在后台启动原始应用的后端服务
+# 启动后端API服务
 echo "Starting backend API service..."
 cd /app
+
+# 检查启动脚本
 if [ -f "start.sh" ]; then
-    echo "Using existing start.sh script"
+    echo "Found start.sh script"
     chmod +x start.sh
+    echo "Executing start.sh in background..."
     ./start.sh &
+    BACKEND_PID=$!
+    echo "Backend started with PID: $BACKEND_PID"
 else
-    echo "No start.sh found, trying to start node service manually..."
-    # 检查是否有Node.js相关文件
+    echo "No start.sh found, checking package.json..."
     if [ -f "package.json" ]; then
-        echo "Found package.json, checking for start script..."
-        if npm run start > /dev/null 2>&1 &; then
-            echo "Started with npm run start"
-        else
-            echo "npm start failed, trying direct node execution..."
-            if [ -f "server.js" ]; then
-                node server.js &
-            elif [ -f "app.js" ]; then
-                node app.js &
-            elif [ -f "index.js" ]; then
-                node index.js &
-            fi
-        fi
+        echo "Trying npm run start..."
+        npm run start &
+        BACKEND_PID=$!
+        echo "Backend started with PID: $BACKEND_PID"
+    else
+        echo "No package.json found either"
     fi
 fi
 
-# 等待后端服务启动
-echo "Waiting for backend service to start..."
-sleep 5
+# 等待服务启动
+echo "Waiting for backend service to initialize..."
+sleep 8
 
-# 检查后端服务是否启动
-if netstat -tlnp 2>/dev/null | grep :3000; then
-    echo "✅ Backend API service started on port 3000"
+# 检查服务状态
+echo "Checking service status..."
+if command -v netstat >/dev/null 2>&1; then
+    LISTENING=$(netstat -tlnp 2>/dev/null | grep ":3000" || echo "")
+    if [ -n "$LISTENING" ]; then
+        echo "✅ Backend API service is running on port 3000"
+        echo "$LISTENING"
+    else
+        echo "⚠️ Port 3000 not detected in netstat"
+    fi
 else
-    echo "⚠️ Backend API service may not be running on port 3000"
-    echo "Current listening ports:"
-    netstat -tlnp 2>/dev/null | grep LISTEN || echo "netstat not available"
+    echo "netstat not available for port checking"
 fi
+
+# 检查进程
+echo "Active processes:"
+ps aux | grep -E "(node|npm)" | grep -v grep || echo "No node/npm processes found"
 
 # 启动nginx
 echo "Starting nginx on port 8080..."
@@ -122,5 +122,5 @@ RUN chmod +x /ha-start.sh
 # 暴露端口
 EXPOSE 8080
 
-# 使用新的启动脚本
+# 使用启动脚本
 CMD ["/ha-start.sh"]
