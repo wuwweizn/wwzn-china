@@ -21,7 +21,9 @@ jobs:
           - arch: arm64
             platform: linux/arm64
             build_arch: aarch64
-
+          - arch: armv7
+            platform: linux/arm/v7
+            build_arch: armv7
     
     permissions:
       contents: read
@@ -57,6 +59,7 @@ jobs:
         run: |
           ADDON_DIR="solara"
           CONFIG_PATH="${ADDON_DIR}/config.yaml"
+          BUILD_YAML="${ADDON_DIR}/build.yaml"
           
           if [[ -f "$CONFIG_PATH" ]]; then
             VERSION=$(yq e ".version" "$CONFIG_PATH")
@@ -65,10 +68,30 @@ jobs:
             exit 1
           fi
           
+          # 获取对应架构的基础镜像
+          if [[ -f "$BUILD_YAML" ]]; then
+            BUILD_FROM=$(yq e ".build_from.${{ matrix.build_arch }}" "$BUILD_YAML")
+          else
+            # 如果没有 build.yaml，使用默认值
+            case "${{ matrix.build_arch }}" in
+              amd64)
+                BUILD_FROM="ghcr.io/home-assistant/amd64-base:3.19"
+                ;;
+              aarch64)
+                BUILD_FROM="ghcr.io/home-assistant/aarch64-base:3.19"
+                ;;
+              armv7)
+                BUILD_FROM="ghcr.io/home-assistant/armv7-base:3.19"
+                ;;
+            esac
+          fi
+          
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "BUILD_ARCH=${{ matrix.build_arch }}" >> $GITHUB_ENV
+          echo "BUILD_FROM=$BUILD_FROM" >> $GITHUB_ENV
           echo "💡 VERSION=$VERSION"
           echo "💡 BUILD_ARCH=${{ matrix.build_arch }}"
+          echo "💡 BUILD_FROM=$BUILD_FROM"
       
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
