@@ -1,0 +1,44 @@
+name: Solara Music Player
+version: "1.0.0"
+slug: solara
+description: 一个极简风格的基于免费API的网页音乐播放器
+url: https://github.com/wuwweizn/wwzn-china
+arch:
+  - aarch64
+  - amd64
+  - armv7
+startup: application
+boot: auto
+init: false
+hassio_api: true
+hassio_role: default
+homeassistant_api: true
+
+# 端口映射
+ports:
+  3100/tcp: 3100
+
+ports_description:
+  3100/tcp: Solara Music Player Web UI
+
+# Ingress 配置（允许通过 Home Assistant 面板访问）
+ingress: true
+ingress_port: 3100
+panel_icon: mdi:music-circle
+panel_title: Solara Music
+
+# 镜像配置
+image: ghcr.io/wuwweizn/solara-{arch}
+
+# 数据持久化
+map:
+  - config:rw
+  - share:rw
+  - media:rw
+
+# 选项配置
+options:
+  log_level: info
+
+schema:
+  log_level: list(debug|info|warning|error)
