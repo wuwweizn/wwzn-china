@@ -16,6 +16,7 @@ Solara 是一个极简风格的基于免费API的网页音乐播放器，支持�
 
 ## 🚀 安装步骤
 
+
 ### 1. 添加仓库到 Home Assistant
 
 在 Home Assistant 中，进入 **设置** > **加载项** > **加载项商店** > 右上角三个点 > **仓库**
@@ -32,8 +33,8 @@ https://github.com/wuwweizn/wwzn-china
 ### 3. 配置加载项
 
 在加载项的 "配置" 选项卡中，你可以调整以下设置：
-- **api_url**: API 后端地址（默认：https://yourAPI.com）
-  - 可以使用你自己部署的 Cloudflare Pages 域名
+- **api_url**: API 后端地址（默认：https://music.gdstudio.xyz - GD音乐台官方API）
+  - 可以使用你自己部署的 Cloudflare Pages 域名（如 https://music.miaowu086.online）
   - 或使用其他可用的 Solara API 后端
 - **log_level**: 日志级别 (debug, info, warning, error)
 
@@ -72,14 +73,33 @@ https://github.com/wuwweizn/wwzn-china
 
 ## ⚠️ 重要说明
 
-### API 依赖
+### API 后端配置
 
-Solara 项目原本设计为部署在 Cloudflare Pages 上，依赖 Cloudflare Pages Functions 作为后端代理。
+Solara 需要后端 API 来搜索和播放音乐。
 
-在 Home Assistant 加载项中使用时：
-- 如果原项目的 Functions 代理仍然可用，可以直接使用
-- 如果需要自建后端，需要自己部署 Cloudflare Pages 或其他代理服务
-- 可能需要修改 `index.html` 中的 `API.baseUrl` 指向可用的服务
+**默认使用 GD音乐台官方API**：`https://music.gdstudio.xyz`（感谢 GD音乐台提供的免费API）
+
+**如果你想使用自己的后端**：
+
+1. 在 Cloudflare Pages 部署 Solara 项目（例如你的：`https://API.COM`）
+2. 在加载项配置中修改 `api_url` 为你的域名
+3. 重启加载项
+
+**配置示例**：
+```yaml
+# 使用官方 GD音乐台 API（默认）
+api_url: https://music.gdstudio.xyz
+
+# 或使用你自己的 Cloudflare Pages
+api_url: https://API.COM
+```
+
+**部署自己的 Cloudflare Pages 后端**：
+- Fork 项目：https://github.com/akudamatata/Solara
+- 在 Cloudflare Pages 中连接你的 GitHub 仓库
+- 部署完成后使用你的域名
+
+**注意**：确保 API URL 不要以斜杠结尾（正确：`https://domain.com`，错误：`https://domain.com/`）
 
 ### 跨域问题
 
