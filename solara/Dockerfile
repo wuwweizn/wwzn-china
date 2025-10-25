@@ -9,6 +9,7 @@ RUN apk add --no-cache \
     nginx \
     git \
     bash \
+    sed \
     && rm -rf /var/cache/apk/*
 
 # 克隆 Solara 项目

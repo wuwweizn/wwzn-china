@@ -16,19 +16,6 @@ Solara 是一个极简风格的基于免费API的网页音乐播放器，支持�
 
 ## 🚀 安装步骤
 
-### 前置要求
-
-确保你的仓库包含以下文件结构：
-```
-solara/
-├── Dockerfile
-├── build.yaml
-├── config.yaml
-├── nginx.conf
-├── run.sh
-└── README.md
-```
-
 ### 1. 添加仓库到 Home Assistant
 
 在 Home Assistant 中，进入 **设置** > **加载项** > **加载项商店** > 右上角三个点 > **仓库**
@@ -45,7 +32,12 @@ https://github.com/wuwweizn/wwzn-china
 ### 3. 配置加载项
 
 在加载项的 "配置" 选项卡中，你可以调整以下设置：
+- **api_url**: API 后端地址（默认：https://yourAPI.com）
+  - 可以使用你自己部署的 Cloudflare Pages 域名
+  - 或使用其他可用的 Solara API 后端
 - **log_level**: 日志级别 (debug, info, warning, error)
+
+**重要**: 修改 API URL 后需要重启加载项才能生效。
 
 ### 4. 启动加载项
 
