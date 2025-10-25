@@ -1,36 +1,34 @@
 ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base:3.19
 FROM ${BUILD_FROM}
 
-# 设置环境变量
-ENV LANG=C.UTF-8
+# 设置工作目录
+WORKDIR /
 
 # 安装必要的依赖
 RUN apk add --no-cache \
     nginx \
     git \
+    bash \
     && rm -rf /var/cache/apk/*
 
 # 克隆 Solara 项目
-RUN git clone https://github.com/akudamatata/Solara.git /tmp/solara
-
-# 创建 web 目录并复制文件
-RUN mkdir -p /var/www/html && \
+RUN git clone https://github.com/akudamatata/Solara.git /tmp/solara && \
+    mkdir -p /var/www/html && \
     cp -r /tmp/solara/* /var/www/html/ && \
     rm -rf /tmp/solara
 
-# 创建数据目录
-RUN mkdir -p /data /config
+# 创建必要的目录
+RUN mkdir -p /run/nginx /var/log/nginx /data /config
 
-# 复制 nginx 配置
+# 复制配置文件
 COPY nginx.conf /etc/nginx/nginx.conf
+COPY run.sh /usr/bin/run.sh
 
-# 复制启动脚本
-COPY run.sh /
-RUN chmod a+x /run.sh
-
-WORKDIR /var/www/html
+# 设置执行权限
+RUN chmod a+x /usr/bin/run.sh
 
 # 暴露端口
 EXPOSE 3100
 
-CMD ["/run.sh"]
+# 启动脚本
+CMD ["/usr/bin/run.sh"]
