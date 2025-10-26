@@ -5,7 +5,7 @@ set -e
 bashio::log.info "Starting Solara Music Player..."
 
 # 获取配置（带默认值）
-API_URL=$(bashio::config 'api_url' 'https://music.gdstudio.xyz')
+API_URL=$(bashio::config 'api_url' 'https://music-api.gdstudio.xyz')
 LOG_LEVEL=$(bashio::config 'log_level' 'info')
 
 bashio::log.info "API URL: ${API_URL}"
