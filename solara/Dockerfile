@@ -10,7 +10,6 @@ RUN apk add --no-cache \
     git \
     bash \
     sed \
-    jq \
     && rm -rf /var/cache/apk/*
 
 # 克隆 Solara 项目
