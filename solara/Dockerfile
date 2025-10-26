@@ -10,7 +10,7 @@ RUN apk add --no-cache \
     git \
     bash \
     sed \
-    python3 \
+    jq \
     && rm -rf /var/cache/apk/*
 
 # 克隆 Solara 项目
