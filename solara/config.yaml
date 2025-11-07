@@ -1,5 +1,5 @@
 name: Solara Music Player
-version: "1.1.0"
+version: "1.1.1"
 slug: solara
 description: 一个极简风格的基于免费API的网页音乐播放器
 url: https://github.com/wuwweizn/wwzn-china
@@ -38,9 +38,11 @@ map:
 
 # 选项配置
 options:
-  api_url: "https://music-api.gdstudio.xyz/api.php"
+  api_mode: "direct"
+  external_api_url: ""
   log_level: info
 
 schema:
-  api_url: str
+  api_mode: list(local|direct|external)
+  external_api_url: str?
   log_level: list(debug|info|warning|error)

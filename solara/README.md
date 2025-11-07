@@ -32,12 +32,39 @@ https://github.com/wuwweizn/wwzn-china
 ### 3. 配置加载项
 
 在加载项的 "配置" 选项卡中，你可以调整以下设置：
-- **api_url**: API 后端地址（默认：https://music.gdstudio.xyz - GD音乐台官方API）
-  - 可以使用你自己部署的 Cloudflare Pages 域名（如 https://api.com）
-  - 或使用其他可用的 Solara API 后端
+
+#### API 模式选择
+
+- **direct**（直接模式，默认推荐）：直接使用 GD音乐台官方API `https://music-api.gdstudio.xyz`
+- **local**（本地代理模式）：使用容器内置的 API 代理服务，通过本地转发请求
+- **external**（外部模式）：使用你自己的 Cloudflare Pages 或其他 API 地址
+
+#### 配置示例
+
+**方式1：直接使用官方API（推荐）**
+```yaml
+api_mode: direct
+external_api_url: ""
+log_level: info
+```
+
+**方式2：使用本地代理**
+```yaml
+api_mode: local
+external_api_url: ""
+log_level: info
+```
+
+**方式3：使用你的 Cloudflare Pages**
+```yaml
+api_mode: external
+external_api_url: "https://music.miaowu086.online"
+log_level: info
+```
+
 - **log_level**: 日志级别 (debug, info, warning, error)
 
-**重要**: 修改 API URL 后需要重启加载项才能生效。
+**重要**: 修改配置后需要重启加载项才能生效。
 
 ### 4. 启动加载项
 
@@ -72,36 +99,42 @@ https://github.com/wuwweizn/wwzn-china
 
 ## ⚠️ 重要说明
 
-### API 后端配置
+### API 工作模式
 
-Solara 需要后端 API 来搜索和播放音乐。加载项内置了 nginx 反向代理，会自动将 `/proxy` 请求转发到配置的音乐 API。
+Solara 支持三种 API 工作模式：
 
-**默认使用 GD音乐台 API**：`https://music-api.gdstudio.xyz/api.php`（感谢 GD音乐台提供的免费API）
+#### 1. Direct 模式（直接模式，推荐）
+直接调用 GD音乐台官方 API：`https://music-api.gdstudio.xyz`
+- ✅ 无需额外配置
+- ✅ 性能最佳
+- ✅ 功能最全
+- ⚠️ 依赖外部服务可用性
 
-**工作原理**：
-```
-浏览器 -> Solara UI (/proxy请求) -> Nginx反向代理 -> 音乐API (music-api.gdstudio.xyz)
-```
+#### 2. Local 模式（本地代理模式）
+使用容器内置的 Node.js API 代理服务
+- ✅ 避免直接暴露外部 API
+- ✅ 可以添加缓存和日志
+- ✅ 更好的隐私保护
+- ⚠️ 增加一层代理延迟
 
-**如果你想使用自己的 Cloudflare Pages**：
+#### 3. External 模式（外部模式）
+使用你自己的 Cloudflare Pages 或其他 API 服务
+- ✅ 完全自主控制
+- ✅ 可以自定义功能
+- ✅ 不受官方限制
+- ⚠️ 需要自己部署维护
 
-1. 部署完整的 Solara 项目到 Cloudflare Pages（包含 Functions）
-2. 在加载项配置中填入你的域名（不需要 /api.php 后缀）
-3. 重启加载项
+### 推荐配置
 
-**配置示例**：
+对于大多数用户，推荐使用 **direct** 模式：
+
 ```yaml
-# 使用 GD音乐台 API（默认）
-api_url: https://music-api.gdstudio.xyz/api.php
-
-# 使用你的 Cloudflare Pages（需要完整部署包含 Functions）
-api_url: https://music.api.com
+api_mode: direct
+external_api_url: ""
+log_level: info
 ```
 
-**注意**：如果使用自己的 Cloudflare Pages，确保：
-- 已正确部署 `functions/api/[...path].js`
-- Functions 可以正常响应
-- CORS 配置正确
+感谢 GD音乐台（music.gdstudio.xyz）提供的免费API服务！
 
 **部署自己的 Cloudflare Pages 后端**：
 - Fork 项目：https://github.com/akudamatata/Solara
@@ -143,7 +176,7 @@ api_url: https://music.api.com
 
 ## 📝 更新日志
 
-### v1.1.0
+### v1.0.0
 - 初始版本
 - 支持 amd64, aarch64, armv7 架构
 - 集成 Ingress 支持

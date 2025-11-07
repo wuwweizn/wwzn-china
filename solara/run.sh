@@ -5,19 +5,12 @@ set -e
 bashio::log.info "Starting Solara Music Player..."
 
 # 获取配置
-API_URL=$(bashio::config 'api_url')
+API_MODE=$(bashio::config 'api_mode' 'local')
+EXTERNAL_API_URL=$(bashio::config 'external_api_url' '')
 LOG_LEVEL=$(bashio::config 'log_level')
 
-bashio::log.info "API URL: ${API_URL}"
+bashio::log.info "API Mode: ${API_MODE}"
 bashio::log.info "Log Level: ${LOG_LEVEL}"
-
-# 从 API_URL 提取域名和协议
-# 例如: https://music-api.gdstudio.xyz/api.php -> music-api.gdstudio.xyz
-API_HOST=$(echo "$API_URL" | sed -E 's|^https?://([^/]+).*|\1|')
-API_SCHEME=$(echo "$API_URL" | sed -E 's|^(https?)://.*|\1|')
-
-bashio::log.info "API Host: ${API_HOST}"
-bashio::log.info "API Scheme: ${API_SCHEME}"
 
 # 确保数据目录存在
 mkdir -p /config/solara /share/solara
@@ -35,21 +28,44 @@ else
     fi
 fi
 
-# 更新 nginx 配置中的 API 地址
-bashio::log.info "Configuring nginx reverse proxy..."
-sed -i "s|server .*:443;|server ${API_HOST}:443;|g" /etc/nginx/nginx.conf
-sed -i "s|proxy_set_header Host .*|proxy_set_header Host ${API_HOST};|g" /etc/nginx/nginx.conf
-sed -i "s|proxy_pass https://.*|proxy_pass ${API_SCHEME}://music_api;|g" /etc/nginx/nginx.conf
-
-bashio::log.info "✓ Nginx proxy configured to: ${API_SCHEME}://${API_HOST}"
+# 配置 API URL
+if [ -f "/var/www/html/index.html" ]; then
+    bashio::log.info "Configuring API..."
+    
+    if [ "${API_MODE}" = "local" ]; then
+        # 使用本地 API 代理
+        API_URL="http://$(hostname -i | awk '{print $1}'):3100"
+        bashio::log.info "Using local API proxy"
+        bashio::log.info "API URL: ${API_URL}/api"
+    elif [ "${API_MODE}" = "external" ] && [ -n "${EXTERNAL_API_URL}" ]; then
+        # 使用外部 API
+        API_URL="${EXTERNAL_API_URL}"
+        bashio::log.info "Using external API: ${API_URL}"
+    else
+        # 默认使用 GD 音乐台
+        API_URL="https://music-api.gdstudio.xyz"
+        bashio::log.info "Using default GD Studio API"
+    fi
+    
+    # 替换 API URL
+    sed -i "s|baseUrl:[[:space:]]*['\"][^'\"]*['\"]|baseUrl: '${API_URL}'|g" /var/www/html/index.html
+    sed -i "s|baseUrl:['\"][^'\"]*['\"]|baseUrl:'${API_URL}'|g" /var/www/html/index.html
+    
+    # 验证
+    if grep -q "${API_URL}" /var/www/html/index.html; then
+        bashio::log.info "✓ API configured successfully"
+    else
+        bashio::log.warning "⚠ API configuration may have failed"
+    fi
+else
+    bashio::log.error "index.html not found!"
+    exit 1
+fi
 
 # 检查 nginx 配置
 bashio::log.info "Testing nginx configuration..."
 nginx -t
 
-# 启动 nginx
-bashio::log.info "Starting Nginx on port 3100"
-bashio::log.info "🎵 Solara Music Player is ready!"
-bashio::log.info "📡 Proxy endpoint: /proxy -> ${API_URL}"
-
-exec nginx -g "daemon off;"
+# 启动所有服务（通过 supervisord）
+bashio::log.info "Starting services..."
+exec /usr/bin/supervisord -c /etc/supervisord.conf
