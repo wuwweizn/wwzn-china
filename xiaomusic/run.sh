@@ -1,23 +1,26 @@
 #!/usr/bin/env bash
 # ==============================================================================
 # XiaoMusic Add-on 启动脚本
-# 注意：使用 bash 而非 with-contenv bashio，因为 xiaomusic 镜像没有 s6-overlay
 #
-# HA 加载项运行时挂载点：
-#   /config  -> HA 配置目录  (config:rw)
-#   /media   -> HA 媒体库    (media:rw)
-#   /share   -> HA Share目录 (share:rw)
+# 官方镜像启动方式：/app/.venv/bin/python /app/xiaomusic.py
+# 环境变量方式配置参数（XIAOMUSIC_PUBLIC_PORT 等）
+# HA 加载项挂载点：
+#   /config -> HA配置目录
+#   /media  -> HA媒体库
+#   /share  -> HA Share目录
+# /data/options.json -> HA加载项用户配置
 # ==============================================================================
 
 set -e
 
-# bashio 读取配置的辅助函数（替代 with-contenv bashio）
-# HA 把加载项选项写入 /data/options.json
+# 读取 /data/options.json 中的配置项
 config_get() {
     local key="$1"
     local default="$2"
     local val
-    val=$(jq -r --arg k "$key" '.[$k] // empty' /data/options.json 2>/dev/null)
+    if [ -f /data/options.json ]; then
+        val=$(jq -r --arg k "$key" '.[$k] // empty' /data/options.json 2>/dev/null)
+    fi
     if [ -z "$val" ] || [ "$val" = "null" ]; then
         echo "$default"
     else
@@ -28,7 +31,7 @@ config_get() {
 echo "[XiaoMusic] ===== 启动中 ====="
 
 # ------------------------------------------------------------------------------
-# 读取用户配置（来自 /data/options.json）
+# 读取用户配置
 # ------------------------------------------------------------------------------
 PUBLIC_PORT=$(config_get "public_port" "58090")
 SONG_MEDIA=$(config_get "song_media" "")
@@ -47,8 +50,7 @@ if [ -d /app/conf ] && [ ! -L /app/conf ]; then
     cp -r /app/conf/. /config/xiaomusic/ 2>/dev/null || true
     rm -rf /app/conf
 fi
-
-if [ ! -L /app/conf ]; then
+if [ ! -e /app/conf ]; then
     ln -sf /config/xiaomusic /app/conf
 fi
 echo "[XiaoMusic] 配置目录: /app/conf -> /config/xiaomusic"
@@ -62,33 +64,30 @@ mkdir -p /app/music
 MEDIA_LINK="/app/music/media_link"
 rm -f "${MEDIA_LINK}"
 if [ -n "${SONG_MEDIA}" ]; then
-    MEDIA_SRC="/media/${SONG_MEDIA}"
-    mkdir -p "${MEDIA_SRC}"
-    ln -sf "${MEDIA_SRC}" "${MEDIA_LINK}"
-    echo "[XiaoMusic] 音乐目录(media): ${MEDIA_LINK} -> ${MEDIA_SRC}"
+    mkdir -p "/media/${SONG_MEDIA}"
+    ln -sf "/media/${SONG_MEDIA}" "${MEDIA_LINK}"
+    echo "[XiaoMusic] 音乐(media): ${MEDIA_LINK} -> /media/${SONG_MEDIA}"
 else
     ln -sf /media "${MEDIA_LINK}"
-    echo "[XiaoMusic] 音乐目录(media): ${MEDIA_LINK} -> /media (全部)"
+    echo "[XiaoMusic] 音乐(media): ${MEDIA_LINK} -> /media"
 fi
 
 # song_share -> /app/music/share_link
 SHARE_LINK="/app/music/share_link"
 rm -f "${SHARE_LINK}"
 if [ -n "${SONG_SHARE}" ]; then
-    SHARE_SRC="/share/${SONG_SHARE}"
-    mkdir -p "${SHARE_SRC}"
-    ln -sf "${SHARE_SRC}" "${SHARE_LINK}"
-    echo "[XiaoMusic] 音乐目录(share): ${SHARE_LINK} -> ${SHARE_SRC}"
+    mkdir -p "/share/${SONG_SHARE}"
+    ln -sf "/share/${SONG_SHARE}" "${SHARE_LINK}"
+    echo "[XiaoMusic] 音乐(share): ${SHARE_LINK} -> /share/${SONG_SHARE}"
 fi
 
 # song_download -> /app/music/download
 DOWNLOAD_LINK="/app/music/download"
 rm -f "${DOWNLOAD_LINK}"
 if [ -n "${SONG_DOWNLOAD}" ]; then
-    DOWNLOAD_SRC="/share/${SONG_DOWNLOAD}"
-    mkdir -p "${DOWNLOAD_SRC}"
-    ln -sf "${DOWNLOAD_SRC}" "${DOWNLOAD_LINK}"
-    echo "[XiaoMusic] 下载目录: ${DOWNLOAD_LINK} -> ${DOWNLOAD_SRC}"
+    mkdir -p "/share/${SONG_DOWNLOAD}"
+    ln -sf "/share/${SONG_DOWNLOAD}" "${DOWNLOAD_LINK}"
+    echo "[XiaoMusic] 下载目录: ${DOWNLOAD_LINK} -> /share/${SONG_DOWNLOAD}"
 else
     mkdir -p /app/music/download
     echo "[XiaoMusic] 下载目录: /app/music/download (容器内)"
@@ -96,7 +95,18 @@ fi
 
 # ------------------------------------------------------------------------------
 # 启动 xiaomusic
+# 官方镜像使用 .venv 虚拟环境，入口为 /app/xiaomusic.py
 # ------------------------------------------------------------------------------
-echo "[XiaoMusic] 启动服务，Web 界面端口: 8090"
+echo "[XiaoMusic] 启动服务..."
 
-exec /app/entrypoint.sh
+# 优先用 supervisord（如果镜像内有），否则直接用 python 启动
+if [ -f /usr/bin/supervisord ] || [ -f /usr/local/bin/supervisord ]; then
+    echo "[XiaoMusic] 使用 supervisord 启动"
+    exec supervisord -c /app/supervisord.conf
+elif [ -f /app/.venv/bin/python ]; then
+    echo "[XiaoMusic] 使用 .venv python 启动"
+    exec /app/.venv/bin/python /app/xiaomusic.py
+else
+    echo "[XiaoMusic] 使用系统 python 启动"
+    exec python3 /app/xiaomusic.py
+fi
