@@ -1,20 +1,20 @@
 # =====================================================================
 # XiaoMusic Home Assistant Add-on Dockerfile
-# »ùÓÚ¹Ù·½¾µÏñÖØĞÂ´ò±êÇ©£¬ÎŞĞè´ÓÔ´Âë¹¹½¨£¬¸úËæÉÏÓÎ×Ô¶¯¸üĞÂ
-# ÉÏÓÎ¾µÏñ: hanxi/xiaomusic
-# ÈİÆ÷ÄÚ·şÎñ¶Ë¿Ú: 8090
+# åŸºäºå®˜æ–¹é•œåƒé‡æ–°æ‰“æ ‡ç­¾ï¼Œæ— éœ€ä»æºç æ„å»ºï¼Œè·Ÿéšä¸Šæ¸¸è‡ªåŠ¨æ›´æ–°
+# ä¸Šæ¸¸é•œåƒ: hanxi/xiaomusic
+# å®¹å™¨å†…æœåŠ¡ç«¯å£: 8090
 # =====================================================================
 
 ARG BUILD_FROM=hanxi/xiaomusic:latest
 FROM ${BUILD_FROM}
 
-# HA Add-on ±ê×¼±êÇ©
+# HA Add-on æ ‡å‡†æ ‡ç­¾
 LABEL \
     io.hass.name="XiaoMusic" \
-    io.hass.description="Ê¹ÓÃĞ¡°®ÒôÏä²¥·ÅÒôÀÖ£¬ÒôÀÖÊ¹ÓÃ yt-dlp ÏÂÔØ" \
+    io.hass.description="ä½¿ç”¨å°çˆ±éŸ³ç®±æ’­æ”¾éŸ³ä¹ï¼ŒéŸ³ä¹ä½¿ç”¨ yt-dlp ä¸‹è½½" \
     io.hass.type="addon" \
     io.hass.version="${BUILD_VERSION}" \
     maintainer="wuwweizn"
 
-# ±©Â¶·şÎñ¶Ë¿Ú
+# æš´éœ²æœåŠ¡ç«¯å£
 EXPOSE 8090

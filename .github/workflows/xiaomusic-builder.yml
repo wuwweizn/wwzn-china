@@ -10,7 +10,7 @@ on:
       - '.github/workflows/xiaomusic-builder.yml'
 
 # ----------------------------------------------------------------
-# ╣╣╜и▓▀┬╘г║╚¤╝▄╣╣▓в╨╨
+# цЮДх╗║чнЦчХея╝Ъф╕ЙцЮ╢цЮДх╣╢шбМ
 # ----------------------------------------------------------------
 jobs:
   build:
@@ -21,7 +21,7 @@ jobs:
           - arch: amd64
             platform: linux/amd64
             build_arch: amd64
-            upstream_tag: latest       # ╣┘╖╜╛╡╧ё╢╘╙ж amd64
+            upstream_tag: latest       # хоШцЦ╣щХЬхГПхп╣х║Ф amd64
           - arch: arm64
             platform: linux/arm64
             build_arch: aarch64
@@ -36,25 +36,25 @@ jobs:
       packages: write
 
     steps:
-      # йдйд 1. └н╚б▓╓┐т┤·┬ы йдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйд
+      # тФАтФА 1. цЛЙхПЦф╗Ух║Уф╗гчаБ тФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # йдйд 2. ░▓╫░ yqги┤╙ config.yaml ╠с╚б░ц▒╛║┼гййдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйд
+      # тФАтФА 2. хоЙшгЕ yqя╝Иф╗О config.yaml цПРхПЦчЙИцЬмхП╖я╝ЙтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА
       - name: Install yq
         run: |
           sudo wget -qO /usr/local/bin/yq \
             https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
           sudo chmod +x /usr/local/bin/yq
 
-      # йдйд 3. ╡╟┬╝ Docker Hub йдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйд
+      # тФАтФА 3. чЩ╗х╜Х Docker Hub тФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # йдйд 4. ╡╟┬╝ GHCR йдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйд
+      # тФАтФА 4. чЩ╗х╜Х GHCR тФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
@@ -62,11 +62,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GH_PAT }}
 
-      # йдйд 5. ═│╥╗▓╓┐т owner ╬к╨б╨┤гиGHCR ╥к╟єгййдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйд
+      # тФАтФА 5. ч╗Яф╕Аф╗Ух║У owner ф╕║х░ПхЖЩя╝ИGHCR шжБц▒Вя╝ЙтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА
       - name: Get lowercase repo owner
         run: echo "REPO_OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
 
-      # йдйд 6. ┤╙ config.yaml ╠с╚б░ц▒╛║┼ йдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйд
+      # тФАтФА 6. ф╗О config.yaml цПРхПЦчЙИцЬмхП╖ тФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА
       - name: Extract VERSION from config
         id: extract_version
         run: |
@@ -76,33 +76,33 @@ jobs:
           if [[ -f "$CONFIG_PATH" ]]; then
             VERSION=$(yq e ".version" "$CONFIG_PATH")
           else
-            echo "? ERROR: $CONFIG_PATH not found!"
+            echo "тЭМ ERROR: $CONFIG_PATH not found!"
             exit 1
           fi
 
           echo "VERSION=$VERSION"           >> $GITHUB_ENV
           echo "BUILD_ARCH=${{ matrix.build_arch }}" >> $GITHUB_ENV
-          echo "?? VERSION=$VERSION"
-          echo "?? BUILD_ARCH=${{ matrix.build_arch }}"
+          echo "ЁЯТб VERSION=$VERSION"
+          echo "ЁЯТб BUILD_ARCH=${{ matrix.build_arch }}"
 
-      # йдйд 7. ┼ф╓├ QEMUги┐ч╝▄╣╣─г─тгй йдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйд
+      # тФАтФА 7. щЕНч╜о QEMUя╝Иш╖ицЮ╢цЮДцибцЛЯя╝Й тФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
 
-      # йдйд 8. ┼ф╓├ Docker Buildx йдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйд
+      # тФАтФА 8. щЕНч╜о Docker Buildx тФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # йдйд 9. ╣╣╜и▓в═╞╦═╛╡╧ё йдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйд
+      # тФАтФА 9. цЮДх╗║х╣╢цОищАБщХЬхГП тФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА
       #
-      # ╦╡├ўг║
-      #   Dockerfile ╩╣╙├ ARG BUILD_FROM=hanxi/xiaomusic:latest
-      #   ═и╣¤ build-arg ┤л╚ы╣┘╖╜╔╧╙╬╛╡╧ё╫ў╬к╗∙┤б╛╡╧ё
-      #   ╥Є┤╦▒╛▓╜╓ш▒╛╓╩╩╟"╕°╣┘╖╜╛╡╧ё┤Є╔╧╫╘╙╨▓╓┐т▒ъ╟й"▓в═╞╦═
-      #   ╛╡╧ё├√╕ё╩╜: xiaomusic-{build_arch}:{version}
-      #   └¤:  ghcr.io/wuwweizn/xiaomusic-amd64:0.3.101
+      # шп┤цШОя╝Ъ
+      #   Dockerfile ф╜┐чФи ARG BUILD_FROM=hanxi/xiaomusic:latest
+      #   щАЪш┐З build-arg ф╝ахЕехоШцЦ╣ф╕Кц╕╕щХЬхГПф╜Ьф╕║хЯ║чбАщХЬхГП
+      #   хЫацндцЬмцнещкдцЬмш┤ицШп"ч╗ЩхоШцЦ╣щХЬхГПцЙУф╕КшЗкцЬЙф╗Ух║УцаЗчн╛"х╣╢цОищАБ
+      #   щХЬхГПхРНца╝х╝П: xiaomusic-{build_arch}:{version}
+      #   ф╛Л:  ghcr.io/wuwweizn/xiaomusic-amd64:0.3.101
       #        wuwweizn/xiaomusic-amd64:0.3.101
-      # йдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйд
+      # тФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА
       - name: Build and push XiaoMusic for ${{ matrix.arch }}
         uses: docker/build-push-action@v5
         with:
