@@ -1,11 +1,11 @@
-﻿name: "XiaoMusic"
-version: "0.4.17"
+name: "XiaoMusic"
+version: "0.4.16"
 slug: "xiaomusic"
 description: "使用小爱音箱播放音乐，音乐使用 yt-dlp 下载，支持语音口令控制。"
 url: "https://github.com/hanxi/xiaomusic"
 panel_icon: "mdi:music-box"
 
-# CI 构建推送到自有仓库后，HA 按架构自动拉取对应镜像
+# HA 根据当前设备架构自动拼接镜像名
 image: "ghcr.io/wuwweizn/xiaomusic-{arch}"
 
 arch:
@@ -13,54 +13,37 @@ arch:
   - aarch64
   - armv7
 
-startup: "services"
+startup: "application"
 boot: "manual"
 init: false
-apparmor: false
 
+# 端口映射
 ports:
   8090/tcp: 58090
 ports_description:
   8090/tcp: "XiaoMusic Web 管理后台"
 
-# 点击加载项面板直接打开 Web UI
-webui: "[PROTO:http]://[HOST]:[PORT:8090]/"
+# Web UI 快捷入口（在 HA 侧边栏点击"打开 Web UI"直接跳转）
+webui: "http://[HOST]:[PORT:8090]/"
 
-# HA 挂载目录（run.sh 通过软链接将其接入 /app/music）
+# ── 目录映射 ─────────────────────────────────────────────────────
+# media  → /media  （HA 的媒体库目录，推荐存放音乐）
+# share  → /share  （HA 的共享目录，也可存放音乐）
+# config → /config （HA 的配置目录，存放 xiaomusic 配置文件）
 map:
-  - config:rw   # /config -> HA配置目录，用于持久化 xiaomusic 的 config.json
-  - media:rw    # /media  -> HA媒体库，通过 song_media 选项指定子目录
-  - share:rw    # /share  -> HA Share，通过 song_share/song_download 选项指定
-  - ssl:ro      # /ssl    -> SSL证书（备用）
+  - "media:rw"
+  - "share:rw"
+  - "config:rw"
 
-environment:
-  XIAOMUSIC_PUBLIC_PORT: "58090"
-
-# ─────────────────────────────────────────────────────────────
-# 用户可配置项（在加载项 UI 的"配置"页中填写）
-#
-# song_media:
-#   媒体库中的音乐子目录（相对于 /media）
-#   例如填写 "music" 则读取 /media/music 下的歌曲
-#   留空则读取整个 /media 目录
-#
-# song_share:
-#   Share 中的音乐子目录（相对于 /share）
-#   例如填写 "xiaomusic" 则读取 /share/xiaomusic 下的歌曲
-#   留空则不挂载 Share 目录
-#
-# song_download:
-#   yt-dlp 下载歌曲保存到 Share 中的哪个子目录（相对于 /share）
-#   例如填写 "xiaomusic/download"，下载的歌曲保存到 /share/xiaomusic/download
-#   留空则保存在容器内部（重装加载项后丢失）
-#
-# public_port:
-#   对外暴露的端口，需与 ports 中的宿主机端口一致
-# ─────────────────────────────────────────────────────────────
+# ── 用户可配置项 ──────────────────────────────────────────────────
+# song_media:    /media 下的子目录名，例如填 "music" 则读取 /media/music
+# song_share:    /share 下的子目录名，例如填 "music" 则读取 /share/music
+# song_download: /share 下的子目录名，用于存放自动下载的歌曲
+# public_port:   对外访问端口（需与上方 ports 的映射端口一致）
 options:
-  song_media: ""
+  song_media: "music"
   song_share: ""
-  song_download: ""
+  song_download: "xiaomusic_download"
   public_port: 58090
 
 schema:
@@ -68,3 +51,7 @@ schema:
   song_share: "str?"
   song_download: "str?"
   public_port: int
+
+# 固定环境变量
+environment:
+  XIAOMUSIC_PUBLIC_PORT: "58090"
