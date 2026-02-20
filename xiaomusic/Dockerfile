@@ -1,18 +1,19 @@
 # ==============================================================================
 # XiaoMusic Home Assistant Add-on Dockerfile
 #
-# 基于官方镜像，安装 bashio（HA 脚本工具库），注入 run.sh 启动脚本
-# bashio 安装方式参考 HA 官方 docker-base 仓库
+# 官方镜像基于 Debian/Python，使用 apt-get 而非 apk
 # ==============================================================================
 
 ARG BUILD_FROM=hanxi/xiaomusic:latest
 FROM ${BUILD_FROM}
 
-# 安装 bashio 所需的依赖工具
-RUN apk add --no-cache \
-    bash \
-    curl \
-    jq
+# 安装 bashio 依赖（Debian 系用 apt-get）
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+       bash \
+       curl \
+       jq \
+    && rm -rf /var/lib/apt/lists/*
 
 # 安装 bashio（HA 官方方式）
 ARG BASHIO_VERSION="0.16.2"
@@ -21,7 +22,7 @@ RUN mkdir -p /usr/src/bashio \
        "https://github.com/hassio-addons/bashio/archive/v${BASHIO_VERSION}.tar.gz" \
        | tar -xzf - --strip 1 -C /usr/src/bashio \
     && mv /usr/src/bashio/lib /usr/lib/bashio \
-    && ln -s /usr/lib/bashio/bashio /usr/bin/bashio \
+    && ln -sf /usr/lib/bashio/bashio /usr/bin/bashio \
     && rm -rf /usr/src/bashio
 
 # 复制启动脚本
