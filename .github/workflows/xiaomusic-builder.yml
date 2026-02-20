@@ -113,6 +113,7 @@ jobs:
           build-args: |
             BUILD_FROM=hanxi/xiaomusic:${{ matrix.upstream_tag }}
             BUILD_VERSION=${{ env.VERSION }}
+            BUILD_ARCH=${{ matrix.build_arch }}
           tags: |
             ghcr.io/${{ env.REPO_OWNER_LC }}/xiaomusic-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
             ghcr.io/${{ env.REPO_OWNER_LC }}/xiaomusic-${{ env.BUILD_ARCH }}:latest
