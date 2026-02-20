@@ -9,9 +9,6 @@ on:
       - 'xiaomusic/**'
       - '.github/workflows/xiaomusic-builder.yml'
 
-# ----------------------------------------------------------------
-# 构建策略：三架构并行
-# ----------------------------------------------------------------
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,40 +18,31 @@ jobs:
           - arch: amd64
             platform: linux/amd64
             build_arch: amd64
-            upstream_tag: latest       # 官方镜像对应 amd64
           - arch: arm64
             platform: linux/arm64
             build_arch: aarch64
-            upstream_tag: latest
           - arch: armv7
             platform: linux/arm/v7
             build_arch: armv7
-            upstream_tag: latest
-
     permissions:
       contents: read
       packages: write
 
     steps:
-      # ── 1. 拉取仓库代码 ────────────────────────────────────────
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      # ── 2. 安装 yq（从 config.yaml 提取版本号）────────────────
       - name: Install yq
         run: |
-          sudo wget -qO /usr/local/bin/yq \
-            https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
           sudo chmod +x /usr/local/bin/yq
 
-      # ── 3. 登录 Docker Hub ────────────────────────────────────
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # ── 4. 登录 GHCR ──────────────────────────────────────────
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
@@ -62,11 +50,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GH_PAT }}
 
-      # ── 5. 统一仓库 owner 为小写（GHCR 要求）─────────────────
       - name: Get lowercase repo owner
         run: echo "REPO_OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
 
-      # ── 6. 从 config.yaml 提取版本号 ─────────────────────────
       - name: Extract VERSION from config
         id: extract_version
         run: |
@@ -80,29 +66,17 @@ jobs:
             exit 1
           fi
 
-          echo "VERSION=$VERSION"           >> $GITHUB_ENV
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "BUILD_ARCH=${{ matrix.build_arch }}" >> $GITHUB_ENV
           echo "💡 VERSION=$VERSION"
           echo "💡 BUILD_ARCH=${{ matrix.build_arch }}"
 
-      # ── 7. 配置 QEMU（跨架构模拟） ───────────────────────────
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
 
-      # ── 8. 配置 Docker Buildx ────────────────────────────────
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # ── 9. 构建并推送镜像 ────────────────────────────────────
-      #
-      # 说明：
-      #   Dockerfile 使用 ARG BUILD_FROM=hanxi/xiaomusic:latest
-      #   通过 build-arg 传入官方上游镜像作为基础镜像
-      #   因此本步骤本质是"给官方镜像打上自有仓库标签"并推送
-      #   镜像名格式: xiaomusic-{build_arch}:{version}
-      #   例:  ghcr.io/wuwweizn/xiaomusic-amd64:0.3.101
-      #        wuwweizn/xiaomusic-amd64:0.3.101
-      # ─────────────────────────────────────────────────────────
       - name: Build and push XiaoMusic for ${{ matrix.arch }}
         uses: docker/build-push-action@v5
         with:
@@ -111,8 +85,6 @@ jobs:
           platforms: ${{ matrix.platform }}
           push: true
           build-args: |
-            BUILD_FROM=hanxi/xiaomusic:${{ matrix.upstream_tag }}
-            BUILD_VERSION=${{ env.VERSION }}
             BUILD_ARCH=${{ matrix.build_arch }}
           tags: |
             ghcr.io/${{ env.REPO_OWNER_LC }}/xiaomusic-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
