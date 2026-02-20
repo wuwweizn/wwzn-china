@@ -1,57 +1,49 @@
-name: "XiaoMusic"
-version: "0.4.16"
-slug: "xiaomusic"
-description: "使用小爱音箱播放音乐，音乐使用 yt-dlp 下载，支持语音口令控制。"
-url: "https://github.com/hanxi/xiaomusic"
-panel_icon: "mdi:music-box"
-
-# HA 根据当前设备架构自动拼接镜像名
-image: "ghcr.io/wuwweizn/xiaomusic-{arch}"
-
+name: XiaoMusic
+version: "0.3.101"
+slug: xiaomusic
+description: >-
+  使用小爱音箱播放音乐，音乐使用 yt-dlp 下载。让小爱音箱无限播放本地及在线音乐。
+url: https://github.com/hanxi/xiaomusic
 arch:
   - amd64
   - aarch64
   - armv7
 
-startup: "application"
-boot: "manual"
-init: false
+# 指向你自有仓库构建并推送到 GHCR 的镜像
+# {arch} 会由 Supervisor 自动替换为 amd64 / aarch64 / armv7
+image: ghcr.io/wuwweizn/xiaomusic-{arch}
 
-# 端口映射
 ports:
   8090/tcp: 58090
+
 ports_description:
-  8090/tcp: "XiaoMusic Web 管理后台"
+  8090/tcp: "XiaoMusic Web UI 访问端口"
 
-# Web UI 快捷入口（在 HA 侧边栏点击"打开 Web UI"直接跳转）
-webui: "http://[HOST]:[PORT:8090]/"
-
-# ── 目录映射 ─────────────────────────────────────────────────────
-# media  → /media  （HA 的媒体库目录，推荐存放音乐）
-# share  → /share  （HA 的共享目录，也可存放音乐）
-# config → /config （HA 的配置目录，存放 xiaomusic 配置文件）
+# 持久化数据目录
 map:
-  - "media:rw"
-  - "share:rw"
-  - "config:rw"
+  - type: share
+    read_only: false
+    path: /share/xiaomusic/music
+  - type: config
+    read_only: false
 
-# ── 用户可配置项 ──────────────────────────────────────────────────
-# song_media:    /media 下的子目录名，例如填 "music" 则读取 /media/music
-# song_share:    /share 下的子目录名，例如填 "music" 则读取 /share/music
-# song_download: /share 下的子目录名，用于存放自动下载的歌曲
-# public_port:   对外访问端口（需与上方 ports 的映射端口一致）
+# 启动选项（可在 HA 加载项页面配置）
 options:
-  song_media: "music"
-  song_share: ""
-  song_download: "xiaomusic_download"
   public_port: 58090
 
 schema:
-  song_media: "str?"
-  song_share: "str?"
-  song_download: "str?"
   public_port: int
 
-# 固定环境变量
+# 环境变量传递给容器
 environment:
-  XIAOMUSIC_PUBLIC_PORT: "58090"
+  XIAOMUSIC_PUBLIC_PORT: "{{public_port}}"
+
+# 不使用 HA 的 init 系统，xiaomusic 自带 supervisord
+init: false
+
+# Web UI（可选，通过 Ingress 访问）
+ingress: true
+ingress_port: 8090
+panel_icon: mdi:music-note
+
+homeassistant: "2023.1.0"
