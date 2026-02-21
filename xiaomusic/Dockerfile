@@ -1,5 +1,5 @@
 # 基于官方 xiaomusic 镜像构建
-ARG BUILD_FROM
+ARG BUILD_FROM=hanxi/xiaomusic:latest
 FROM ${BUILD_FROM}
 
 # 复制启动脚本
