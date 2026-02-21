@@ -37,9 +37,6 @@ https://github.com/wuwweizn/wwzn-china
 | 参数 | 说明 | 默认值 |
 |------|------|--------|
 | `public_port` | 对外暴露的 Web 端口 | `58090` |
-| `music_path` | 音乐文件存放路径 | `/share/xiaomusic/music` |
-| `conf_path` | 配置文件存放路径 | `/data/conf` |
-| `log_level` | 日志级别 | `warning` |
 
 ### 第四步：启动并访问
 
@@ -49,7 +46,7 @@ https://github.com/wuwweizn/wwzn-china
 http://<HA_IP>:58090
 ```
 
-或直接点击加载项侧边栏的「XiaoMusic」面板内嵌访问。
+或直接点击侧边栏「XiaoMusic」面板内嵌访问。
 
 首次使用需在 Web 页面输入**小米账号和密码**，保存后才能获取设备列表。
 
@@ -84,16 +81,14 @@ http://<HA_IP>:58090
 
 | HA 路径 | 容器路径 | 说明 |
 |---------|---------|------|
-| `/share/xiaomusic/music` | `/app/music` | 音乐文件存放目录 |
-| `/data/conf` | `/app/conf` | 配置文件持久化目录（升级不丢失） |
+| `/share/xiaomusic/music` | `/share/xiaomusic/music` | 音乐文件存放目录（通过 share 映射） |
+| `/data/conf` | `/data/conf` | 配置文件持久化目录（升级不丢失） |
 
-可通过 HA 的**文件管理器**或 **Samba** 加载项向 `/share/xiaomusic/music` 上传音乐文件，上传后对小爱说「刷新列表」即可生效。
+可通过 HA 的**文件管理器**或 **Samba** 加载项向 `/share/xiaomusic/music` 上传音乐，上传后对小爱说「刷新列表」即可生效。
 
 ---
 
 ## 🏗️ 镜像构建说明
-
-本加载项使用 GitHub Actions 将上游 `hanxi/xiaomusic` 镜像封装为 HA Addon 格式，并推送到自建 GHCR 仓库。
 
 支持架构：
 

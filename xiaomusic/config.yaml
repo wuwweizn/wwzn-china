@@ -1,15 +1,8 @@
-# ============================================================
-# XiaoMusic - Home Assistant 加载项配置
-# 镜像由自有仓库 ghcr.io/wuwweizn 构建并托管
-# ============================================================
 name: "XiaoMusic"
-version: "0.3.2"
+version: "0.3.101"
 slug: "xiaomusic"
 description: "使用小爱音箱播放本地/网络音乐，支持 yt-dlp 下载，语音口令控制播放。"
 url: "https://github.com/hanxi/xiaomusic"
-
-# 使用自有 GHCR 镜像，{arch} 由 Supervisor 自动替换为当前架构
-# 支持：amd64 → amd64 | arm64 → aarch64 | armv7 → armv7
 image: "ghcr.io/wuwweizn/xiaomusic-{arch}"
 
 arch:
@@ -17,50 +10,30 @@ arch:
   - aarch64
   - armv7
 
-# 端口映射：容器内 8090，对外默认 58090（用户可在配置中修改 public_port 后对应调整）
+startup: "application"
+boot: "auto"
+init: false
+
 ports:
   8090/tcp: 58090
 ports_description:
   8090/tcp: "XiaoMusic Web 管理界面"
 
-# 是否使用宿主机网络（小爱音箱局域网发现建议开启；若有端口冲突可关闭）
-host_network: false
+map:
+  - type: share
+    read_only: false
+  - type: media
+    read_only: false
 
-# HA Ingress 内嵌 Web 面板
 ingress: true
 ingress_port: 8090
 panel_icon: "mdi:music-box-multiple"
 panel_title: "XiaoMusic"
 
-# 目录映射说明：
-#   /share/xiaomusic/music → 容器 /app/music（音乐目录）
-#   /data/conf             → 容器 /app/conf  （配置目录，持久化）
-map:
-  - share:rw
-  - media:rw
-
-# 用户可配置选项
 options:
   public_port: 58090
-  music_path: "/share/xiaomusic/music"
-  conf_path: "/data/conf"
-  log_level: "warning"
 
 schema:
   public_port: int
-  music_path: str
-  conf_path: str
-  log_level: list(debug|info|warning|error)
 
-# 不使用 s6-overlay，直接运行 run.sh CMD
-init: false
-startup: "application"
-
-# 安全权限（最小权限）
-privileged: false
-full_access: false
-hassio_api: false
-homeassistant_api: false
-
-# Web UI 直接访问链接
 webui: "http://[HOST]:[PORT:8090]"
