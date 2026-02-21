@@ -11,10 +11,10 @@ arch:
   - i386
 
 ports:
-  8090/tcp: 8090
+  58090/tcp: 58090
 
 ports_description:
-  8090/tcp: "XiaoMusic Web 控制台"
+  58090/tcp: "XiaoMusic Web 控制台"
 
 map:
   - share:rw
@@ -22,8 +22,8 @@ map:
 
 options:
   XIAOMUSIC_HOSTNAME: ""
-  XIAOMUSIC_PORT: 8090
-  XIAOMUSIC_PUBLIC_PORT: 8090
+  XIAOMUSIC_PORT: 58090
+  XIAOMUSIC_PUBLIC_PORT: 58090
   XIAOMUSIC_ACCOUNT: ""
   XIAOMUSIC_PASSWORD: ""
   XIAOMUSIC_MI_DID: ""
