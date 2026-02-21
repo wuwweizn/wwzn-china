@@ -1,30 +1,25 @@
 name: "XiaoMusic"
-description: "使用小爱音箱播放音乐，音乐使用 yt-dlp 下载"
+description: "使用小爱音箱播放音乐，支持 yt-dlp 下载"
 version: "0.4.23"
 slug: "xiaomusic"
 url: "https://github.com/hanxi/xiaomusic"
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
 
-# 使用官方镜像作为基础，通过 Dockerfile 构建
-build_from:
-  aarch64: "hanxi/xiaomusic:latest"
-  amd64: "hanxi/xiaomusic:latest"
-  armhf: "hanxi/xiaomusic:latest"
-  armv7: "hanxi/xiaomusic:latest"
-  i386: "hanxi/xiaomusic:latest"
-
-# 端口映射
 ports:
   8090/tcp: 8090
 
 ports_description:
   8090/tcp: "XiaoMusic Web 控制台"
 
-# 数据持久化
 map:
   - share:rw
   - media:rw
 
-# HA 选项配置（在插件配置页面显示）
 options:
   XIAOMUSIC_HOSTNAME: ""
   XIAOMUSIC_PORT: 8090
@@ -46,19 +41,3 @@ schema:
   XIAOMUSIC_MUSIC_PATH: str
   XIAOMUSIC_CONF_PATH: str
   XIAOMUSIC_VERBOSE: bool
-
-# 权限
-privileged:
-  - NET_ADMIN
-
-# 网络
-host_network: false
-
-# 允许访问 Home Assistant API
-homeassistant_api: false
-
-# 面板配置（侧边栏快捷方式）
-panel_icon: "mdi:music"
-panel_title: "XiaoMusic"
-ingress: true
-ingress_port: 8090
