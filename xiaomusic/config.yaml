@@ -1,5 +1,5 @@
-﻿name: XiaoMusic
-version: "0.3.6"
+name: XiaoMusic
+version: "0.3.8"
 slug: xiaomusic
 description: 使用小爱音箱播放音乐，音乐使用 yt-dlp 下载。
 url: https://github.com/hanxi/xiaomusic
@@ -19,8 +19,6 @@ environment:
   XIAOMUSIC_PUBLIC_PORT: "58090"
   XIAOMUSIC_MUSIC_PATH: /media
   XIAOMUSIC_CONF_PATH: /share/xiaomusic/conf
-ingress: true
-ingress_port: 8090
-ingress_entry: /
 panel_icon: mdi:music-box-multiple
 panel_title: XiaoMusic
+panel_url: http://homeassistant.local:58090
