@@ -1,0 +1,8 @@
+# ============================================================
+# build.yaml - HA Addon 构建配置
+# 指定各架构对应的基础镜像（此处直接包装官方镜像，不依赖 HA base）
+# ============================================================
+build_from:
+  amd64: "hanxi/xiaomusic:latest"
+  aarch64: "hanxi/xiaomusic:latest"
+  armv7: "hanxi/xiaomusic:latest"
