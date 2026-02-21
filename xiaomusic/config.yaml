@@ -1,5 +1,5 @@
 name: XiaoMusic
-version: "0.3.4"
+version: "0.3.5"
 slug: xiaomusic
 description: 使用小爱音箱播放音乐，音乐使用 yt-dlp 下载。
 url: https://github.com/hanxi/xiaomusic
@@ -15,14 +15,9 @@ ports_description:
 map:
   - media:rw
   - share:rw
-volume_mounts:
-  media:
-    path: /app/music
-  share_conf:
-    path: /app/conf
-    read_only: false
 environment:
   XIAOMUSIC_PUBLIC_PORT: "58090"
-  XIAOMUSIC_CONF_PATH: /app/conf
+  XIAOMUSIC_MUSIC_PATH: /media
+  XIAOMUSIC_CONF_PATH: /share/xiaomusic/conf
 panel_icon: mdi:music
 panel_title: XiaoMusic
