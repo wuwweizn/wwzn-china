@@ -7,32 +7,17 @@ arch:
   - amd64
   - aarch64
   - armv7
-
-# 使用自有仓库的镜像（由 GitHub Actions 构建并推送）
 image: ghcr.io/wuwweizn/xiaomusic-{arch}
-
 ports:
   8090/tcp: 58090
 ports_description:
   8090/tcp: XiaoMusic Web 管理界面
-
 map:
-  - share:rw          # 映射 HA /share 目录，用于存放音乐文件
-  - config:rw         # 映射 HA /config 目录，用于存放配置文件
-
+  - share:rw
+  - config:rw
 options:
-  XIAOMUSIC_PUBLIC_PORT: 58090
-
+  public_port: 58090
 schema:
-  XIAOMUSIC_PUBLIC_PORT: int
-
-environment:
-  XIAOMUSIC_MUSIC_PATH: /share/xiaomusic/music
-  XIAOMUSIC_CONF_PATH: /config/xiaomusic
-
-homeassistant_api: false
-host_network: false
-privileged: false
-
+  public_port: int
 panel_icon: mdi:music
 panel_title: XiaoMusic
