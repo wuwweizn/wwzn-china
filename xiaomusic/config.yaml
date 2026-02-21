@@ -14,10 +14,9 @@ ports_description:
   8090/tcp: XiaoMusic Web 管理界面
 map:
   - share:rw
-  - config:rw
 options:
-  public_port: 58090
+  PUBLIC_PORT: 58090
 schema:
-  public_port: int
+  PUBLIC_PORT: int
 panel_icon: mdi:music
 panel_title: XiaoMusic
