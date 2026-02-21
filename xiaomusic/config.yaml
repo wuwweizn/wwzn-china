@@ -1,5 +1,5 @@
 name: XiaoMusic
-version: "0.3.101"
+version: "0.3.7"
 slug: xiaomusic
 description: 使用小爱音箱播放音乐，音乐使用 yt-dlp 下载。
 url: https://github.com/hanxi/xiaomusic
