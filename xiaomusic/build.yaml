@@ -1,4 +1,0 @@
-build_from:
-  amd64: "hanxi/xiaomusic:latest"
-  aarch64: "hanxi/xiaomusic:latest"
-  armv7: "hanxi/xiaomusic:latest"

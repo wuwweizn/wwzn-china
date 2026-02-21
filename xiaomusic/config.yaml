@@ -1,39 +1,64 @@
 name: "XiaoMusic"
-version: "0.3.101"
+description: "使用小爱音箱播放音乐，音乐使用 yt-dlp 下载"
+version: "0.4.23"
 slug: "xiaomusic"
-description: "使用小爱音箱播放本地/网络音乐，支持 yt-dlp 下载，语音口令控制播放。"
 url: "https://github.com/hanxi/xiaomusic"
-image: "ghcr.io/wuwweizn/xiaomusic-{arch}"
 
-arch:
-  - amd64
-  - aarch64
-  - armv7
+# 使用官方镜像作为基础，通过 Dockerfile 构建
+build_from:
+  aarch64: "hanxi/xiaomusic:latest"
+  amd64: "hanxi/xiaomusic:latest"
+  armhf: "hanxi/xiaomusic:latest"
+  armv7: "hanxi/xiaomusic:latest"
+  i386: "hanxi/xiaomusic:latest"
 
-startup: "application"
-boot: "auto"
-init: false
-
+# 端口映射
 ports:
-  8090/tcp: 58090
+  8090/tcp: 8090
+
 ports_description:
-  8090/tcp: "XiaoMusic Web 管理界面"
+  8090/tcp: "XiaoMusic Web 控制台"
 
+# 数据持久化
 map:
-  - type: share
-    read_only: false
-  - type: media
-    read_only: false
+  - share:rw
+  - media:rw
 
-ingress: true
-ingress_port: 8090
-panel_icon: "mdi:music-box-multiple"
-panel_title: "XiaoMusic"
-
+# HA 选项配置（在插件配置页面显示）
 options:
-  public_port: 58090
+  XIAOMUSIC_HOSTNAME: ""
+  XIAOMUSIC_PORT: 8090
+  XIAOMUSIC_PUBLIC_PORT: 8090
+  XIAOMUSIC_ACCOUNT: ""
+  XIAOMUSIC_PASSWORD: ""
+  XIAOMUSIC_MI_DID: ""
+  XIAOMUSIC_MUSIC_PATH: "/share/xiaomusic/music"
+  XIAOMUSIC_CONF_PATH: "/share/xiaomusic/conf"
+  XIAOMUSIC_VERBOSE: false
 
 schema:
-  public_port: int
+  XIAOMUSIC_HOSTNAME: str
+  XIAOMUSIC_PORT: int
+  XIAOMUSIC_PUBLIC_PORT: int
+  XIAOMUSIC_ACCOUNT: str
+  XIAOMUSIC_PASSWORD: str
+  XIAOMUSIC_MI_DID: str
+  XIAOMUSIC_MUSIC_PATH: str
+  XIAOMUSIC_CONF_PATH: str
+  XIAOMUSIC_VERBOSE: bool
 
-webui: "http://[HOST]:[PORT:8090]"
+# 权限
+privileged:
+  - NET_ADMIN
+
+# 网络
+host_network: false
+
+# 允许访问 Home Assistant API
+homeassistant_api: false
+
+# 面板配置（侧边栏快捷方式）
+panel_icon: "mdi:music"
+panel_title: "XiaoMusic"
+ingress: true
+ingress_port: 8090
