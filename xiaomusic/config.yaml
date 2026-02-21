@@ -1,43 +1,38 @@
-name: "XiaoMusic"
-description: "使用小爱音箱播放音乐，支持 yt-dlp 下载"
-version: "0.4.23"
-slug: "xiaomusic"
-url: "https://github.com/hanxi/xiaomusic"
+name: XiaoMusic
+version: "0.3.101"
+slug: xiaomusic
+description: 使用小爱音箱播放音乐，音乐使用 yt-dlp 下载。
+url: https://github.com/hanxi/xiaomusic
 arch:
-  - aarch64
   - amd64
-  - armhf
+  - aarch64
   - armv7
-  - i386
+
+# 使用自有仓库的镜像（由 GitHub Actions 构建并推送）
+image: ghcr.io/wuwweizn/xiaomusic-{arch}
 
 ports:
-  58090/tcp: 58090
-
+  8090/tcp: 58090
 ports_description:
-  58090/tcp: "XiaoMusic Web 控制台"
+  8090/tcp: XiaoMusic Web 管理界面
 
 map:
-  - share:rw
-  - media:rw
+  - share:rw          # 映射 HA /share 目录，用于存放音乐文件
+  - config:rw         # 映射 HA /config 目录，用于存放配置文件
 
 options:
-  XIAOMUSIC_HOSTNAME: ""
-  XIAOMUSIC_PORT: 58090
   XIAOMUSIC_PUBLIC_PORT: 58090
-  XIAOMUSIC_ACCOUNT: ""
-  XIAOMUSIC_PASSWORD: ""
-  XIAOMUSIC_MI_DID: ""
-  XIAOMUSIC_MUSIC_PATH: "/share/xiaomusic/music"
-  XIAOMUSIC_CONF_PATH: "/share/xiaomusic/conf"
-  XIAOMUSIC_VERBOSE: false
 
 schema:
-  XIAOMUSIC_HOSTNAME: str
-  XIAOMUSIC_PORT: int
   XIAOMUSIC_PUBLIC_PORT: int
-  XIAOMUSIC_ACCOUNT: str
-  XIAOMUSIC_PASSWORD: str
-  XIAOMUSIC_MI_DID: str
-  XIAOMUSIC_MUSIC_PATH: str
-  XIAOMUSIC_CONF_PATH: str
-  XIAOMUSIC_VERBOSE: bool
+
+environment:
+  XIAOMUSIC_MUSIC_PATH: /share/xiaomusic/music
+  XIAOMUSIC_CONF_PATH: /config/xiaomusic
+
+homeassistant_api: false
+host_network: false
+privileged: false
+
+panel_icon: mdi:music
+panel_title: XiaoMusic

@@ -35,8 +35,7 @@ jobs:
 
       - name: Install yq
         run: |
-          sudo wget -qO /usr/local/bin/yq \
-            https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
           sudo chmod +x /usr/local/bin/yq
 
       - name: Login to GHCR
@@ -44,25 +43,28 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GH_PAT }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Get lowercase repo owner
         run: echo "REPO_OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
 
-      - name: Extract VERSION from config.yaml
+      - name: Extract VERSION from config
         id: extract_version
         run: |
           ADDON_DIR="xiaomusic"
           CONFIG_PATH="${ADDON_DIR}/config.yaml"
+
           if [[ -f "$CONFIG_PATH" ]]; then
             VERSION=$(yq e ".version" "$CONFIG_PATH")
           else
-            echo "ERROR: $CONFIG_PATH not found!"
+            echo "❌ ERROR: $CONFIG_PATH not found!"
             exit 1
           fi
+
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "BUILD_ARCH=${{ matrix.build_arch }}" >> $GITHUB_ENV
-          echo "VERSION=$VERSION  BUILD_ARCH=${{ matrix.build_arch }}"
+          echo "💡 VERSION=$VERSION"
+          echo "💡 BUILD_ARCH=${{ matrix.build_arch }}"
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
@@ -77,8 +79,8 @@ jobs:
           file: xiaomusic/Dockerfile
           platforms: ${{ matrix.platform }}
           push: true
+          build-args: |
+            BUILD_ARCH=${{ matrix.build_arch }}
           tags: |
             ghcr.io/${{ env.REPO_OWNER_LC }}/xiaomusic-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
             ghcr.io/${{ env.REPO_OWNER_LC }}/xiaomusic-${{ env.BUILD_ARCH }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
