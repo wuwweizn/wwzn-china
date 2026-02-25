@@ -1,5 +1,5 @@
 ---
-version: 2.2.5.1
+version: 2.8.1
 slug: stargate2
 name: 星际之门 · StarGate（备选）
 description: 星际之门的功能补充版本，适合首选版无法使用时替代。
@@ -9,7 +9,7 @@ arch:
   - amd64
 hassio_api: true
 host_network: true
-image: ghcr.io/wuwweizn/stargate2
+image: ghcr.io/wuwweizn/stargate2-{arch}
 init: false
 boot: manual
 map:
@@ -19,7 +19,6 @@ map:
   - homeassistant_config:rw
   - media:rw
   - share:rw
-  - backup:rw
   - ssl:rw
 udev: true
 ports_description:

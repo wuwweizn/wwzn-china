@@ -1,5 +1,5 @@
 ---
-version: 2.2.5.8
+version: 2.8.1
 slug: stargate_green
 name: 星际之门 · StarGate - Green专版
 description: 专为 Home Assistant Green 设备优化的网络穿越星门应用，支持星际科学上网，Green专用。
@@ -9,7 +9,7 @@ arch:
   - amd64
 hassio_api: true
 host_network: true
-image: ghcr.io/wuwweizn/stargate-green
+image: ghcr.io/wuwweizn/stargate-green-{arch}
 init: false
 boot: manual
 map:

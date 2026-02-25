@@ -1,5 +1,5 @@
 ---
-version: 2.2.6
+version: 2.8.1
 slug: stargate_proxy
 name: 星际之门 · StarGate - 国内穿越
 description: 星际之门穿越镜像源版本，国内科学网络星门。
@@ -9,7 +9,7 @@ arch:
   - amd64
 hassio_api: true
 host_network: true
-image: ghcr.io/wuwweizn/stargate-proxy
+image: ghcr.io/wuwweizn/stargate-proxy-{arch}
 init: false
 boot: manual
 map:
