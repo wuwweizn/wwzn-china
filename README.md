@@ -74,6 +74,8 @@ xswxm加载项：https://github.com/xswxm/hassio-addons
 【引用的项目：wenotify_tx、zhonghong_vrf】
 scrypted加载项：https://github.com/koush/scrypted
 【引用的项目：scrypted、Docker Wyze Bridge】
+V2加载项：https://github.com/joe-turbo/hassio-addons
+【引用的项目：haos_turbo】
 
 自行构建加载项：【alist、clash、ddnsto、istoreos、jdxb、libretv、lucky、musicn、NeteaseCloudMusicApi、passwall、v2ray-core、xray、yesplaymusic】
 alist项目地址：https://github.com/AlistGo/alist
