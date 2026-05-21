@@ -1,5 +1,5 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:latest
-FROM node:20-alpine AS builder
+# 构建阶段：固定用 amd64，避免 lightningcss 等原生模块在 armv7 上无预编译二进制的问题
+FROM --platform=linux/amd64 node:20-alpine AS builder
 
 # 克隆 OuonnkiTV 源码并构建
 RUN apk add --no-cache git && \
@@ -7,13 +7,15 @@ RUN apk add --no-cache git && \
 
 WORKDIR /build
 
-# 安装 pnpm 并构建
+# 安装 pnpm 并构建（始终在 amd64 上执行，输出纯静态文件）
 RUN npm install -g pnpm && \
     pnpm install && \
     pnpm build
 
-# ---- 运行阶段：使用 nginx 托管静态文件 ----
+# ---- 运行阶段：跟随目标架构，使用 nginx 托管静态文件 ----
 FROM nginx:alpine
+
+ARG BUILD_ARCH=amd64
 
 LABEL \
   io.hass.name="OuonnkiTV" \
@@ -25,7 +27,7 @@ LABEL \
 # 将构建产物复制到 nginx 目录
 COPY --from=builder /build/dist /usr/share/nginx/html
 
-# 使用启动脚本来注入 HA 的 options 环境变量（运行时）
+# 启动脚本：读取 HA options.json 并生成 runtime-config.json
 COPY run.sh /run.sh
 RUN chmod +x /run.sh
 
