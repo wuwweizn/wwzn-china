@@ -1,18 +1,20 @@
 # ============================================================
 # 构建阶段：固定 amd64，避免 lightningcss 等原生模块在 armv7
 # 无预编译二进制时的编译失败问题。
-# 使用占位符构建，运行时由 run.sh 替换真实值。
 # ============================================================
 FROM --platform=linux/amd64 node:20-alpine AS builder
 
-# 用占位符构建，run.sh 启动时用 sed 替换进 JS bundle
-ENV OKI_INITIAL_VIDEO_SOURCES="__OKI_INITIAL_VIDEO_SOURCES__"
+# 密码和视频源：空字符串构建（无密码/无预置源）
+# 用户需要预置这些配置请使用应用内设置或 oki_initial_config
+ENV OKI_ACCESS_PASSWORD=""
+ENV OKI_INITIAL_VIDEO_SOURCES=""
+ENV OKI_INITIAL_CONFIG=""
+ENV OKI_DISABLE_ANALYTICS="true"
+
+# TMDB 配置：用占位符，运行时替换（这类 URL 字符串 Vite 不会优化掉）
 ENV OKI_TMDB_API_TOKEN="__OKI_TMDB_API_TOKEN__"
 ENV OKI_TMDB_API_BASE_URL="__OKI_TMDB_API_BASE_URL__"
 ENV OKI_TMDB_IMAGE_BASE_URL="__OKI_TMDB_IMAGE_BASE_URL__"
-ENV OKI_ACCESS_PASSWORD="__OKI_ACCESS_PASSWORD__"
-ENV OKI_DISABLE_ANALYTICS="__OKI_DISABLE_ANALYTICS__"
-ENV OKI_INITIAL_CONFIG="__OKI_INITIAL_CONFIG__"
 
 RUN apk add --no-cache git && \
     git clone --depth=1 https://github.com/Ouonnki/OuonnkiTV /build
@@ -24,7 +26,7 @@ RUN npm install -g pnpm && \
     pnpm build
 
 # ============================================================
-# 运行阶段：跟随目标架构
+# 运行阶段
 # ============================================================
 FROM nginx:alpine
 
@@ -37,10 +39,8 @@ LABEL \
   io.hass.type="addon" \
   maintainer="wuwweizn"
 
-# 安装 jq（解析 HA options.json）
 RUN apk add --no-cache jq
 
-# nginx 监听 17380，SPA fallback
 RUN printf 'server {\n\
     listen 17380;\n\
     root /usr/share/nginx/html;\n\
