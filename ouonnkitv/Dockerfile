@@ -1,27 +1,18 @@
 # ============================================================
 # 构建阶段：固定 amd64，避免 lightningcss 等原生模块在 armv7
 # 无预编译二进制时的编译失败问题。
-# 输出为纯静态文件，无架构依赖。
+# 使用占位符构建，运行时由 run.sh 替换真实值。
 # ============================================================
 FROM --platform=linux/amd64 node:20-alpine AS builder
 
-# OuonnkiTV 所有环境变量均在【构建时】注入（Vite import.meta.env）
-# 通过 ARG → ENV 传递，pnpm build 时会打包进静态文件
-ARG OKI_INITIAL_VIDEO_SOURCES=""
-ARG OKI_TMDB_API_TOKEN=""
-ARG OKI_TMDB_API_BASE_URL="https://api.tmdb.org/3"
-ARG OKI_TMDB_IMAGE_BASE_URL="https://image.tmdb.org/t/p/"
-ARG OKI_ACCESS_PASSWORD=""
-ARG OKI_DISABLE_ANALYTICS="true"
-ARG OKI_INITIAL_CONFIG=""
-
-ENV OKI_INITIAL_VIDEO_SOURCES=${OKI_INITIAL_VIDEO_SOURCES}
-ENV OKI_TMDB_API_TOKEN=${OKI_TMDB_API_TOKEN}
-ENV OKI_TMDB_API_BASE_URL=${OKI_TMDB_API_BASE_URL}
-ENV OKI_TMDB_IMAGE_BASE_URL=${OKI_TMDB_IMAGE_BASE_URL}
-ENV OKI_ACCESS_PASSWORD=${OKI_ACCESS_PASSWORD}
-ENV OKI_DISABLE_ANALYTICS=${OKI_DISABLE_ANALYTICS}
-ENV OKI_INITIAL_CONFIG=${OKI_INITIAL_CONFIG}
+# 用占位符构建，run.sh 启动时用 sed 替换进 JS bundle
+ENV OKI_INITIAL_VIDEO_SOURCES="__OKI_INITIAL_VIDEO_SOURCES__"
+ENV OKI_TMDB_API_TOKEN="__OKI_TMDB_API_TOKEN__"
+ENV OKI_TMDB_API_BASE_URL="__OKI_TMDB_API_BASE_URL__"
+ENV OKI_TMDB_IMAGE_BASE_URL="__OKI_TMDB_IMAGE_BASE_URL__"
+ENV OKI_ACCESS_PASSWORD="__OKI_ACCESS_PASSWORD__"
+ENV OKI_DISABLE_ANALYTICS="__OKI_DISABLE_ANALYTICS__"
+ENV OKI_INITIAL_CONFIG="__OKI_INITIAL_CONFIG__"
 
 RUN apk add --no-cache git && \
     git clone --depth=1 https://github.com/Ouonnki/OuonnkiTV /build
@@ -33,7 +24,7 @@ RUN npm install -g pnpm && \
     pnpm build
 
 # ============================================================
-# 运行阶段：跟随目标架构，nginx 托管静态文件
+# 运行阶段：跟随目标架构
 # ============================================================
 FROM nginx:alpine
 
@@ -46,7 +37,10 @@ LABEL \
   io.hass.type="addon" \
   maintainer="wuwweizn"
 
-# 覆盖 nginx 默认配置，监听 17380 端口
+# 安装 jq（解析 HA options.json）
+RUN apk add --no-cache jq
+
+# nginx 监听 17380，SPA fallback
 RUN printf 'server {\n\
     listen 17380;\n\
     root /usr/share/nginx/html;\n\
@@ -57,7 +51,9 @@ RUN printf 'server {\n\
 }\n' > /etc/nginx/conf.d/default.conf
 
 COPY --from=builder /build/dist /usr/share/nginx/html
+COPY run.sh /run.sh
+RUN chmod +x /run.sh
 
 EXPOSE 17380
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["/run.sh"]
