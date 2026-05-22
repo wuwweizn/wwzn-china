@@ -1,5 +1,5 @@
 name: OuonnkiTV
-version: "1.0.7"
+version: "1.0.8"
 slug: ouonnkitv
 description: 一键搭建个人影视站，支持TMDB智能模式，基于LibreTV修改
 url: https://github.com/Ouonnki/OuonnkiTV
@@ -15,6 +15,8 @@ ports:
 ports_description:
   17380/tcp: OuonnkiTV Web UI
 image: "ghcr.io/wuwweizn/ouonnkitv-{arch}"
+webui: http://[HOST]:[PORT:17380]
+panel_icon: mdi:television-play
 options:
   oki_tmdb_api_token: ""
   oki_tmdb_api_base_url: "https://api.tmdb.org/3"
