@@ -20,15 +20,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - arch: amd64
-            platform: linux/amd64
+          - platform: linux/amd64
             build_arch: amd64
-          - arch: arm64
-            platform: linux/arm64
+          - platform: linux/arm64
             build_arch: aarch64
-          - arch: armv7
-            platform: linux/arm/v7
-            build_arch: armv7
 
     permissions:
       contents: read
@@ -71,7 +66,7 @@ jobs:
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push rtp2httpd for ${{ matrix.arch }}
+      - name: Build and push rtp2httpd for ${{ matrix.build_arch }}
         uses: docker/build-push-action@v5
         with:
           context: rtp2httpd
@@ -79,7 +74,6 @@ jobs:
           platforms: ${{ matrix.platform }}
           push: true
           build-args: |
-            BUILD_FROM=ghcr.io/home-assistant/base:latest
             RTP2HTTPD_VERSION=${{ env.VERSION }}
           tags: |
             ghcr.io/${{ env.REPO_OWNER_LC }}/rtp2httpd-${{ matrix.build_arch }}:${{ env.VERSION }}
