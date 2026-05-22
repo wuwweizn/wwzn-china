@@ -53,27 +53,17 @@ jobs:
       - name: Get lowercase repo owner
         run: echo "REPO_OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
 
-      - name: Extract VERSION from config or input
-        id: extract_version
+      - name: Extract VERSION
         run: |
-          ADDON_DIR="rtp2httpd"
-          CONFIG_PATH="${ADDON_DIR}/config.yaml"
-
-          # 优先使用手动触发时的 input 版本
           INPUT_VERSION="${{ github.event.inputs.version }}"
           if [[ -n "$INPUT_VERSION" ]]; then
             VERSION="$INPUT_VERSION"
             echo "💡 使用手动输入版本: $VERSION"
-          elif [[ -f "$CONFIG_PATH" ]]; then
-            VERSION=$(yq e ".version" "$CONFIG_PATH")
-            echo "💡 使用 config.yaml 版本: $VERSION"
           else
-            echo "❌ ERROR: $CONFIG_PATH not found and no input version!"
-            exit 1
+            VERSION=$(yq e ".version" "rtp2httpd/config.yaml")
+            echo "💡 使用 config.yaml 版本: $VERSION"
           fi
-
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "BUILD_ARCH=${{ matrix.build_arch }}" >> $GITHUB_ENV
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
@@ -89,7 +79,8 @@ jobs:
           platforms: ${{ matrix.platform }}
           push: true
           build-args: |
-            BUILD_FROM=ghcr.io/stackia/rtp2httpd:${{ env.VERSION }}
+            BUILD_FROM=ghcr.io/home-assistant/base:latest
+            RTP2HTTPD_VERSION=${{ env.VERSION }}
           tags: |
-            ghcr.io/${{ env.REPO_OWNER_LC }}/rtp2httpd-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
-            ghcr.io/${{ env.REPO_OWNER_LC }}/rtp2httpd-${{ env.BUILD_ARCH }}:latest
+            ghcr.io/${{ env.REPO_OWNER_LC }}/rtp2httpd-${{ matrix.build_arch }}:${{ env.VERSION }}
+            ghcr.io/${{ env.REPO_OWNER_LC }}/rtp2httpd-${{ matrix.build_arch }}:latest
