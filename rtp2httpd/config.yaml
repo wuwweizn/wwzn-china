@@ -1,0 +1,35 @@
+name: "rtp2httpd"
+version: "3.12.1"
+slug: "rtp2httpd"
+description: "IPTV 组播转单播转发服务器，支持 RTP/RTSP 转 HTTP，内置 Web 播放器与快速换台（FCC）"
+url: "https://rtp2httpd.com"
+arch:
+  - amd64
+  - aarch64
+  - armv7
+startup: services
+boot: auto
+init: false
+host_network: true
+image: "ghcr.io/wuwweizn/rtp2httpd-{arch}"
+options:
+  listen_port: 5140
+  max_clients: 20
+  verbose: 2
+  extra_args: ""
+schema:
+  listen_port: int
+  max_clients: int
+  verbose: int
+  extra_args: str
+ports:
+  5140/tcp: 5140
+ports_description:
+  5140/tcp: "rtp2httpd HTTP 服务端口"
+map:
+  - config:/config
+tmpfs:
+  - /tmp
+cap_add:
+  - NET_ADMIN
+full_access: false
