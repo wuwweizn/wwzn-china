@@ -1,5 +1,5 @@
 name: "rtp2httpd"
-version: "3.12.3"
+version: "3.12.4"
 slug: "rtp2httpd"
 description: "IPTV 组播转单播转发服务器，支持 RTP/RTSP 转 HTTP，内置 Web 播放器与快速换台（FCC）"
 url: "https://rtp2httpd.com"
@@ -17,11 +17,23 @@ options:
   listen_port: 5140
   max_clients: 20
   verbose: 2
+  workers: 1
+  upstream_interface: ""
+  external_m3u: ""
+  external_m3u_update_interval: 7200
+  fcc_listen_port_range: ""
+  r2h_token: ""
   extra_args: ""
 schema:
   listen_port: int
   max_clients: int
   verbose: int
+  workers: int
+  upstream_interface: str
+  external_m3u: str
+  external_m3u_update_interval: int
+  fcc_listen_port_range: str
+  r2h_token: str
   extra_args: str
 ports:
   5140/tcp: 5140
