@@ -1,5 +1,5 @@
 name: "rtp2httpd"
-version: "3.12.4"
+version: "3.12.1"
 slug: "rtp2httpd"
 description: "IPTV 组播转单播转发服务器，支持 RTP/RTSP 转 HTTP，内置 Web 播放器与快速换台（FCC）"
 url: "https://rtp2httpd.com"
