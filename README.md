@@ -77,7 +77,7 @@ scrypted加载项：https://github.com/koush/scrypted
 V2加载项：https://github.com/joe-turbo/hassio-addons
 【引用的项目：haos_turbo】
 
-自行构建加载项：【alist、clash、ddnsto、istoreos、jdxb、libretv、lucky、musicn、NeteaseCloudMusicApi、passwall、v2ray-core、xray、yesplaymusic】
+自行构建加载项：【alist、clash、ddnsto、istoreos、jdxb、libretv、lucky、musicn、NeteaseCloudMusicApi、passwall、v2ray-core、xray、yesplaymusic、rtp2httpd、OuonnkiTV、TradingAgents-CN】
 alist项目地址：https://github.com/AlistGo/alist
 clash项目地址：https://github.com/MetaCubeX/mihomo
 jdxb项目地址：https://www.iepose.com/
