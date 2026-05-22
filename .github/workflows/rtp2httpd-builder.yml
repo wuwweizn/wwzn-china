@@ -89,7 +89,7 @@ jobs:
           platforms: ${{ matrix.platform }}
           push: true
           build-args: |
-            BUILD_FROM=ghcr.io/stackia/rtp2httpd:v${{ env.VERSION }}
+            BUILD_FROM=ghcr.io/stackia/rtp2httpd:${{ env.VERSION }}
           tags: |
             ghcr.io/${{ env.REPO_OWNER_LC }}/rtp2httpd-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
             ghcr.io/${{ env.REPO_OWNER_LC }}/rtp2httpd-${{ env.BUILD_ARCH }}:latest
