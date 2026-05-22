@@ -4,14 +4,14 @@
 # ============================================================
 FROM --platform=linux/amd64 node:20-alpine AS builder
 
-# 密码和视频源：空字符串构建（无密码/无预置源）
-# 用户需要预置这些配置请使用应用内设置或 oki_initial_config
+# 视频源：构建时直接硬编码，启动即可用
+ENV OKI_INITIAL_VIDEO_SOURCES='[{"id":"iqiyizyapi-com","name":"爱奇艺","url":"https://iqiyizyapi.com/api.php/provide/vod","detailUrl":"https://iqiyizyapi.com","isEnabled":true},{"id":"dbzy-tv","name":"豆瓣资源","url":"https://caiji.dbzy5.com/api.php/provide/vod","detailUrl":"https://dbzy.tv","isEnabled":true},{"id":"ikunzy-com","name":"iKun资源","url":"https://ikunzyapi.com/api.php/provide/vod","detailUrl":"https://ikunzy.com","isEnabled":true},{"id":"www-maoyanzy-com","name":"猫眼资源","url":"https://api.maoyanapi.top/api.php/provide/vod","detailUrl":"https://www.maoyanzy.com","isEnabled":true},{"id":"360zy-com","name":"360资源","url":"https://360zyzz.com/api.php/provide/vod","detailUrl":"https://360zy.com","isEnabled":true},{"id":"www-moduzy-net","name":"魔都资源","url":"https://www.mdzyapi.com/api.php/provide/vod","detailUrl":"https://www.moduzy.net","isEnabled":true},{"id":"xinlangapi-com","name":"新浪资源","url":"https://api.xinlangapi.com/xinlangapi.php/provide/vod","detailUrl":"https://xinlangapi.com","isEnabled":true},{"id":"www-subozy-com","name":"速播资源","url":"https://subocaiji.com/api.php/provide/vod","detailUrl":"https://www.subozy.com","isEnabled":true},{"id":"jinyingzy-com","name":"金鹰点播","url":"https://jinyingzy.com/api.php/provide/vod","detailUrl":"https://jinyingzy.com","isEnabled":true},{"id":"api-guangsuapi-com","name":"光速资源","url":"https://api.guangsuapi.com/api.php/provide/vod","detailUrl":"https://api.guangsuapi.com","isEnabled":true},{"id":"www-hongniuzy-com","name":"红牛资源","url":"https://www.hongniuzy2.com/api.php/provide/vod","detailUrl":"https://www.hongniuzy.com","isEnabled":true},{"id":"caiji-moduapi-cc","name":"魔都动漫","url":"https://caiji.moduapi.cc/api.php/provide/vod","detailUrl":"https://caiji.moduapi.cc","isEnabled":true},{"id":"www-ryzyw-com","name":"如意资源","url":"https://cj.rycjapi.com/api.php/provide/vod","detailUrl":"https://www.ryzyw.com","isEnabled":true},{"id":"www-haohuazy-com","name":"豪华资源","url":"https://hhzyapi.com/api.php/provide/vod","detailUrl":"https://www.haohuazy.com","isEnabled":true},{"id":"www-huyaapi-com","name":"虎牙资源","url":"https://www.huyaapi.com/api.php/provide/vod","detailUrl":"https://www.huyaapi.com","isEnabled":true}]'
+
 ENV OKI_ACCESS_PASSWORD=""
-ENV OKI_INITIAL_VIDEO_SOURCES=""
 ENV OKI_INITIAL_CONFIG=""
 ENV OKI_DISABLE_ANALYTICS="true"
 
-# TMDB 配置：用占位符，运行时替换（这类 URL 字符串 Vite 不会优化掉）
+# TMDB 配置：用占位符，运行时由 run.sh 替换
 ENV OKI_TMDB_API_TOKEN="__OKI_TMDB_API_TOKEN__"
 ENV OKI_TMDB_API_BASE_URL="__OKI_TMDB_API_BASE_URL__"
 ENV OKI_TMDB_IMAGE_BASE_URL="__OKI_TMDB_IMAGE_BASE_URL__"
