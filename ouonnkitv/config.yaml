@@ -1,7 +1,7 @@
 name: OuonnkiTV
-version: "1.0.0"
+version: "1.0.1"
 slug: ouonnkitv
-description: 一键搭建个人影视站，基于LibreTV修改
+description: 一键搭建个人影视站，支持TMDB智能模式，基于LibreTV修改
 url: https://github.com/Ouonnki/OuonnkiTV
 arch:
   - amd64
@@ -11,21 +11,23 @@ init: false
 map:
   - config:rw
 ports:
-  3000/tcp: 3000
+  17380/tcp: 17380
 ports_description:
-  3000/tcp: Web UI
+  17380/tcp: OuonnkiTV Web UI
 image: "ghcr.io/wuwweizn/ouonnkitv-{arch}"
 options:
-  initial_video_sources: ""
-  tmdb_api_token: ""
-  tmdb_api_base_url: "https://api.tmdb.org/3"
-  tmdb_image_base_url: "https://image.tmdb.org/t/p/"
-  access_password: ""
-  disable_analytics: true
+  oki_initial_video_sources: ""
+  oki_tmdb_api_token: ""
+  oki_tmdb_api_base_url: "https://api.tmdb.org/3"
+  oki_tmdb_image_base_url: "https://image.tmdb.org/t/p/"
+  oki_access_password: ""
+  oki_disable_analytics: true
+  oki_initial_config: ""
 schema:
-  initial_video_sources: str?
-  tmdb_api_token: str?
-  tmdb_api_base_url: str
-  tmdb_image_base_url: str
-  access_password: str?
-  disable_analytics: bool
+  oki_initial_video_sources: str?
+  oki_tmdb_api_token: str?
+  oki_tmdb_api_base_url: str
+  oki_tmdb_image_base_url: str
+  oki_access_password: str?
+  oki_disable_analytics: bool
+  oki_initial_config: str?
