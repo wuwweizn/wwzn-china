@@ -1,0 +1,90 @@
+name: Build and Push hacs_china (Multi-Arch, Docker Hub + GHCR)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'hacs-china/**'
+      - '.github/workflows/build-hacs-china.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            platform: linux/amd64
+            build_arch: amd64
+          - arch: arm64
+            platform: linux/arm64
+            build_arch: aarch64
+          - arch: armv7
+            platform: linux/arm/v7
+            build_arch: armv7
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GH_PAT }}
+
+      - name: Get lowercase repo owner
+        run: echo "REPO_OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+
+      - name: Extract VERSION and BUILD_FROM
+        run: |
+          ADDON_DIR="ha-addons/hacs-china"
+          BUILD_ARCH="${{ matrix.build_arch }}"
+
+          VERSION=$(yq e ".version" "${ADDON_DIR}/config.yaml")
+          BUILD_FROM=$(yq e ".build_from.${BUILD_ARCH}" "${ADDON_DIR}/build.yaml")
+
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "BUILD_FROM=$BUILD_FROM" >> $GITHUB_ENV
+          echo "BUILD_ARCH=$BUILD_ARCH" >> $GITHUB_ENV
+          echo "💡 VERSION=$VERSION, BUILD_FROM=$BUILD_FROM, ARCH=$BUILD_ARCH"
+
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push hacs_china for ${{ matrix.arch }}
+        uses: docker/build-push-action@v5
+        with:
+          context: ha-addons/hacs-china
+          file: ha-addons/hacs-china/Dockerfile
+          platforms: ${{ matrix.platform }}
+          push: true
+          tags: |
+            ghcr.io/${{ env.REPO_OWNER_LC }}/hacs_china-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
+            ghcr.io/${{ env.REPO_OWNER_LC }}/hacs_china-${{ env.BUILD_ARCH }}:latest
+            ${{ secrets.DOCKER_USERNAME }}/hacs_china-${{ env.BUILD_ARCH }}:${{ env.VERSION }}
+            ${{ secrets.DOCKER_USERNAME }}/hacs_china-${{ env.BUILD_ARCH }}:latest
+          build-args: |
+            BUILD_FROM=${{ env.BUILD_FROM }}
+            BUILD_ARCH=${{ env.BUILD_ARCH }}

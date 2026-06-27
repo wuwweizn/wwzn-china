@@ -1,0 +1,28 @@
+#!/usr/bin/with-contenv bashio
+
+TARGET="/homeassistant/custom_components"
+HACS_DIR="${TARGET}/hacs"
+
+bashio::log.info "=========================================="
+bashio::log.info "  HACS 极速版 安装器"
+bashio::log.info "=========================================="
+
+# 确保 custom_components 目录存在
+if ! bashio::fs.directory_exists "${TARGET}"; then
+    bashio::log.info "创建 custom_components 目录..."
+    mkdir -p "${TARGET}"
+fi
+
+# 如果已存在旧版本，先备份
+if bashio::fs.directory_exists "${HACS_DIR}"; then
+    bashio::log.warning "检测到已安装的 HACS，正在覆盖更新..."
+    rm -rf "${HACS_DIR}"
+fi
+
+# 复制集成文件
+bashio::log.info "正在安装 HACS 极速版..."
+cp -rf /hacs "${HACS_DIR}"
+
+bashio::log.info "安装完成！"
+bashio::log.info "请重启 Home Assistant 以激活 HACS 极速版。"
+bashio::log.info "=========================================="

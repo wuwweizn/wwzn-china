@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//tmp/hacs_fe/hacs_frontend_extracted/hacs_frontend/**)",
+      "Bash(curl -s \"https://api.github.com/repos/wuwweizn/wwzn-china/contents/\" -o /tmp/repo.json)",
+      "Bash(python3 /tmp/parse.py)",
+      "Read(//tmp/**)"
+    ]
+  }
+}
