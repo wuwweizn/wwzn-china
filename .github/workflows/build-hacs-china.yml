@@ -56,7 +56,7 @@ jobs:
 
       - name: Extract VERSION and BUILD_FROM
         run: |
-          ADDON_DIR="ha-addons/hacs-china"
+          ADDON_DIR="hacs-china"
           BUILD_ARCH="${{ matrix.build_arch }}"
 
           VERSION=$(yq e ".version" "${ADDON_DIR}/config.yaml")
@@ -76,8 +76,8 @@ jobs:
       - name: Build and push hacs_china for ${{ matrix.arch }}
         uses: docker/build-push-action@v5
         with:
-          context: ha-addons/hacs-china
-          file: ha-addons/hacs-china/Dockerfile
+          context: hacs-china
+          file: hacs-china/Dockerfile
           platforms: ${{ matrix.platform }}
           push: true
           tags: |
