@@ -5,3 +5,5 @@ COPY rootfs /
 COPY hacs/ /hacs/
 
 RUN chmod +x /etc/addon/run
+
+CMD ["/etc/addon/run"]
