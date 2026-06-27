@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """HACS Token Hub - HA 加载项版"""
 
+import base64
+import hashlib
 import os
 import random
 import sqlite3
@@ -226,9 +228,64 @@ async def verify_token(token: str) -> dict | None:
             return None
 
 
+def _decrypt_token(enc_b64: str) -> str:
+    """用内置密钥 XOR 解密 token。"""
+    key = hashlib.sha256(b"hacs-tokenhub-wwzn-2024").digest()
+    data = base64.b64decode(enc_b64.strip())
+    return "".join(chr(b ^ key[i % len(key)]) for i, b in enumerate(data))
+
+
+async def load_init_token():
+    """启动时自动加载内置加密 token 或配置文件中的 token。"""
+    token = None
+
+    # 优先读取构建时内置的加密 token
+    enc_file = "/app/init_token.enc"
+    if os.path.exists(enc_file):
+        try:
+            token = _decrypt_token(open(enc_file).read())
+        except Exception as e:
+            print(f"[WARNING] 解密内置 token 失败: {e}")
+
+    # 其次读取加载项配置中的 init_token（用户手动填写）
+    if not token:
+        import json
+        options_path = "/data/options.json"
+        if os.path.exists(options_path):
+            try:
+                options = json.load(open(options_path))
+                token = (options.get("init_token") or "").strip()
+            except Exception as e:
+                print(f"[WARNING] 读取 options.json 失败: {e}")
+
+    if not token:
+        return
+
+    conn = get_db()
+    exists = conn.execute("SELECT id FROM tokens WHERE token=?", (token,)).fetchone()
+    conn.close()
+    if exists:
+        return
+
+    info = await verify_token(token)
+    if not info:
+        print("[WARNING] 内置 token 验证失败，跳过自动添加")
+        return
+
+    conn = get_db()
+    conn.execute(
+        "INSERT OR IGNORE INTO tokens (token,login,remaining) VALUES (?,?,?)",
+        (token, info["login"], info["remaining"]),
+    )
+    conn.commit()
+    conn.close()
+    print(f"[INFO] 内置 token 已自动添加，账号: {info['login']}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
+    await load_init_token()
     yield
 
 

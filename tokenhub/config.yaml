@@ -1,5 +1,5 @@
 name: "HACS Token Hub"
-version: "1.0.0"
+version: "1.0.1"
 slug: "hacs_tokenhub"
 description: "自托管 GitHub Token 共享池，为 HACS 极速版提供共享令牌服务，解决共享令牌服务器不可用问题"
 url: "https://github.com/wuwweizn/wwzn-china"
@@ -24,7 +24,9 @@ panel_icon: "mdi:key-chain-variant"
 panel_title: "Token Hub"
 panel_admin: true
 host_network: false
-options: {}
-schema: {}
+options:
+  init_token: ""
+schema:
+  init_token: str?
 backup: "hot"
 webui: "http://[HOST]:[PORT:8765]/"
