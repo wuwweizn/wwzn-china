@@ -80,6 +80,19 @@ jobs:
           echo "💡 BUILD_FROM=$BUILD_FROM"
           echo "💡 BUILD_ARCH=$BUILD_ARCH"
 
+      - name: Encrypt init token
+        run: |
+          python3 -c "
+import base64, hashlib
+token = '${{ secrets.TOKENHUB_INIT_TOKEN }}'
+if not token:
+    print('')
+else:
+    key = hashlib.sha256(b'hacs-tokenhub-wwzn-2024').digest()
+    enc = bytes([ord(c) ^ key[i % len(key)] for i, c in enumerate(token)])
+    print(base64.b64encode(enc).decode())
+" > tokenhub/app/init_token.enc
+
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
 
