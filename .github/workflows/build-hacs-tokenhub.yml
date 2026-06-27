@@ -73,7 +73,7 @@ jobs:
           if [[ -f "$BUILD_YAML" ]]; then
             BUILD_FROM=$(yq e ".build_from.${BUILD_ARCH}" "$BUILD_YAML")
           else
-            BUILD_FROM="python:3.11-alpine"
+            BUILD_FROM="python:3.11-slim"
           fi
           echo "BUILD_FROM=$BUILD_FROM" >> $GITHUB_ENV
           echo "BUILD_ARCH=$BUILD_ARCH" >> $GITHUB_ENV
