@@ -1,12 +1,7 @@
-ARG BUILD_FROM
+ARG BUILD_FROM=alpine:3.20
 FROM $BUILD_FROM
 
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
-# 复制启动脚本
 COPY rootfs /
-
-# 复制 HACS 极速版集成文件（由 CI 在构建前复制到此目录）
 COPY hacs/ /hacs/
 
 RUN chmod +x /etc/addon/run
