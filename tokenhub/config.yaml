@@ -1,0 +1,30 @@
+name: "HACS Token Hub"
+version: "1.0.0"
+slug: "hacs_tokenhub"
+description: "自托管 GitHub Token 共享池，为 HACS 极速版提供共享令牌服务，解决共享令牌服务器不可用问题"
+url: "https://github.com/wuwweizn/wwzn-china"
+startup: "application"
+arch:
+  - "amd64"
+  - "aarch64"
+  - "armv7"
+  - "i386"
+  - "armhf"
+image: "ghcr.io/wuwweizn/hacs_tokenhub-{arch}"
+init: false
+map:
+  - "data:rw"
+ports:
+  "8765/tcp": 8765
+ports_description:
+  "8765/tcp": "Token Hub Web UI 和 API"
+ingress: true
+ingress_port: 8765
+panel_icon: "mdi:key-chain-variant"
+panel_title: "Token Hub"
+panel_admin: true
+host_network: false
+options: {}
+schema: {}
+backup: "hot"
+webui: "http://[HOST]:[PORT:8765]/"
