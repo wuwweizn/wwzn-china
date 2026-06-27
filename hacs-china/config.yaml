@@ -1,5 +1,5 @@
 name: "HACS 极速版"
-version: "1.0.5"
+version: "1.0.6"
 slug: "hacs_china"
 description: "一键安装 HACS 极速版（中国大陆优化，内置共享令牌支持）"
 url: "https://github.com/wuwweizn/wwzn-china"
