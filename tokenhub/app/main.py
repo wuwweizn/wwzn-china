@@ -114,9 +114,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             <ol class="mb-2">
                 <li>在上方添加至少一个 GitHub Token</li>
                 <li>打开 <strong>HACS → 右上角三点菜单 → 自定义存储库</strong></li>
-                <li>或在 HACS 选项中将「共享令牌服务器地址」设为：
-                    <code class="user-select-all">{{ apiBase }}</code>
-                </li>
+                <li>或在 HACS 选项中将「共享令牌服务器地址」设为：http://ha-ip:8765</li>
             </ol>
             <div class="alert alert-info py-2 mb-0 small">
                 <strong>提示：</strong>添加后 HACS 设置共享令牌服务器地址为本服务器地址，重新配置 HACS 集成即可使用共享令牌登录。
