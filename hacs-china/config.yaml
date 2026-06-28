@@ -1,7 +1,7 @@
-name: "HACS 极速版"
-version: "1.0.7"
+name: "HACS 增强极速版"
+version: "1.0.8"
 slug: "hacs_china"
-description: "一键安装 HACS 极速版（中国大陆优化，内置共享令牌支持）"
+description: "一键安装 HACS 增强极速版（中国大陆优化，内置共享令牌支持，可搭配tokenhub应用一起使用）"
 url: "https://github.com/wuwweizn/wwzn-china"
 arch:
   - aarch64

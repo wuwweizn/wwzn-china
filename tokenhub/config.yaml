@@ -1,7 +1,7 @@
 name: "HACS Token Hub"
-version: "1.0.3"
+version: "1.0.4"
 slug: "hacs_tokenhub"
-description: "自托管 GitHub Token 共享池，为 HACS 极速版提供共享令牌服务，解决共享令牌服务器不可用问题"
+description: "自托管 GitHub Token 共享池，为 HACS 增强极速版提供共享令牌服务，解决共享令牌服务器不可用问题"
 url: "https://github.com/wuwweizn/wwzn-china"
 startup: "application"
 arch:
