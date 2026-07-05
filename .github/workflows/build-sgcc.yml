@@ -2,12 +2,6 @@ name: Build and Push SGCC Electricity (Multi-Arch, Docker Hub + GHCR)
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - 'sgcc_electricity/**'
-      - '.github/workflows/sgcc-electricity-builder.yml'
 
 jobs:
   build:

@@ -1,0 +1,11 @@
+{
+  "name": "SGCC Electricity",
+  "version": "v1.9.6",
+  "slug": "sgcc_electricity",
+  "description": "获取国网电费数据的插件",
+  "startup": "application",
+  "boot": "auto",
+  "init": false,
+  "host_network": true,
+  "arch": ["amd64", "aarch64"]
+}

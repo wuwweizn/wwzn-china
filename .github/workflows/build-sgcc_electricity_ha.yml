@@ -2,12 +2,6 @@
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - 'sgcc_electricity/**'
-      - '.github/workflows/sgcc_electricity-builder.yml'
 
 jobs:
   build:
